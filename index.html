@@ -92,6 +92,9 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 .linha{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .linha input{flex:1;min-width:120px;width:auto}
 #codigoSala{font-family:Cinzel,serif;font-size:34px;letter-spacing:6px;color:var(--gold);text-align:center;background:#1a1420;border-radius:10px;padding:10px;margin:8px 0;user-select:all}
+.botaoLink{font-family:Cinzel,serif;font-size:14px;border:1px solid #2f7d46;background:linear-gradient(#2f7d46,#1f5a31);color:#fff;padding:8px 14px;border-radius:6px;text-decoration:none}
+#convidado{background:#2f2410;border:1px solid var(--gold);border-radius:8px;padding:10px 12px;margin:10px 0}
+#convidado:empty{display:none}
 #listaLobby{list-style:none;padding:0;margin:8px 0}
 #listaLobby li{padding:6px 10px;border-bottom:1px solid #3a2f46}
 .msg{color:#ffb35a;min-height:22px;margin:8px 0 0}
@@ -139,6 +142,7 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
     <div id="telaInicio">
       <h2 style="color:var(--gold)">☾ Lua de Cinzas</h2>
       <p><i>Uma vila assustada. Bruxas se escondem entre os vizinhos. Ninguém é confiável.</i></p>
+      <div id="convidado"></div>
       <label>Seu nome</label><input id="inNome" value="" maxlength="14" placeholder="Seu nome">
       <div class="secao">
         <h3>🌐 Jogar online com amigos</h3>
@@ -155,7 +159,13 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
     <div id="telaLobby" hidden>
       <h2 style="color:var(--gold)">🌐 Sala</h2>
       <div id="codigoSala">-----</div>
-      <p id="lobbyDica" style="text-align:center;color:var(--muted)">Passe este código para seus amigos. Eles abrem o jogo, digitam o código e clicam em <b>Entrar na sala</b>.</p>
+      <div id="convite">
+        <p style="text-align:center;margin:4px 0">📨 <b>Link de convite</b>: mande para seus amigos. Eles clicam, digitam o nome e já entram na sua sala.</p>
+        <div class="linha"><input id="linkConvite" readonly onclick="this.select()"><button class="prim" id="btnCopiar">Copiar link</button></div>
+        <div class="linha" style="margin-top:8px;justify-content:center"><a id="btnZap" class="botaoLink" target="_blank" rel="noopener">📱 Enviar no WhatsApp</a><button id="btnCompartilhar" hidden>Compartilhar…</button></div>
+        <p style="text-align:center;color:var(--muted);font-size:14px;margin:8px 0 0">O código fica salvo neste navegador: na próxima vez que você criar a sala, o mesmo link continua valendo.</p>
+      </div>
+      <p id="lobbyDica" hidden></p>
       <h3>Jogadores na sala</h3>
       <ul id="listaLobby"></ul>
       <div id="lobbyHost">
@@ -997,10 +1007,26 @@ function fecharRede(){
 }
 
 // ----- anfitrião -----
+const URL_PUBLICA = 'https://adrielscarvalho-pixel.github.io/lua-de-cinzas/';
+function linkConvite(code){
+  const base = location.protocol.startsWith('http') && !/localhost|127\.0\.0\.1/.test(location.hostname) ? location.origin + location.pathname : URL_PUBLICA;
+  return `${base}?sala=${code}`;
+}
+function mostrarConvite(code){
+  const link = linkConvite(code);
+  $('linkConvite').value = link;
+  const texto = `🌙 Vem jogar Lua de Cinzas comigo! Clique no link, digite seu nome e entre na sala ${code}: ${link}`;
+  $('btnZap').href = 'https://wa.me/?text=' + encodeURIComponent(texto);
+  $('btnCompartilhar').hidden = !navigator.share;
+  $('btnCompartilhar').onclick = () => navigator.share({title:'Lua de Cinzas', text:texto.replace(link, '').trim(), url:link}).catch(() => {});
+}
+function codigoSalvo(){ try { return localStorage.getItem('ldc-sala'); } catch (e) { return null; } }
 function criarSala(tent = 0){
   if (semRede()) return;
   fecharRede();
-  NET.modo = 'host'; NET.code = gerarCodigo();
+  // reaproveita o código salvo, para o link de convite continuar o mesmo; se estiver ocupado, cria outro
+  NET.modo = 'host'; NET.code = (tent < 5 && codigoSalvo()) || gerarCodigo();
+  try { localStorage.setItem('ldc-sala', NET.code); } catch (e) {}
   msg('msgRede', 'Criando sala...');
   const peer = new Peer(PREFIXO + NET.code, {debug:0});
   NET.peer = peer;
@@ -1009,6 +1035,7 @@ function criarSala(tent = 0){
     $('telaInicio').hidden = true; $('telaLobby').hidden = false;
     $('lobbyHost').hidden = false; $('lobbyCliente').hidden = true; $('lobbyDica').hidden = false;
     $('codigoSala').textContent = NET.code;
+    $('convite').hidden = false; mostrarConvite(NET.code);
     $('selo').textContent = `🌐 Sala ${NET.code} · anfitrião`; $('lblRapido').hidden = true;
     atualizarLobby();
   });
@@ -1019,7 +1046,11 @@ function criarSala(tent = 0){
   });
   peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
   peer.on('error', e => {
-    if (e.type === 'unavailable-id' && tent < 3) return criarSala(tent + 1);
+    if (e.type === 'unavailable-id'){
+      // o código salvo pode ainda estar preso de uma página recarregada: tenta de novo por ~20s antes de trocar
+      if (tent < 4 && codigoSalvo()){ msg('msgRede', `Recuperando sua sala ${NET.code}... (${tent + 1}/5)`); setTimeout(() => criarSala(tent + 1), 5000); return; }
+      if (tent < 8) return criarSala(tent + 1);
+    }
     msg('msgRede', 'Erro de conexão: ' + e.type); msg('msgLobby', 'Erro de conexão: ' + e.type);
   });
 }
@@ -1086,7 +1117,7 @@ function entrarSala(){
       msg('msgRede', '');
       enviar(conn, {t:'oi', nome:meuNome()});
       $('telaInicio').hidden = true; $('telaLobby').hidden = false;
-      $('lobbyHost').hidden = true; $('lobbyCliente').hidden = false; $('lobbyDica').hidden = true;
+      $('lobbyHost').hidden = true; $('lobbyCliente').hidden = false; $('lobbyDica').hidden = true; $('convite').hidden = true;
       $('codigoSala').textContent = code;
       $('selo').textContent = `🌐 Sala ${code}`; $('lblRapido').hidden = true; $('btnNovo').textContent = 'Sair da sala';
     });
@@ -1098,7 +1129,7 @@ function entrarSala(){
     });
   });
   peer.on('error', e => {
-    msg('msgRede', e.type === 'peer-unavailable' ? 'Sala não encontrada. Confira o código e se o anfitrião está com a sala aberta.' : 'Erro de conexão: ' + e.type);
+    msg('msgRede', e.type === 'peer-unavailable' ? 'Sala não encontrada. Confira o código e peça para quem convidou abrir o jogo e clicar em "Criar sala".' : 'Erro de conexão: ' + e.type);
   });
 }
 let LOG_CLIENTE = [];
@@ -1192,6 +1223,21 @@ $('btnComprar').onclick = () => { if (CV && CV.minhaVez && !CV.jogou) mandarAcao
 $('btnFim').onclick = () => { if (CV && CV.minhaVez && CV.jogou) mandarAcao({tipo:'fim'}); };
 try { const n = localStorage.getItem('ldc-nome'); if (n) $('inNome').value = n; } catch (e) {}
 $('inNome').onchange = () => { try { localStorage.setItem('ldc-nome', $('inNome').value.trim()); } catch (e) {} };
+$('btnCopiar').onclick = async () => {
+  const link = $('linkConvite').value;
+  try { await navigator.clipboard.writeText(link); } catch (e) { $('linkConvite').select(); document.execCommand('copy'); }
+  $('btnCopiar').textContent = '✔ Copiado!'; setTimeout(() => { $('btnCopiar').textContent = 'Copiar link'; }, 2000);
+};
+// Aberto por um link de convite (?sala=CODIGO): já preenche a sala e só pede o nome
+(() => {
+  const sala = (new URLSearchParams(location.search).get('sala') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+  if (sala.length < 4) return;
+  $('inCodigo').value = sala;
+  $('convidado').innerHTML = `📨 Você foi convidado para a sala <b>${sala}</b>!<br>Digite seu nome e clique em <b>Entrar na sala</b>.`;
+  $('btnEntrar').classList.add('prim'); $('btnCriar').classList.remove('prim');
+  $('inNome').onkeydown = e => { if (e.key === 'Enter'){ $('inNome').onchange(); entrarSala(); } };
+  setTimeout(() => $('inNome').focus(), 50);
+})();
 </script>
 </body>
 </html>
