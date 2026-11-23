@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lua de Cinzas</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#120e17;--panel:#211a2a;--panel2:#2b2236;--parch:#ecdfc2;--parch2:#d6c49c;--ink:#2a1f14;--txt:#e8e0d0;--muted:#a197ad;
+--red:#b23a3a;--green:#4f8a55;--blue:#3f6fb5;--gold:#c9a23f;--purple:#8a5bb8}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#2c2139,var(--bg) 65%);background-attachment:fixed;color:var(--txt);
+ font-family:'Crimson Text',Georgia,serif;font-size:17px;min-height:100vh;transition:background .8s}
+body.noite{background:radial-gradient(ellipse at top,#0e1733,#04050b 65%);background-attachment:fixed}
+h1,h2,h3{font-family:Cinzel,serif;margin:0 0 .4em;font-weight:700}
+button{font-family:Cinzel,serif;font-size:14px;cursor:pointer;border:1px solid #6b5a3a;background:linear-gradient(#3a2e22,#2a2119);color:var(--parch);padding:8px 14px;border-radius:6px}
+button:hover{border-color:var(--gold)}
+button:disabled{opacity:.4;cursor:default}
+button.prim{background:linear-gradient(#6a4f1f,#4a3714);border-color:var(--gold)}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #3a2f46;flex-wrap:wrap}
+header h1{font-size:24px;margin:0;color:var(--gold);letter-spacing:1px}
+#fase{color:var(--muted);font-style:italic}
+.hdr-dir{display:flex;gap:12px;align-items:center;font-size:15px;flex-wrap:wrap}
+#selo{font-size:13px;padding:2px 8px;border-radius:10px;background:#22385e;border:1px solid #3f6fb5}
+#selo:empty{display:none}
+main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
+@media (max-width:860px){main{grid-template-columns:1fr}}
+#jogadores{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;align-content:start}
+.pl{background:var(--panel);border:2px solid #3a2f46;border-radius:10px;padding:10px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.pl.eu{background:#2a2135}
+.pl.atual{border-color:var(--gold);box-shadow:0 0 14px #c9a23f55}
+.pl.morto{opacity:.5;filter:grayscale(.7)}
+.pl.alvo{cursor:pointer;border-color:var(--purple);box-shadow:0 0 12px #8a5bb877}
+.pl.alvo:hover{transform:translateY(-3px)}
+.pl.escolhido{border-color:#e05a5a;box-shadow:0 0 14px #e05a5a88}
+.pl-top{display:flex;gap:8px;align-items:center}
+.av{font-size:30px;line-height:1}
+.nome{font-family:Cinzel,serif;font-weight:700;font-size:15px}
+.tag{font-size:13px;color:var(--muted)}
+.tag.bru{color:#ff7a7a}.tag.vil{color:#8fd39a}
+.acus{display:flex;gap:3px;margin:8px 0 6px;align-items:center;font-size:12px;color:var(--muted)}
+.pip{width:13px;height:13px;border-radius:50%;border:1px solid #5a4a3a;background:#1a1420}
+.pip.on{background:radial-gradient(circle at 35% 35%,#ff8a6a,#a3261c);border-color:#e05a3a}
+.pistas{display:flex;gap:4px}
+.pista{flex:1;min-width:0;height:42px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:18px;text-align:center;line-height:1.05;
+ background:repeating-linear-gradient(45deg,#3a2c48,#3a2c48 6px,#33263f 6px,#33263f 12px);border:1px solid #574670;color:#b9a9cc;padding:2px}
+.pista.rev-inocente{background:var(--parch);color:#2d5a33;border-color:#8a7a55;font-weight:600}
+.pista.rev-guardiao{background:#d9e4f2;color:#24497a;border-color:#6a86ad;font-weight:600}
+.pista.rev-bruxa{background:#3b0d0d;color:#ff8a8a;border-color:#c33;font-weight:600}
+.pista.own{outline:2px dashed #ffffff55;outline-offset:-4px}
+.pista.own-bruxa{color:#ff7a7a}.pista.own-inocente{color:#8fd39a}.pista.own-guardiao{color:#9cc0f0}
+.pista.peek-bruxa::after{content:'☾?';color:#ff7a7a}
+.pista.peek-inocente::after,.pista.peek-guardiao::after{content:'✝?';color:#8fd39a}
+.azuis{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;min-height:22px}
+.badge{font-size:12px;background:#22385e;border:1px solid #3f6fb5;border-radius:10px;padding:1px 7px}
+.badge.gato{background:#3a2a10;border-color:var(--gold)}
+.status{font-size:13px;color:var(--muted);margin-top:4px}
+#log{background:var(--panel);border:1px solid #3a2f46;border-radius:10px;padding:10px;height:560px;overflow-y:auto;font-size:15px}
+@media (max-width:860px){#log{height:260px}}
+#log h3{font-size:15px;color:var(--gold)}
+.ln{padding:3px 0;border-bottom:1px solid #2c2337}
+.ln.phase{color:var(--gold);font-family:Cinzel,serif;font-size:14px;padding-top:8px}
+.ln.trial{color:#ffb35a}.ln.bad{color:#ff8a8a}.ln.good{color:#8fd39a}.ln.acc{color:#f1c9b9}
+.ln.chat{color:#cfc3e0;font-style:italic}.ln.chat b{font-style:normal;color:var(--parch)}
+.ln.priv{color:#9cc0f0}
+#maoBox{padding:6px 16px 22px}
+#instr{margin:0 0 8px;color:var(--parch2);min-height:24px}
+#mao{display:flex;gap:10px;flex-wrap:wrap}
+.carta{width:128px;min-height:172px;background:linear-gradient(var(--parch),var(--parch2));color:var(--ink);border-radius:9px;padding:8px;
+ border:2px solid #8a7a55;border-top:9px solid var(--cor,#888);display:flex;flex-direction:column;gap:3px;transition:transform .15s,box-shadow .15s;user-select:none;position:relative}
+.carta.jogavel{cursor:pointer}.carta.jogavel:hover{transform:translateY(-6px)}
+.carta.sel{transform:translateY(-10px);box-shadow:0 0 0 3px var(--gold),0 6px 18px #000a}
+.carta .ic{font-size:28px;text-align:center}
+.carta .cn{font-family:Cinzel,serif;font-weight:700;font-size:13px;text-align:center}
+.carta .cd{font-size:13px;line-height:1.15}
+.carta .pts{position:absolute;top:4px;right:7px;font-family:Cinzel,serif;font-weight:700;color:#8a1f1f;font-size:18px}
+.acoes{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
+.modal[hidden]{display:none}
+.mbox{background:var(--panel2);border:2px solid var(--gold);border-radius:12px;padding:20px;max-width:580px;width:100%;max-height:90vh;overflow:auto}
+.mbox.largo{max-width:820px}
+.mbox .botoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.mbox input,.mbox select{font:inherit;padding:6px 8px;border-radius:6px;border:1px solid #6b5a3a;background:#1a1420;color:var(--txt);width:100%}
+.big{font-family:Cinzel,serif;font-size:21px;padding:14px;text-align:center;border-radius:8px;margin:10px 0}
+.big.inocente{background:var(--parch);color:#2d5a33}.big.guardiao{background:#d9e4f2;color:#24497a}
+.big.bruxa{background:#3b0d0d;color:#ff8a8a;border:1px solid #c33}
+.mini{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+#timer{color:#ffb35a;font-family:Cinzel,serif}
+#setup label{display:block;margin:10px 0 4px}
+.secao{border-top:1px solid #3a2f46;margin-top:16px;padding-top:12px}
+.linha{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.linha input{flex:1;min-width:120px;width:auto}
+#codigoSala{font-family:Cinzel,serif;font-size:34px;letter-spacing:6px;color:var(--gold);text-align:center;background:#1a1420;border-radius:10px;padding:10px;margin:8px 0;user-select:all}
+#listaLobby{list-style:none;padding:0;margin:8px 0}
+#listaLobby li{padding:6px 10px;border-bottom:1px solid #3a2f46}
+.msg{color:#ffb35a;min-height:22px;margin:8px 0 0}
+.regras{font-size:15.5px;color:#d8cfe3}.regras li{margin:3px 0}
+.fim-lista div{padding:3px 0}
+.cat h4{font-family:Cinzel,serif;margin:16px 0 4px;font-size:15px}
+.cat .sub{font-size:14px;color:var(--muted);margin:0 0 8px}
+.cat-grid{display:flex;gap:10px;flex-wrap:wrap}
+.cat .carta{width:150px;min-height:0}
+.cat .qtd{margin-top:auto;font-size:12px;color:#6b5a3a;text-align:right;padding-top:4px}
+.carta.preta{background:linear-gradient(#2a2430,#17131c);color:var(--txt);border-color:#555}
+.carta.preta .qtd{color:var(--muted)}
+.carta.julg{border-top-color:#777}
+</style>
+</head>
+<body>
+<header>
+  <h1>☾ Lua de Cinzas</h1>
+  <span id="fase">—</span>
+  <div class="hdr-dir">
+    <span id="selo"></span>
+    <span id="placar"></span>
+    <label id="lblRapido"><input type="checkbox" id="rapido"> Bots rápidos</label>
+    <button id="btnRegras">Regras</button>
+    <button id="btnCartas">Cartas</button>
+    <button id="btnNovo">Novo jogo</button>
+  </div>
+</header>
+<main>
+  <section id="jogadores"></section>
+  <aside id="log"><h3>Crônica da Vila</h3><div id="logL"></div></aside>
+</main>
+<section id="maoBox">
+  <p id="instr"></p>
+  <div id="mao"></div>
+  <div class="acoes">
+    <button id="btnComprar" class="prim" disabled>Comprar 2 cartas</button>
+    <button id="btnFim" disabled>Encerrar turno</button>
+    <button id="btnCancelar" disabled>Cancelar seleção</button>
+  </div>
+</section>
+
+<div class="modal" id="setup">
+  <div class="mbox">
+    <div id="telaInicio">
+      <h2 style="color:var(--gold)">☾ Lua de Cinzas</h2>
+      <p><i>Uma vila assustada. Bruxas se escondem entre os vizinhos. Ninguém é confiável.</i></p>
+      <label>Seu nome</label><input id="inNome" value="" maxlength="14" placeholder="Seu nome">
+      <div class="secao">
+        <h3>🌐 Jogar online com amigos</h3>
+        <div class="linha"><button class="prim" id="btnCriar">Criar sala</button><span style="color:var(--muted)">ou</span>
+          <input id="inCodigo" maxlength="5" placeholder="CÓDIGO" style="text-transform:uppercase"><button id="btnEntrar">Entrar na sala</button></div>
+      </div>
+      <div class="secao">
+        <h3>🤖 Jogar sozinho contra bots</h3>
+        <div class="linha"><select id="inN" style="flex:1"></select><button id="btnSolo">Começar</button></div>
+      </div>
+      <p class="msg" id="msgRede"></p>
+      <div class="linha" style="margin-top:10px"><button id="btnRegras2">Regras</button><button id="btnCartas2">Cartas</button></div>
+    </div>
+    <div id="telaLobby" hidden>
+      <h2 style="color:var(--gold)">🌐 Sala</h2>
+      <div id="codigoSala">-----</div>
+      <p id="lobbyDica" style="text-align:center;color:var(--muted)">Passe este código para seus amigos. Eles abrem o jogo, digitam o código e clicam em <b>Entrar na sala</b>.</p>
+      <h3>Jogadores na sala</h3>
+      <ul id="listaLobby"></ul>
+      <div id="lobbyHost">
+        <label>Total de jogadores na mesa (as vagas que sobrarem viram bots)</label>
+        <select id="inNOnline"></select>
+        <div class="linha" style="margin-top:12px"><button class="prim" id="btnComecarOnline">Começar partida</button><button id="btnSairSala">Sair</button></div>
+      </div>
+      <div id="lobbyCliente" hidden><p>⏳ Aguardando o anfitrião começar a partida...</p><button id="btnSairSala2">Sair</button></div>
+      <p class="msg" id="msgLobby"></p>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden><div class="mbox"><div class="conteudo"></div><div class="botoes"></div></div></div>
+<div class="modal" id="info" hidden style="z-index:20"><div class="mbox largo"><div class="conteudo"></div><div class="botoes"><button id="btnFecharInfo" class="prim">Fechar</button></div></div></div>
+
+<template id="tplRegras">
+<h2 style="color:var(--gold)">Regras</h2>
+<div class="regras">
+<p><b>Objetivo.</b> Há duas equipes: <b>Moradores</b> e <b>Bruxas</b>. Moradores vencem quando <b>todas as cartas Bruxa</b> forem reveladas. Bruxas vencem quando <b>todos os vivos</b> forem da equipe das bruxas.</p>
+<p><b>Cartas de julgamento</b> (fechadas, na sua frente): <span style="color:#ff7a7a">Bruxa</span>, <span style="color:#8fd39a">Não é Bruxa</span> e <span style="color:#9cc0f0">Guardião</span>. Quem já teve uma carta Bruxa é da equipe das bruxas para sempre. O Guardião pode ser bruxa também.</p>
+<p><b>Seu turno, escolha UMA opção:</b></p>
+<ul><li><b>Comprar 2 cartas.</b> Carta preta é revelada e resolvida na hora.</li>
+<li><b>Jogar cartas:</b> uma ou várias, depois encerre o turno.</li></ul>
+<p>Você <b>nunca</b> pode usar cartas em si mesmo. <b>Exceção:</b> o Furto pode ser entregue a você, mas aí você pega só metade da mão do alvo.</p>
+<p><b>Cores:</b></p>
+<ul><li><span style="color:#ff8a8a">Vermelhas</span>: acusações de 1, 3 ou 7 pontos. Com <b>7 pontos</b> há julgamento: quem colocou a última acusação escolhe uma carta fechada do acusado para revelar. <b>Se o acusado for uma pessoa (não um bot), ela mesma escolhe qual carta mostrar.</b> Se for Bruxa, ele morre. Depois as acusações são descartadas.</li>
+<li><span style="color:#9cc0f0">Azuis</span>: ficam na frente do jogador e o efeito continua.</li>
+<li><span style="color:#8fd39a">Verdes</span>: efeito imediato, depois são descartadas.</li>
+<li><b>Pretas</b>: <b>Noite</b> e <b>Conspiração</b>, reveladas ao serem compradas. A <b>Noite é sempre a última carta do baralho</b>: quando ela sai, o descarte é embaralhado e vira um novo baralho, com a Noite de novo no fundo. A Conspiração fica embaralhada no meio.</li></ul>
+<p><b>Noite:</b> as bruxas escolhem uma vítima e o Guardião protege alguém (não a si mesmo). Qualquer um pode <b>confessar</b>, revelando uma carta própria, para ter imunidade naquela noite. O Refúgio também protege.</p>
+<p><b>Madrugada e Gato da Lua 🐈‍⬛:</b> antes do primeiro dia, as bruxas escolhem quem recebe o Gato da Lua. Toda vez que sair Conspiração, quem a comprou escolhe uma carta de julgamento do dono do gato para revelar. O gato não pode ser exorcizado, mas o Bode Expiatório o leva junto com as outras cartas azuis.</p>
+<p><b>Cartas de julgamento:</b> todos recebem 5. Ícones: ☾ Bruxa, ✝ Não é Bruxa, 🏮 Guardião.</p>
+<p><b>Conspiração:</b> primeiro resolve-se o Gato da Lua; depois cada jogador vivo pega uma carta fechada do jogador à sua esquerda (o próximo da mesa). Quem receber uma Bruxa entra na equipe das bruxas.</p>
+<p><b>Morte:</b> quem revela uma Bruxa, revela todas as cartas ou é morto à noite está fora. A mão e as cartas azuis são descartadas, as cartas restantes são reveladas e diz-se se já foi bruxa. Ainda dá para dizer 3 últimas palavras.</p>
+<p><b>Online:</b> quem cria a sala é o anfitrião: o jogo roda no navegador dele, então ele precisa ficar com a página aberta até o fim. Se alguém cair, um bot assume o lugar.</p>
+</div>
+</template>
+
+<script>
+const LIM = 7;
+// Cada jogador recebe 5 cartas de julgamento. Bruxas por número de jogadores (ajuste aqui se quiser); 1 Guardião; o resto é "Não é Bruxa".
+const CARTAS_POR_JOGADOR = 5;
+const BRUXAS = {4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:2,12:2};
+const TABELA = {};
+for (const n in BRUXAS) TABELA[n] = [n * CARTAS_POR_JOGADOR - BRUXAS[n] - 1, BRUXAS[n], 1];
+const CARDS = {
+  suspeita:  {nome:'Suspeita',   cor:'vermelha', pts:1, qtd:20, ic:'👉', desc:'Acusação de 1 ponto.'},
+  prova:     {nome:'Prova',      cor:'vermelha', pts:3, qtd:8,  ic:'📌', desc:'Acusação de 3 pontos.'},
+  flagrante: {nome:'Flagrante',  cor:'vermelha', pts:7, qtd:2,  ic:'⚡', desc:'Acusação de 7 pontos.'},
+  devocao:   {nome:'Devoção',    cor:'azul', qtd:1, ic:'🙏', desc:'Ninguém pode jogar acusações neste jogador.'},
+  refugio:   {nome:'Refúgio',    cor:'azul', qtd:1, ic:'⛪', desc:'Este jogador não pode ser morto à Noite.'},
+  mafama:    {nome:'Má Fama',    cor:'azul', qtd:3, ic:'🐍', desc:'Cada acusação neste jogador vale +1 ponto.'},
+  pelourinho:{nome:'Pelourinho', cor:'azul', qtd:3, ic:'⛓️', desc:'O jogador perde o próximo turno.'},
+  defesa:    {nome:'Defesa',     cor:'verde', qtd:7, ic:'🛡️', desc:'Remova até 3 pontos de acusação de um jogador.'},
+  exorcismo: {nome:'Exorcismo',  cor:'verde', qtd:3, ic:'✨', desc:'Descarte uma carta azul da frente de um jogador.'},
+  confisco:  {nome:'Confisco',   cor:'verde', qtd:2, ic:'🔥', desc:'O jogador descarta a mão inteira.'},
+  furto:     {nome:'Furto',      cor:'verde', qtd:2, alvo:2, ic:'🫳', desc:'Tire a mão inteira de um jogador e entregue a outro. Se ficar com você, pega só metade.'},
+  espiar:    {nome:'Espiar',     cor:'verde', qtd:6, ic:'🔍', desc:'Escolha uma carta de julgamento fechada de um jogador e olhe em segredo.'},
+  bode:      {nome:'Bode Expiatório', cor:'verde', qtd:2, alvo:2, ic:'🐐', desc:'Mova todas as acusações e cartas azuis de um jogador para outro.'},
+  gato:      {nome:'Gato da Lua', cor:'azul', qtd:0, ic:'🐈‍⬛', desc:'Dado pelas bruxas na Madrugada. Quando sair Conspiração, quem a comprou escolhe uma carta de julgamento deste jogador para revelar.'},
+  noite:     {nome:'Noite',      cor:'preta', ic:'🌑', desc:'Última carta do baralho. As bruxas escolhem uma vítima, o Guardião protege alguém e todos podem confessar.'},
+  conspiracao:{nome:'Conspiração', cor:'preta', ic:'🕸️', desc:'O dono do Gato da Lua revela uma carta. Depois todos pegam uma carta de julgamento do vizinho da esquerda.'},
+};
+const COR = {vermelha:'#b23a3a', azul:'#3f6fb5', verde:'#4f8a55', preta:'#111'};
+const TIPO = {bruxa:'☾ Bruxa', inocente:'✝ Não é Bruxa', guardiao:'🏮 Guardião'};
+const ICONE = {bruxa:'☾', inocente:'✝', guardiao:'🏮'};
+const removiveis = p => p.azuis.filter(a => a !== 'gato');
+const NOMES = [['Benedita','👩‍🌾'],['Joaquim','🧔'],['Tereza','👵'],['Anselmo','👨‍🦳'],['Clarice','👩'],['Severino','🧑‍🦰'],['Odete','👩‍🦳'],
+  ['Bento','👨'],['Firmina','👱‍♀️'],['Custódio','🧓'],['Rosalina','👩‍🦱'],['Matias','🧑']];
+const AV_HUMANOS = ['🕯️','🎩','🦉','🌙','🗝️','🪶','🍄','🐦‍⬛','🌿','🔔','📿','🕰️'];
+const FALAS_ACUSA = ['{t} anda quieto demais ultimamente...','Vi {t} perto do cemitério depois do toque de recolher!','Não confio em {t}.',
+  'Por que {t} tem cheiro de enxofre?','{t} faltou à missa de novo.','As galinhas de {t} morreram todas de uma vez.','Velas pretas na janela de {t}. Expliquem isso!'];
+const FALAS_DEFENDE = ['{t} é gente boa, eu garanto.','Conheço {t} desde criança.','{t} estava comigo ontem à noite.','Deixem {t} em paz!'];
+const PREFIXO = 'luadecinzas-v1-';
+
+let G = null;          // estado do jogo (só existe no anfitrião / jogo solo)
+let CV = null;         // última visão recebida (o que esta tela mostra)
+const UI = {sel:null, alvos:[]}; // seleção local de carta/alvos
+const NET = {modo:'solo', peer:null, code:null, hostConn:null, lobby:[], asks:new Map()};
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const delay = (m = 1) => sleep(($('rapido').checked && NET.modo === 'solo' ? 280 : 1000) * m);
+const rnd = a => a[Math.floor(Math.random() * a.length)];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const vivos = () => G.players.filter(p => p.alive);
+const nm = p => `<b>${esc(p.nome)}</b>`;
+const ocultas = p => p.pistas.filter(x => !x.rev);
+const pontos = p => p.acus.reduce((s, a) => s + CARDS[a.k].pts + (p.azuis.includes('mafama') ? 1 : 0), 0);
+const ehGuardiao = p => p.alive && p.pistas.some(x => !x.rev && x.t === 'guardiao');
+const humanos = () => G.players.filter(p => p.isHuman);
+const local = () => G.players.find(p => p.ctl === 'local');
+
+// =====================================================================
+//  MOTOR DO JOGO (roda no anfitrião)
+// =====================================================================
+function novoJogo(pessoas, n){
+  const [ni, nb, ng] = TABELA[n];
+  const cartas = shuffle([...Array(ni).fill('inocente'), ...Array(nb).fill('bruxa'), ...Array(ng).fill('guardiao')]);
+  const usados = new Set(pessoas.map(p => p.nome.toLowerCase()));
+  const bots = shuffle(NOMES.filter(b => !usados.has(b[0].toLowerCase()))).slice(0, n - pessoas.length);
+  const players = shuffle([
+    ...pessoas.map((h, i) => ({nome:h.nome, av:AV_HUMANOS[i % AV_HUMANOS.length], ctl:h.ctl, conn:h.conn || null})),
+    ...bots.map(b => ({nome:b[0], av:b[1], ctl:'bot', conn:null})),
+  ]);
+  let cid = 0;
+  players.forEach((p, i) => {
+    p.id = i;
+    p.isHuman = p.ctl !== 'bot';
+    p.pistas = cartas.slice(i * CARTAS_POR_JOGADOR, (i + 1) * CARTAS_POR_JOGADOR).map(t => ({id:cid++, t, rev:false}));
+    p.team = p.pistas.some(x => x.t === 'bruxa') ? 'bruxa' : 'vila';
+    Object.assign(p, {alive:true, hand:[], acus:[], azuis:[], b:{}, peek:new Set()});
+  });
+  players.forEach(p => players.forEach(q => { if (q !== p) p.b[q.id] = (Math.random() - .5) * .6; }));
+  G = {players, deck:[], discard:[], round:0, current:null, over:false, history:[], claims:[], totalBruxas:nb,
+       turno:null, fase:'', noite:false, logs:[], esperando:new Set()};
+  for (const k in CARDS) for (let i = 0; i < (CARDS[k].qtd || 0); i++) G.deck.push(k);
+  shuffle(G.deck);
+  players.forEach(p => { for (let i = 0; i < 3; i++) p.hand.push(G.deck.pop()); });
+  inserirFundo('conspiracao', .8);
+  G.deck.unshift('noite'); // a Noite é sempre a última carta do baralho
+  NET.asks.clear();
+}
+function inserirFundo(k, frac){ // o fim do array é o topo do baralho
+  const pos = 1 + Math.floor(Math.random() * (G.deck.length * frac));
+  G.deck.splice(pos, 0, k);
+}
+function novoBaralho(){
+  G.deck = shuffle(G.discard); G.discard = [];
+  G.deck.unshift('noite');
+  log(`🔄 O descarte foi embaralhado e virou um novo baralho (${G.deck.length} cartas). A Noite volta para o fundo.`);
+}
+function tirar(){
+  if (!G.deck.length) novoBaralho();
+  return G.deck.pop();
+}
+function conheceTime(viewer, p){
+  return viewer === p || !p.alive || G.over || (viewer.team === 'bruxa' && p.team === 'bruxa');
+}
+
+// ---------- log (com linhas privadas) ----------
+function log(html, cls = '', to = null){ G.logs.push({h:html, c:cls, to}); atualizar(); }
+const fala = (p, txt) => log(`<b>${esc(p.nome)}:</b> “${esc(txt)}”`, 'chat');
+
+// ---------- visão de cada jogador (só o que ele pode ver) ----------
+function visao(vid, comLog = true){
+  const me = G.players[vid];
+  const rev = G.players.reduce((s, p) => s + p.pistas.filter(x => x.rev && x.t === 'bruxa').length, 0);
+  const atual = G.current != null ? G.players[G.current] : null;
+  return {
+    meId:vid, fase:G.fase, noite:G.noite, over:G.over, current:G.current, atualNome:atual ? atual.nome : '',
+    placar:`☾ Bruxas reveladas: <b>${rev}/${G.totalBruxas}</b> · 🂠 ${G.deck.length}`,
+    minhaVez: !!(G.turno && G.turno.pid === vid && G.turno.res), jogou: !!(G.turno && G.turno.pid === vid && G.turno.jogou),
+    esperando:[...G.esperando].filter(id => id !== vid).map(id => G.players[id].nome),
+    alive:me.alive, hand:me.hand.slice(),
+    players:G.players.map(p => ({
+      id:p.id, nome:p.nome, av:p.av, alive:p.alive, humano:p.isHuman, pts:pontos(p), azuis:p.azuis.slice(),
+      mao:p.hand.length, oc:ocultas(p).length, acus:p.acus.length, time:conheceTime(me, p) ? p.team : null,
+      slots:p.pistas.map(x => x.rev ? {c:'rev-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
+        : p === me ? {c:'own own-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
+        : me.peek.has(x.id) ? {c:'peek-' + x.t, i:'', t:'Você espiou: ' + TIPO[x.t]}
+        : {c:'', i:'?', t:'Carta fechada'}),
+    })),
+    log:comLog ? G.logs.filter(l => l.to == null || l.to === vid).slice(-300) : [],
+  };
+}
+// Para os convidados, manda a visão sem o histórico e só as linhas novas do histórico (mensagens pequenas).
+function enviarVisao(p){
+  const ini = p.logPtr || 0;
+  let novos = G.logs.slice(ini).filter(l => l.to == null || l.to === p.id);
+  p.logPtr = G.logs.length;
+  if (ini === 0) enviar(p.conn, {t:'logs', novos:[], reinicio:true});
+  // o PeerJS (modo JSON) não aceita mensagens grandes: manda o histórico em pedaços
+  while (JSON.stringify(novos).length > 9000){
+    let n = Math.max(1, Math.floor(novos.length / 2));
+    while (n > 1 && JSON.stringify(novos.slice(0, n)).length > 9000) n = Math.floor(n / 2);
+    enviar(p.conn, {t:'logs', novos:novos.slice(0, n)});
+    novos = novos.slice(n);
+  }
+  enviar(p.conn, {t:'view', v:visao(p.id, false), novos});
+}
+let agendado = false;
+function atualizar(){
+  if (agendado || !G) return;
+  agendado = true;
+  setTimeout(() => {
+    agendado = false;
+    if (!G) return;
+    const loc = local();
+    if (loc) desenhar(visao(loc.id));
+    G.players.forEach(p => { if (p.ctl === 'remoto') enviarVisao(p); });
+  }, 0);
+}
+
+// ---------- perguntas para pessoas (locais ou remotas) ----------
+let QID = 0;
+function perguntar(p, html, botoes, tempo = 0, padrao = null){
+  if (!p.isHuman) return Promise.resolve(padrao != null ? padrao : botoes[0].v);
+  G.esperando.add(p.id); atualizar();
+  const meuG = G;
+  const terminou = v => { meuG.esperando.delete(p.id); if (G === meuG) atualizar(); return v; };
+  if (p.ctl === 'local') return modal(html, botoes, tempo, padrao).then(terminou);
+  return new Promise(res => {
+    const qid = ++QID;
+    const pad = botoes.findIndex(b => b.v === padrao);
+    let timer = null;
+    const conclui = (idx, texto) => {
+      if (!NET.asks.has(qid)) return;
+      NET.asks.delete(qid); clearTimeout(timer);
+      const b = botoes[idx] || botoes[0];
+      res(terminou(b.v === '__input' ? String(texto || '').slice(0, 60) : b.v));
+    };
+    const reserva = () => conclui(pad >= 0 ? pad : Math.floor(Math.random() * botoes.length), '');
+    NET.asks.set(qid, {pid:p.id, conclui, reserva});
+    enviar(p.conn, {t:'ask', qid, html, tempo, pad, botoes:botoes.map(b => ({l:b.l, prim:!!b.prim, input:b.v === '__input'}))});
+    if (tempo) timer = setTimeout(reserva, (tempo + 5) * 1000);
+  });
+}
+
+// ---------- ações de turno ----------
+function alvoOk(k, pv, sel, meId){ // funciona com a visão (cliente) e é usada também para validar no anfitrião
+  if (k === 'furto' && sel.length && pv.id === meId) return true; // o Furto pode ser para você mesmo (metade)
+  if (!pv.alive || pv.id === meId) return false;
+  const c = CARDS[k];
+  if (c.cor === 'vermelha') return !pv.azuis.includes('devocao');
+  if (c.cor === 'azul') return !pv.azuis.includes(k);
+  if (k === 'exorcismo') return pv.azuis.some(a => a !== 'gato');
+  if (k === 'confisco') return pv.mao > 0;
+  if (k === 'espiar') return pv.oc > 0;
+  if (k === 'defesa') return pv.pts > 0;
+  if (k === 'bode') return sel.length ? !sel.includes(pv.id) : (pv.acus > 0 || pv.azuis.length > 0);
+  if (k === 'furto') return sel.length ? !sel.includes(pv.id) : pv.mao > 0;
+  return true;
+}
+function receberAcao(pid, act){
+  if (!G || !G.turno || G.turno.pid !== pid || !G.turno.res || !act) return;
+  const p = G.players[pid];
+  if (act.tipo === 'comprar' && G.turno.jogou) return;
+  if (act.tipo === 'fim' && !G.turno.jogou) return;
+  if (act.tipo === 'jogar'){
+    if (p.hand[act.i] !== act.k || !Array.isArray(act.targets) || act.targets.length !== (CARDS[act.k].alvo || 1)) return;
+    const pvs = visao(pid).players, sel = [];
+    for (const id of act.targets){ const pv = pvs[id]; if (!pv || !alvoOk(act.k, pv, sel, pid)) return; sel.push(id); }
+  } else if (act.tipo !== 'comprar' && act.tipo !== 'fim') return;
+  const res = G.turno.res; G.turno.res = null; res(act);
+}
+async function vezHumana(p){
+  const meuG = G;
+  G.turno = {pid:p.id, jogou:false, res:null};
+  while (!G.over && p.alive && G === meuG){
+    const act = await new Promise(res => { G.turno.res = res; atualizar(); });
+    if (G !== meuG) return;
+    if (act.tipo === 'bot'){ G.turno = null; await vezBot(p); return; }
+    if (act.tipo === 'comprar'){ G.turno.jogou = true; await comprar2(p); break; }
+    if (act.tipo === 'fim') break;
+    G.turno.jogou = true;
+    await jogar(p, act.i, act.targets.map(id => G.players[id]));
+  }
+  if (G === meuG){ G.turno = null; atualizar(); }
+}
+
+// ---------- efeitos das cartas ----------
+async function jogar(p, i, ts){
+  const k = p.hand.splice(i, 1)[0], c = CARDS[k], t = ts[0];
+  if (c.cor !== 'azul') G.discard.push(k);
+  if (c.cor === 'vermelha'){
+    t.acus.push({k, by:p.id});
+    G.history.push({by:p.id, t:t.id, n:c.pts});
+    log(`${c.ic} ${nm(p)} acusa ${nm(t)} com <i>${c.nome}</i> (+${c.pts}). Total: <b>${pontos(t)}/${LIM}</b>`, 'acc');
+    if (!p.isHuman && Math.random() < .4) fala(p, rnd(FALAS_ACUSA).replace('{t}', t.nome));
+    if (!t.isHuman && t.team === 'vila') t.b[p.id] += .35 * c.pts;
+    if (pontos(t) >= LIM) await julgamento(t, p);
+  } else if (c.cor === 'azul'){
+    t.azuis.push(k);
+    log(`${c.ic} ${nm(p)} coloca <i>${c.nome}</i> na frente de ${nm(t)}.`);
+    if (!t.isHuman && t.team === 'vila' && (k === 'mafama' || k === 'pelourinho')) t.b[p.id] += .5;
+    if (k === 'mafama' && pontos(t) >= LIM) await julgamento(t, p);
+  } else if (k === 'defesa'){
+    let orc = 3; const rem = [];
+    t.acus.slice().sort((a, b) => CARDS[b.k].pts - CARDS[a.k].pts).forEach(a => { if (CARDS[a.k].pts <= orc){ orc -= CARDS[a.k].pts; rem.push(a); } });
+    t.acus = t.acus.filter(a => !rem.includes(a)); G.discard.push(...rem.map(a => a.k));
+    G.history.push({by:p.id, t:t.id, n:-1});
+    log(`🛡️ ${nm(p)} defende ${nm(t)} (−${3 - orc} pontos). Total: ${pontos(t)}/${LIM}`);
+    if (!p.isHuman && Math.random() < .4) fala(p, rnd(FALAS_DEFENDE).replace('{t}', t.nome));
+  } else if (k === 'exorcismo'){
+    let alvoK;
+    if (p.isHuman) alvoK = await perguntar(p, `<h3>✨ Exorcismo</h3><p>Qual carta azul de ${nm(t)} descartar?</p>`, removiveis(t).map(a => ({l:`${CARDS[a].ic} ${CARDS[a].nome}`, v:a})));
+    else {
+      const amigo = p.team === 'bruxa' && t.team === 'bruxa';
+      const pref = (amigo || p.b[t.id] < 0) ? ['mafama','pelourinho','devocao','refugio'] : ['devocao','refugio','mafama','pelourinho'];
+      alvoK = pref.find(a => t.azuis.includes(a));
+    }
+    t.azuis.splice(t.azuis.indexOf(alvoK), 1); G.discard.push(alvoK);
+    log(`✨ ${nm(p)} exorciza <i>${CARDS[alvoK].nome}</i> de ${nm(t)}.`);
+  } else if (k === 'confisco'){
+    log(`🔥 ${nm(p)} confisca a mão de ${nm(t)} (${t.hand.length} cartas descartadas).`);
+    G.discard.push(...t.hand); t.hand = [];
+  } else if (k === 'furto'){
+    const d = ts[1];
+    if (d === p){
+      const qtd = Math.max(1, Math.floor(t.hand.length / 2));
+      shuffle(t.hand);
+      const pegas = t.hand.splice(0, qtd);
+      p.hand.push(...pegas);
+      log(`🫳 ${nm(p)} furta ${qtd} carta(s) da mão de ${nm(t)} para si (metade).`);
+      log(`Você pegou: ${pegas.map(k => '<i>' + CARDS[k].nome + '</i>').join(', ')}.`, 'priv', p.id);
+      log(`${nm(p)} pegou de você: ${pegas.map(k => '<i>' + CARDS[k].nome + '</i>').join(', ')}.`, 'priv', t.id);
+    } else {
+      log(`🫳 ${nm(p)} tira as ${t.hand.length} cartas de ${nm(t)} e entrega a ${nm(d)}.`);
+      d.hand.push(...t.hand); t.hand = [];
+    }
+  } else if (k === 'bode'){
+    const d = ts[1];
+    log(`🐐 ${nm(p)} faz de ${nm(d)} o bode expiatório: tudo que estava na frente de ${nm(t)} passa para ${nm(d)}.`);
+    d.acus.push(...t.acus); t.acus = [];
+    t.azuis.forEach(a => { if (d.azuis.includes(a)) G.discard.push(a); else d.azuis.push(a); }); t.azuis = [];
+    if (!d.isHuman && d.team === 'vila') d.b[p.id] += 1;
+    if (pontos(d) >= LIM) await julgamento(d, p);
+  } else if (k === 'espiar'){
+    await espiar(p, t);
+  }
+  atualizar();
+}
+
+async function julgamento(t, by){
+  log(`⚖️ ${nm(t)} chegou a ${pontos(t)} pontos e vai a JULGAMENTO! ${t.isHuman ? nm(t) + ' escolhe qual carta mostrar.' : nm(by) + ' escolhe a carta.'}`, 'trial');
+  await delay(1.1);
+  const oc = ocultas(t);
+  let carta;
+  if (t.isHuman){
+    carta = await perguntar(t, `<h3>⚖️ Seu julgamento</h3><p>Você chegou a 7 pontos de acusação. Escolha qual das suas cartas de julgamento mostrar para a vila:</p>
+      ${oc.length === 1 ? '<p><b>É sua última carta: revelá-la vai te matar.</b></p>' : ''}`,
+      oc.map(x => ({l:TIPO[x.t], v:x})));
+  } else if (by.isHuman && by.alive){
+    carta = await perguntar(by, `<h3>⚖️ Julgamento de ${esc(t.nome)}</h3><p>As cartas estão fechadas. Escolha qual revelar:</p>`,
+      oc.map(x => ({l:`🂠 Carta ${t.pistas.indexOf(x) + 1}`, v:x})));
+  } else carta = rnd(oc);
+  G.discard.push(...t.acus.map(a => a.k)); t.acus = [];
+  await revelarCarta(t, carta, 'julgamento');
+}
+
+async function revelarCarta(t, carta, motivo){
+  carta.rev = true;
+  if (carta.t === 'bruxa'){
+    log(`🔥 A carta de ${nm(t)} é uma <b>BRUXA</b>!`, 'good');
+    await morre(t, motivo === 'confissão' ? 'confessou uma Bruxa' : 'revelou uma Bruxa');
+  } else {
+    log(`${carta.t === 'guardiao' ? '🏮' : '✝️'} A carta de ${nm(t)} é <b>${TIPO[carta.t]}</b>.`);
+    G.players.forEach(b => { if (!b.isHuman && b !== t) b.b[t.id] -= .5; });
+    if (!ocultas(t).length) await morre(t, 'todas as cartas reveladas');
+  }
+  checarVitoria();
+}
+
+async function morre(t, motivo){
+  if (!t.alive) return;
+  t.alive = false;
+  t.pistas.forEach(x => x.rev = true);
+  if (t.azuis.includes('gato')) log(`🐈‍⬛ O Gato da Lua foge de ${nm(t)} e desaparece na escuridão.`);
+  G.discard.push(...removiveis(t), ...t.hand, ...t.acus.map(a => a.k));
+  t.hand = []; t.azuis = []; t.acus = [];
+  const eraB = t.team === 'bruxa';
+  log(`💀 ${nm(t)} morreu (${motivo}). ${eraB ? '<b>Já foi bruxa!</b>' : 'Nunca foi bruxa.'}`, eraB ? 'good' : 'bad');
+  G.players.forEach(b => {
+    if (b.isHuman) return;
+    G.history.forEach(h => { if (h.t === t.id) b.b[h.by] += eraB ? (h.n > 0 ? -.4 * h.n : 1.5) : (h.n > 0 ? .4 * h.n : -.5); });
+    G.claims.forEach(c => { if (c.t === t.id && c.tipo === 'bruxa') b.b[c.by] += eraB ? -2 : 5; });
+  });
+  checarVitoria();
+  if (t.isHuman){
+    if (!G.over){
+      const w = await perguntar(t, `<h3>💀 Você morreu</h3><p>Suas três últimas palavras:</p><input id="ult" maxlength="50" placeholder="ex.: cuidado com Joaquim">`,
+        [{l:'Falar', prim:true, v:'__input'}, {l:'Silêncio', v:''}]);
+      const txt = (w || '').trim().split(/\s+/).slice(0, 3).join(' ');
+      if (txt){
+        fala(t, txt);
+        const alvo = G.players.find(p => p.alive && txt.toLowerCase().includes(p.nome.toLowerCase()));
+        if (alvo) G.players.forEach(b => { if (!b.isHuman && b.alive && b.team === 'vila' && b !== alvo) b.b[alvo.id] += eraB ? -.5 : 1; });
+      }
+    }
+  } else {
+    if (eraB) fala(t, rnd(['A lua ainda é nossa...','Vocês não sabem nada.','Hehehe...']));
+    else {
+      const sus = vivos().filter(p => p !== t).sort((a, b) => t.b[b.id] - t.b[a.id])[0];
+      fala(t, sus && t.b[sus.id] > 1 ? `Cuidado com ${sus.nome}!` : rnd(['Eu era inocente!','Rezem por mim.','Encontrem as bruxas!']));
+      if (sus && t.b[sus.id] > 1) G.players.forEach(b => { if (!b.isHuman && b.alive && b.team === 'vila' && b !== sus) b.b[sus.id] += .6; });
+    }
+  }
+}
+
+async function espiar(p, t){
+  const oc = ocultas(t);
+  let carta;
+  if (p.isHuman){
+    carta = await perguntar(p, `<h3>🔍 Espiar ${esc(t.nome)}</h3><p>Escolha qual carta fechada você quer olhar:</p>`,
+      oc.map(x => { const pos = t.pistas.indexOf(x) + 1;
+        return {l: p.peek.has(x.id) ? `👁 Carta ${pos}: ${TIPO[x.t]} (já vista)` : `🂠 Carta ${pos}`, v:x}; }));
+  } else {
+    let cand = oc.filter(x => !p.peek.has(x.id)); if (!cand.length) cand = oc;
+    carta = rnd(cand);
+  }
+  p.peek.add(carta.id);
+  log(`🔍 ${nm(p)} espia uma carta de ${nm(t)} em segredo.`);
+  const tipo = carta.t === 'bruxa' ? 'bruxa' : 'inocente';
+  if (p.isHuman){
+    const r = await perguntar(p, `<h3>🔍 Espiar</h3><p>Você viu uma carta fechada de <b>${esc(t.nome)}</b>:</p><div class="big ${carta.t}">${TIPO[carta.t]}</div>
+      <p>${carta.t !== 'bruxa' ? '<i>Uma carta inocente não prova nada: a pessoa pode ter uma Bruxa entre as outras.</i><br>' : ''}O que você conta para a vila?</p>`,
+      [{l:'Anunciar: é BRUXA', v:'bruxa'}, {l:'Anunciar: não é bruxa', v:'inocente'}, {l:'Ficar calado', v:null}]);
+    if (r) anunciar(p, t, r);
+  } else if (p.team === 'vila'){
+    if (tipo === 'bruxa') p.b[t.id] = 100; else p.b[t.id] -= .5;
+    if (tipo === 'bruxa' || Math.random() < .75) anunciar(p, t, tipo);
+  } else {
+    const claim = t.team === 'bruxa' ? 'inocente' : (Math.random() < .35 ? 'bruxa' : 'inocente');
+    if (Math.random() < .75) anunciar(p, t, claim);
+  }
+}
+function anunciar(p, t, tipo){
+  log(tipo === 'bruxa' ? `📢 ${nm(p)} declara: “Eu vi uma carta de BRUXA com ${esc(t.nome)}!”` : `📢 ${nm(p)} declara: “A carta de ${esc(t.nome)} que eu vi não era bruxa.”`, tipo === 'bruxa' ? 'trial' : 'chat');
+  G.claims.push({by:p.id, t:t.id, tipo});
+  G.players.forEach(b => {
+    if (b.isHuman || b === p || !b.alive || b.team !== 'vila') return;
+    if (b === t){ if (tipo === 'bruxa'){ b.b[p.id] = 50; fala(b, `Mentira! ${p.nome} está mentindo!`); } return; }
+    const trust = Math.min(1, Math.max(.1, 1 - b.b[p.id] / 4));
+    b.b[t.id] += tipo === 'bruxa' ? 3 * trust : -.5 * trust;
+  });
+}
+
+// ---------- cartas pretas ----------
+async function noite(){
+  G.fase = 'Noite'; G.noite = true;
+  log('🌑 NOITE. Todos fecham os olhos...', 'phase'); await delay(1);
+  const bruxas = vivos().filter(p => p.team === 'bruxa');
+  const alvos = vivos().filter(p => p.team !== 'bruxa');
+  let vitima = null;
+  if (bruxas.length && alvos.length){
+    const decide = bruxas.find(p => p.isHuman);
+    if (decide){
+      const parc = bruxas.filter(p => p !== decide).map(p => esc(p.nome)).join(', ');
+      vitima = await perguntar(decide, `<h3>🌑 As bruxas abrem os olhos</h3>${parc ? `<p>Suas parceiras: <b>${parc}</b></p>` : ''}<p>Escolha a vítima desta noite:</p>`,
+        alvos.map(t => ({l:`${t.av} ${t.nome}${t.azuis.includes('refugio') ? ' ⛪' : ''}`, v:t})));
+      bruxas.filter(p => p.isHuman && p !== decide).forEach(p => log(`🌑 ${nm(decide)} escolheu ${nm(vitima)} como vítima.`, 'priv', p.id));
+    } else {
+      let bv = -1e9;
+      alvos.forEach(t => { const v = ameaca(t) + Math.random() * 1.2 - (t.azuis.includes('refugio') ? 6 : 0); if (v > bv){ bv = v; vitima = t; } });
+      bruxas.filter(p => p.isHuman).forEach(p => log(`🌑 Suas parceiras escolheram ${nm(vitima)} como vítima.`, 'priv', p.id));
+    }
+  }
+  const guard = vivos().find(ehGuardiao);
+  let protegido = null;
+  if (guard){
+    const opc = vivos().filter(p => p !== guard);
+    if (guard.isHuman){
+      protegido = await perguntar(guard, `<h3>🏮 O Guardião abre os olhos</h3><p>Escolha alguém para proteger esta noite (não pode ser você):</p>`,
+        opc.map(t => ({l:`${t.av} ${t.nome}`, v:t})));
+    } else if (guard.team === 'bruxa'){
+      protegido = opc.find(p => p.team === 'bruxa') || rnd(opc);
+    } else {
+      let bv = -1e9;
+      opc.forEach(t => { const v = -guard.b[t.id] + Math.random() * .8; if (v > bv){ bv = v; protegido = t; } });
+    }
+  }
+  log('☀️ Todos abrem os olhos. Quem quiser pode confessar...', 'phase'); await delay(.6);
+  // Confissões: todas as pessoas decidem ao mesmo tempo
+  const conf = await Promise.all(vivos().filter(p => p.isHuman && ocultas(p).length >= 2).map(async p => {
+    const r = await perguntar(p, `<h3>🙊 Confissão</h3><p>Alguém foi escolhido pelas bruxas. Você pode revelar uma das suas cartas de julgamento para ter imunidade esta noite.</p>`,
+      [{l:'Confessar', prim:true, v:true}, {l:'Não confessar', v:false}], 15, false);
+    if (!r) return null;
+    const c = await perguntar(p, `<h3>Qual carta revelar?</h3>`, [...ocultas(p).map(x => ({l:TIPO[x.t], v:x})), {l:'Desistir', v:null}]);
+    if (!c) return null;
+    if (c.t === 'bruxa' && !(await perguntar(p, `<p>Revelar uma Bruxa vai te matar. Tem certeza?</p>`, [{l:'Sim', v:true}, {l:'Não', v:false}]))) return null;
+    return {p, c};
+  }));
+  vivos().filter(p => !p.isHuman).forEach(p => {
+    const oc = ocultas(p), seguras = oc.filter(x => x.t !== 'bruxa');
+    if (oc.length < 2 || !seguras.length) return;
+    const chance = p.team === 'bruxa' ? .12 : .12 + pontos(p) / LIM * .15 + (oc.length >= 3 ? .08 : 0);
+    if (Math.random() < chance) conf.push({p, c:rnd(seguras)});
+  });
+  const confessou = new Set();
+  for (const x of conf){
+    if (!x || G.over || !x.p.alive || x.c.rev) continue;
+    log(`🙊 ${nm(x.p)} confessa.`); confessou.add(x.p);
+    await revelarCarta(x.p, x.c, 'confissão'); await delay(.4);
+  }
+  if (!G.over){
+    if (!vitima || !vitima.alive) log('A noite passou sem mortes.', 'good');
+    else if (vitima === protegido || vitima.azuis.includes('refugio') || confessou.has(vitima)){
+      log('🕊️ As bruxas atacaram, mas ninguém morreu esta noite.', 'good');
+    } else {
+      log(`🩸 ${nm(vitima)} foi encontrado(a) morto(a) ao amanhecer!`, 'bad');
+      await morre(vitima, 'morto pelas bruxas à noite');
+    }
+  }
+  await delay(.8);
+  G.noite = false; G.fase = `Dia ${G.round}`; atualizar();
+}
+
+async function conspiracao(quem){
+  log('🕸️ CONSPIRAÇÃO!', 'phase');
+  const dono = vivos().find(p => p.azuis.includes('gato'));
+  if (dono){
+    const oc = ocultas(dono);
+    log(`🐈‍⬛ O Gato da Lua mia na porta de ${nm(dono)}. ${nm(quem)} escolhe uma carta para revelar...`, 'trial');
+    await delay(.9);
+    let carta;
+    if (quem.isHuman && quem.alive){
+      carta = await perguntar(quem, `<h3>🐈‍⬛ Gato da Lua</h3><p>Escolha uma carta de julgamento de <b>${esc(dono.nome)}</b> para revelar:</p>`,
+        oc.map(x => ({l:dono === quem ? TIPO[x.t] : `🂠 Carta ${dono.pistas.indexOf(x) + 1}`, v:x})));
+    } else if (quem === dono){
+      carta = oc.find(x => x.t !== 'bruxa') || oc[0];
+    } else carta = rnd(oc);
+    await revelarCarta(dono, carta, 'Gato da Lua');
+    if (G.over) return;
+  }
+  log('🕸️ Cada um pega uma carta fechada do jogador à sua esquerda.', 'phase');
+  const v = vivos();
+  if (v.length < 2) return;
+  const trocas = await Promise.all(v.map(async (rec, i) => {
+    const dador = v[(i + 1) % v.length], oc = ocultas(dador);
+    const carta = rec.isHuman
+      ? await perguntar(rec, `<h3>🕸️ Conspiração</h3><p>Escolha uma carta fechada de <b>${esc(dador.nome)}</b> (à sua esquerda):</p>`, oc.map(x => ({l:`🂠 Carta ${dador.pistas.indexOf(x) + 1}`, v:x})))
+      : rnd(oc);
+    return {rec, dador, carta};
+  }));
+  trocas.forEach(({dador, carta}) => { dador.pistas.splice(dador.pistas.indexOf(carta), 1); });
+  trocas.forEach(({rec, carta}) => { rec.pistas.push(carta); if (carta.t === 'bruxa') rec.team = 'bruxa'; });
+  G.players.forEach(p => { p.peek = new Set(); if (!p.isHuman) for (const k in p.b) if (Math.abs(p.b[k]) < 40) p.b[k] *= .6; });
+  atualizar();
+  await Promise.all(trocas.filter(x => x.rec.isHuman).map(({rec, carta}) => perguntar(rec,
+    `<h3>🕸️ Você recebeu</h3><div class="big ${carta.t}">${TIPO[carta.t]}</div>
+     ${carta.t === 'bruxa' ? '<p><b>Agora você pertence à equipe das bruxas!</b> Seu objetivo mudou.</p>' : ''}
+     ${rec.team === 'bruxa' ? `<p>Equipe das bruxas: <b>${vivos().filter(p => p.team === 'bruxa').map(p => esc(p.nome)).join(', ')}</b></p>` : ''}`,
+    [{l:'Entendi', v:1}])));
+}
+
+// ---------- IA dos bots ----------
+function ameaca(t){
+  let s = 0;
+  G.history.forEach(h => { if (h.by === t.id && h.n > 0 && G.players[h.t].team === 'bruxa') s += .35 * h.n; });
+  G.claims.forEach(c => { if (c.by === t.id && c.tipo === 'bruxa' && G.players[c.t].team === 'bruxa') s += 1.5; });
+  return Math.min(s, 4);
+}
+function opcoesBot(me){
+  const outros = vivos().filter(p => p !== me);
+  const isB = me.team === 'bruxa', amigo = t => isB && t.team === 'bruxa', B = t => me.b[t.id];
+  const pressao = Math.min(G.round * .06, .6);
+  const opts = [];
+  me.hand.forEach((k, i) => {
+    const c = CARDS[k];
+    const add = (targets, v) => opts.push({i, k, targets, v:v + Math.random() * .4});
+    if (c.cor === 'vermelha'){
+      outros.forEach(t => {
+        if (t.azuis.includes('devocao') || amigo(t)) return;
+        const pts = pontos(t), dispara = pts + c.pts + (t.azuis.includes('mafama') ? 1 : 0) >= LIM;
+        let v;
+        if (isB){ v = .7 + ameaca(t) + .1 * pts + (dispara ? .6 : 0); if (c.pts === 7 && ameaca(t) < 1.5) v -= 1.5; }
+        else { v = B(t) * (c.pts === 1 ? 1 : c.pts === 3 ? 1.15 : 1.3) + .1 * pts + pressao + (dispara && B(t) > .8 ? 1 : 0);
+               if (c.pts >= 3 && B(t) < 1) v -= 1; if (c.pts === 7 && B(t) < 2.5) v -= 2; }
+        add([t], v);
+      });
+    } else if (k === 'mafama' || k === 'pelourinho'){
+      outros.forEach(t => { if (t.azuis.includes(k) || amigo(t)) return; add([t], isB ? .3 + ameaca(t) * .5 : B(t) * .7 - .2); });
+    } else if (k === 'devocao' || k === 'refugio'){
+      outros.forEach(t => { if (t.azuis.includes(k)) return;
+        add([t], isB ? (amigo(t) ? .5 + pontos(t) * .25 : -2) : -B(t) * .5 + (k === 'devocao' ? pontos(t) * .12 : .15)); });
+    } else if (k === 'defesa'){
+      outros.forEach(t => { const pts = pontos(t); if (!pts) return; add([t], isB ? (amigo(t) ? .8 + pts * .35 : -1.5) : -B(t) * .6 + pts * .2 - .2); });
+    } else if (k === 'exorcismo'){
+      outros.forEach(t => { if (!removiveis(t).length) return;
+        const bom = t.azuis.some(a => a === 'devocao' || a === 'refugio'), ruim = t.azuis.some(a => a === 'mafama' || a === 'pelourinho');
+        add([t], isB ? (amigo(t) ? (ruim ? 1.5 : -1) : (bom ? .6 + ameaca(t) * .4 : -1)) : (bom && B(t) > .8 ? 1 + B(t) * .3 : (ruim && B(t) < -.3 ? 1 : -1))); });
+    } else if (k === 'confisco'){
+      outros.forEach(t => { if (!t.hand.length || amigo(t)) return; add([t], (isB ? .2 + ameaca(t) * .5 : B(t) * .5) + t.hand.length * .08); });
+    } else if (k === 'espiar'){
+      outros.forEach(t => { if (!ocultas(t).some(x => !me.peek.has(x.id))) return;
+        add([t], isB ? (amigo(t) ? -1 : .6) : 1.4 - Math.abs(B(t)) * .25 - (B(t) >= 50 ? 3 : 0)); });
+    } else if (k === 'bode' || k === 'furto'){
+      for (const a of outros) for (const d of (k === 'furto' ? [...outros, me] : outros)){
+        if (a === d) continue;
+        if (d === me){
+          if (!a.hand.length || amigo(a)) continue;
+          const metade = Math.max(1, Math.floor(a.hand.length / 2));
+          add([a, d], (isB ? .3 + ameaca(a) * .3 : B(a) * .3) + metade * .15 - .1);
+          continue;
+        }
+        let v;
+        if (k === 'bode'){
+          const pts = pontos(a); if (!pts && !a.azuis.length) continue;
+          v = isB ? (amigo(a) && !amigo(d) ? pts * .45 + ameaca(d) * .3 : -9) : (pts >= 3 ? (B(d) - B(a)) * .4 + pts * .1 : -1);
+        } else {
+          if (!a.hand.length) continue;
+          v = isB ? (!amigo(a) && amigo(d) ? .4 + a.hand.length * .1 : -9) : (B(a) - B(d)) * .3 + a.hand.length * .05 - .3;
+        }
+        add([a, d], v);
+      }
+    }
+  });
+  return opts.sort((x, y) => y.v - x.v);
+}
+async function vezBot(p){
+  let n = 0;
+  while (n < 3 && p.alive && !G.over){
+    const o = opcoesBot(p)[0];
+    const lim = (n === 0 ? .9 : 1.3) - (p.hand.length >= 7 ? .6 : 0);
+    if (!o || o.v < lim) break;
+    if (n) await delay(.7);
+    await jogar(p, o.i, o.targets); n++;
+  }
+  if (!n && p.alive && !G.over){ log(`${nm(p)} compra duas cartas.`); await comprar2(p); }
+}
+
+// ---------- fluxo ----------
+async function comprar2(p){
+  for (let j = 0; j < 2; j++){
+    if (G.over || !p.alive) return;
+    const k = tirar(); if (!k) return;
+    if (CARDS[k].cor === 'preta'){
+      log(`${CARDS[k].ic} ${nm(p)} comprou e revelou <b>${CARDS[k].nome}</b>!`, 'phase'); await delay(.8);
+      if (k === 'noite'){ await noite(); if (!G.over) novoBaralho(); }
+      else { await conspiracao(p); G.discard.push(k); }
+    } else {
+      p.hand.push(k);
+      if (p.isHuman) log(`Você comprou <i>${CARDS[k].nome}</i>.`, 'priv', p.id);
+    }
+    atualizar();
+  }
+}
+async function loop(){
+  const meu = G;
+  while (!meu.over && G === meu){
+    G.round++; G.fase = `Dia ${G.round}`;
+    log(`☀️ Dia ${G.round}`, 'phase');
+    for (const p of G.players){
+      if (G !== meu || G.over) return;
+      if (!p.alive) continue;
+      G.current = p.id; atualizar();
+      if (p.azuis.includes('pelourinho')){
+        p.azuis.splice(p.azuis.indexOf('pelourinho'), 1); G.discard.push('pelourinho');
+        log(`⛓️ ${nm(p)} está no pelourinho e perde o turno.`); await delay(.6); continue;
+      }
+      if (p.isHuman) await vezHumana(p);
+      else { await delay(); if (G !== meu) return; await vezBot(p); }
+    }
+  }
+}
+function checarVitoria(){
+  if (G.over) return;
+  const rev = G.players.reduce((s, p) => s + p.pistas.filter(x => x.rev && x.t === 'bruxa').length, 0);
+  if (rev >= G.totalBruxas) return fim('vila');
+  const v = vivos();
+  if (!v.length || v.every(p => p.team === 'bruxa')) fim('bruxa');
+}
+async function fim(lado){
+  G.over = true; G.current = null; G.turno = null; G.noite = false;
+  log(lado === 'vila' ? '🌅 Todas as bruxas foram reveladas. A vila está salva!' : '🔥 Só restaram bruxas vivas. A vila caiu...', 'phase');
+  const meuG = G;
+  await sleep(700);
+  if (G !== meuG) return;
+  const lista = G.players.map(p => `<div>${p.av} <b>${esc(p.nome)}</b>: ${p.team === 'bruxa' ? '<span style="color:#ff7a7a">Equipe das Bruxas</span>' : '<span style="color:#8fd39a">Morador</span>'}${p.alive ? '' : ' (morto)'}${p.isHuman ? '' : ' 🤖'}</div>`).join('');
+  const html = p => `<h2 style="color:var(--gold)">${p.team === lado ? '🏆 Vitória!' : '☠️ Derrota'}</h2>
+    <p>${lado === 'vila' ? 'Os <b>Moradores</b> venceram.' : 'As <b>Bruxas</b> venceram.'}</p><div class="fim-lista">${lista}</div>`;
+  G.players.filter(p => p.ctl === 'remoto').forEach(p => perguntar(p, html(p) + '<p><i>Aguarde o anfitrião começar outra partida.</i></p>', [{l:'Ver a mesa', v:null}]));
+  const loc = local();
+  const r = await modal(html(loc), [{l:'Jogar novamente', prim:true, v:'novo'}, {l:'Ver a mesa', v:null}]);
+  if (r === 'novo') voltarAoInicio();
+}
+function introHTML(p){
+  const mini = p.pistas.map(x => `<span class="big ${x.t}" style="font-size:14px;padding:8px;margin:0">${TIPO[x.t]}</span>`).join('');
+  const parc = G.players.filter(q => q !== p && q.team === 'bruxa').map(q => esc(q.nome));
+  return `<h2 style="color:${p.team === 'bruxa' ? '#ff7a7a' : '#8fd39a'}">${p.team === 'bruxa' ? 'Você é da equipe das BRUXAS ☾' : 'Você é um MORADOR ✝'}</h2>
+    <p>Suas cartas de julgamento (só você vê):</p><div class="mini">${mini}</div>
+    ${p.pistas.some(x => x.t === 'guardiao') ? '<p>🏮 Você tem o <b>Guardião</b>: à noite escolhe alguém para proteger.</p>' : ''}
+    ${p.team === 'bruxa' ? (parc.length ? `<p>Sua parceira: <b>${parc.join(', ')}</b>.</p>` : '<p>Você é a única bruxa... por enquanto.</p>') + '<p>Vença quando todos os vivos forem da equipe das bruxas.</p>'
+      : `<p>Há <b>${G.totalBruxas}</b> carta(s) Bruxa escondida(s). Revele todas para vencer.</p>`}`;
+}
+async function comecarJogo(pessoas, n){
+  resetModal();
+  $('setup').hidden = true;
+  UI.sel = null; UI.alvos = []; CV = null;
+  novoJogo(pessoas, n);
+  const meuG = G;
+  log(NET.modo === 'host' ? `🌐 Partida online: ${humanos().map(p => nm(p)).join(', ')}${n > humanos().length ? ` + ${n - humanos().length} bot(s)` : ''}.` : '🤖 Partida contra bots.', 'phase');
+  await Promise.all(humanos().map(p => perguntar(p, introHTML(p), [{l:'Começar', prim:true, v:1}])));
+  if (G !== meuG) return;
+  await madrugada();
+  if (G !== meuG) return;
+  loop();
+}
+async function madrugada(){
+  G.fase = 'Madrugada'; G.noite = true;
+  log('🌘 MADRUGADA. As bruxas abrem os olhos e entregam o Gato da Lua a alguém...', 'phase'); await delay(1);
+  const bruxas = G.players.filter(p => p.team === 'bruxa');
+  const decide = bruxas.find(p => p.isHuman);
+  let dono;
+  if (decide){
+    const parc = bruxas.filter(p => p !== decide).map(p => esc(p.nome)).join(', ');
+    dono = await perguntar(decide, `<h3>🐈‍⬛ Gato da Lua</h3>${parc ? `<p>Suas parceiras: <b>${parc}</b></p>` : ''}
+      <p>Escolha quem recebe o Gato da Lua. Toda vez que sair <b>Conspiração</b>, esse jogador terá uma carta de julgamento revelada.</p>`,
+      G.players.map(t => ({l:`${t.av} ${t.nome}${t === decide ? ' (você)' : ''}`, v:t})));
+  } else {
+    dono = rnd(G.players.filter(p => p.team !== 'bruxa'));
+  }
+  dono.azuis.push('gato');
+  log(`🐈‍⬛ Ao amanhecer, um gato negro de olhos prateados está sentado na porta de ${nm(dono)}.`);
+  await delay(.8);
+  G.noite = false; atualizar();
+}
+
+// =====================================================================
+//  TELA (igual para anfitrião e convidados: desenha a partir da visão)
+// =====================================================================
+let assinaturaLog = '';
+function desenhar(v){
+  CV = v;
+  document.body.classList.toggle('noite', !!v.noite);
+  $('fase').textContent = v.fase;
+  $('placar').innerHTML = v.placar;
+  if (!v.minhaVez){ UI.sel = null; UI.alvos = []; }
+  if (UI.sel != null && UI.sel >= v.hand.length){ UI.sel = null; UI.alvos = []; }
+  const selK = UI.sel != null ? v.hand[UI.sel] : null;
+  const grid = $('jogadores'); grid.innerHTML = '';
+  v.players.forEach(p => {
+    const d = document.createElement('div');
+    let cls = 'pl';
+    if (p.id === v.meId) cls += ' eu';
+    if (v.current === p.id) cls += ' atual';
+    if (!p.alive) cls += ' morto';
+    if (selK && alvoOk(selK, p, UI.alvos, v.meId)) cls += ' alvo';
+    if (UI.alvos.includes(p.id)) cls += ' escolhido';
+    d.className = cls;
+    let tag = '???', tc = '';
+    if (p.time){ tag = p.time === 'bruxa' ? 'Equipe das Bruxas' : 'Morador'; tc = p.time === 'bruxa' ? 'bru' : 'vil'; }
+    if (!p.alive) tag += ' · morto';
+    const pips = Array.from({length:LIM}, (_, i) => `<span class="pip ${i < p.pts ? 'on' : ''}"></span>`).join('');
+    const slots = p.slots.map(s => `<div class="pista ${s.c}" title="${s.t}">${s.i}</div>`).join('');
+    const azuis = p.azuis.map(k => `<span class="badge ${k === 'gato' ? 'gato' : ''}" title="${CARDS[k].desc}">${CARDS[k].ic} ${CARDS[k].nome}</span>`).join('');
+    d.innerHTML = `<div class="pl-top"><span class="av">${p.av}</span><div><div class="nome">${esc(p.nome)}${p.id === v.meId ? ' (você)' : ''}${!p.humano ? ' <span title="bot" style="font-size:12px">🤖</span>' : ''}</div>
+      <div class="tag ${tc}">${tag}</div></div></div>
+      <div class="acus">${pips}<span>&nbsp;${p.pts}/${LIM}</span></div>
+      <div class="pistas">${slots}</div>
+      <div class="azuis">${azuis}</div>
+      <div class="status">${p.id === v.meId ? '' : (p.alive ? '🂠 ' + p.mao + ' na mão' : '')}</div>`;
+    d.onclick = () => cliqueJogador(p);
+    grid.appendChild(d);
+  });
+  // log
+  const ult = v.log[v.log.length - 1];
+  const sig = v.log.length + '|' + (ult ? ult.h : '');
+  if (sig !== assinaturaLog){
+    assinaturaLog = sig;
+    $('logL').innerHTML = v.log.map(l => `<div class="ln ${l.c}">${l.h}</div>`).join('');
+    $('log').scrollTop = $('log').scrollHeight;
+  }
+  // mão
+  $('mao').innerHTML = '';
+  v.hand.forEach((k, i) => {
+    const c = CARDS[k], el = document.createElement('div');
+    el.className = 'carta' + (v.minhaVez ? ' jogavel' : '') + (UI.sel === i ? ' sel' : '');
+    el.style.setProperty('--cor', COR[c.cor]);
+    el.innerHTML = `${c.pts ? `<span class="pts">${c.pts}</span>` : ''}<div class="ic">${c.ic}</div><div class="cn">${c.nome}</div><div class="cd">${c.desc}</div>`;
+    el.onclick = () => { if (!CV.minhaVez) return; UI.sel = UI.sel === i ? null : i; UI.alvos = []; desenhar(CV); };
+    $('mao').appendChild(el);
+  });
+  $('btnComprar').disabled = !(v.minhaVez && !v.jogou);
+  $('btnFim').disabled = !(v.minhaVez && v.jogou);
+  $('btnCancelar').disabled = !(v.minhaVez && UI.sel != null);
+  let ins;
+  if (v.over) ins = 'Fim de jogo.';
+  else if (!v.alive) ins = '💀 Você está morto e em silêncio. Assista ao desfecho...';
+  else if (v.minhaVez){
+    if (selK == null) ins = v.jogou ? 'Jogue mais cartas ou <b>encerre o turno</b>.' : '🕯️ Sua vez! <b>Compre 2 cartas</b> OU jogue uma ou mais cartas da mão.';
+    else if (CARDS[selK].alvo === 2) ins = UI.alvos.length ? `Agora escolha <b>para quem</b> vai (${CARDS[selK].nome}).` : `Escolha <b>de quem</b> sai (${CARDS[selK].nome}).`;
+    else ins = `Escolha o alvo de <b>${CARDS[selK].nome}</b> (destacados em roxo).`;
+  }
+  else if (v.esperando.length) ins = `⏳ Aguardando ${v.esperando.map(esc).join(', ')} decidir...`;
+  else if (v.atualNome) ins = `Vez de <b>${esc(v.atualNome)}</b>...`;
+  else ins = 'Aguarde...';
+  $('instr').innerHTML = ins;
+}
+function cliqueJogador(pv){
+  if (!CV || !CV.minhaVez || UI.sel == null) return;
+  const k = CV.hand[UI.sel];
+  if (!alvoOk(k, pv, UI.alvos, CV.meId)) return;
+  UI.alvos.push(pv.id);
+  if (UI.alvos.length >= (CARDS[k].alvo || 1)){
+    const act = {tipo:'jogar', i:UI.sel, k, targets:UI.alvos.slice()};
+    UI.sel = null; UI.alvos = [];
+    mandarAcao(act);
+  }
+  desenhar(CV);
+}
+function mandarAcao(act){
+  if (NET.modo === 'cliente') enviar(NET.hostConn, {t:'acao', act});
+  else if (G) receberAcao(local().id, act);
+}
+
+// ---------- janelas ----------
+let filaModal = Promise.resolve(), modalAtual = null;
+function modal(html, botoes, tempo = 0, padrao = null){
+  const p = filaModal.then(() => new Promise(res => {
+    const m = $('modal');
+    m.querySelector('.conteudo').innerHTML = html;
+    const bx = m.querySelector('.botoes'); bx.innerHTML = '';
+    let timer = null, feito = false;
+    const fim = v => { if (feito) return; feito = true; clearInterval(timer); m.hidden = true; modalAtual = null; res(v); };
+    modalAtual = {cancelar:() => { feito = true; clearInterval(timer); m.hidden = true; modalAtual = null; }};
+    botoes.forEach(b => {
+      const el = document.createElement('button'); el.textContent = b.l; if (b.prim) el.className = 'prim';
+      el.onclick = () => fim(b.v === '__input' ? (($('ult') || {}).value || '') : b.v);
+      bx.appendChild(el);
+    });
+    if (tempo){
+      let s = tempo;
+      const t = document.createElement('span'); t.id = 'timer'; t.textContent = `⏳ ${s}s`; bx.appendChild(t);
+      timer = setInterval(() => { s--; t.textContent = `⏳ ${s}s`; if (s <= 0) fim(padrao); }, 1000);
+    }
+    m.hidden = false;
+    const inp = m.querySelector('input'); if (inp) inp.focus();
+  }));
+  filaModal = p.catch(() => {});
+  return p;
+}
+function resetModal(){ if (modalAtual) modalAtual.cancelar(); filaModal = Promise.resolve(); }
+
+// =====================================================================
+//  REDE (PeerJS: conexão direta entre os navegadores)
+// =====================================================================
+function enviar(conn, msg){ try { if (conn && conn.open) conn.send(msg); } catch (e) { console.warn(e); } }
+const meuNome = () => ($('inNome').value.trim() || 'Jogador').slice(0, 14);
+function msg(id, t){ $(id).textContent = t || ''; }
+function gerarCodigo(){ const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; return Array.from({length:5}, () => a[Math.floor(Math.random() * a.length)]).join(''); }
+function semRede(){ if (typeof Peer === 'undefined'){ msg('msgRede', 'Não foi possível carregar o módulo online (sem internet?).'); return true; } return false; }
+function fecharRede(){
+  try { if (NET.peer) NET.peer.destroy(); } catch (e) {}
+  NET.peer = null; NET.hostConn = null; NET.lobby = []; NET.code = null; NET.modo = 'solo';
+  $('selo').textContent = ''; $('lblRapido').hidden = false; $('btnNovo').textContent = 'Novo jogo';
+}
+
+// ----- anfitrião -----
+function criarSala(tent = 0){
+  if (semRede()) return;
+  fecharRede();
+  NET.modo = 'host'; NET.code = gerarCodigo();
+  msg('msgRede', 'Criando sala...');
+  const peer = new Peer(PREFIXO + NET.code, {debug:0});
+  NET.peer = peer;
+  peer.on('open', () => {
+    msg('msgRede', '');
+    $('telaInicio').hidden = true; $('telaLobby').hidden = false;
+    $('lobbyHost').hidden = false; $('lobbyCliente').hidden = true; $('lobbyDica').hidden = false;
+    $('codigoSala').textContent = NET.code;
+    $('selo').textContent = `🌐 Sala ${NET.code} · anfitrião`; $('lblRapido').hidden = true;
+    atualizarLobby();
+  });
+  peer.on('connection', conn => {
+    conn.on('data', d => hostRecebe(conn, d));
+    conn.on('close', () => hostDesconectou(conn));
+    conn.on('error', e => console.warn('erro na conexão com convidado', e));
+  });
+  peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+  peer.on('error', e => {
+    if (e.type === 'unavailable-id' && tent < 3) return criarSala(tent + 1);
+    msg('msgRede', 'Erro de conexão: ' + e.type); msg('msgLobby', 'Erro de conexão: ' + e.type);
+  });
+}
+function atualizarLobby(){
+  const nomes = [meuNome() + ' (anfitrião)', ...NET.lobby.map(l => l.nome)];
+  $('listaLobby').innerHTML = nomes.map((n, i) => `<li>${AV_HUMANOS[i % AV_HUMANOS.length]} ${esc(n)}</li>`).join('');
+  const sel = $('inNOnline'), atual = +sel.value || 6, min = Math.max(4, nomes.length);
+  sel.innerHTML = '';
+  for (let n = min; n <= 12; n++) sel.insertAdjacentHTML('beforeend', `<option value="${n}">${n} jogadores${n > nomes.length ? ` (${n - nomes.length} bot${n - nomes.length > 1 ? 's' : ''})` : ' (só pessoas)'}</option>`);
+  sel.value = Math.max(min, atual);
+  $('btnComecarOnline').disabled = nomes.length > 12;
+  NET.lobby.forEach(l => enviar(l.conn, {t:'lobby', code:NET.code, nomes}));
+}
+function hostRecebe(conn, d){
+  if (!d || typeof d !== 'object') return;
+  if (d.t === 'oi'){
+    if (G && !G.over){ enviar(conn, {t:'erro', msg:'A partida já começou. Espere ela acabar e entre de novo.'}); setTimeout(() => conn.close(), 500); return; }
+    if (NET.lobby.length >= 11){ enviar(conn, {t:'erro', msg:'A sala está cheia (12 jogadores).'}); setTimeout(() => conn.close(), 500); return; }
+    let nome = String(d.nome || 'Jogador').slice(0, 14).trim() || 'Jogador';
+    const usados = new Set([meuNome().toLowerCase(), ...NET.lobby.map(l => l.nome.toLowerCase())]);
+    let base = nome, k = 2; while (usados.has(nome.toLowerCase())) nome = `${base} ${k++}`;
+    if (!NET.lobby.find(l => l.conn === conn)) NET.lobby.push({conn, nome});
+    atualizarLobby();
+    return;
+  }
+  if (!G) return;
+  const p = G.players.find(q => q.conn === conn && q.ctl === 'remoto');
+  if (!p) return;
+  if (d.t === 'acao') receberAcao(p.id, d.act);
+  else if (d.t === 'ans'){ const a = NET.asks.get(d.qid); if (a && a.pid === p.id) a.conclui(d.idx, d.texto); }
+}
+function hostDesconectou(conn){
+  const antes = NET.lobby.length;
+  NET.lobby = NET.lobby.filter(l => l.conn !== conn);
+  if (NET.lobby.length !== antes && !$('telaLobby').hidden) atualizarLobby();
+  if (!G) return;
+  const p = G.players.find(q => q.conn === conn && q.ctl === 'remoto');
+  if (!p) return;
+  p.ctl = 'bot'; p.isHuman = false; p.conn = null;
+  if (!G.over) log(`📴 ${nm(p)} saiu da partida. Um bot assume o lugar.`, 'bad');
+  [...NET.asks.values()].filter(a => a.pid === p.id).forEach(a => a.reserva());
+  if (G.turno && G.turno.pid === p.id && G.turno.res){ const r = G.turno.res; G.turno.res = null; r({tipo:'bot'}); }
+}
+function comecarOnline(){
+  const pessoas = [{nome:meuNome(), ctl:'local'}, ...NET.lobby.filter(l => l.conn.open).map(l => ({nome:l.nome, ctl:'remoto', conn:l.conn}))];
+  const n = Math.max(4, pessoas.length, +$('inNOnline').value || 4);
+  comecarJogo(pessoas, n);
+}
+
+// ----- convidado -----
+function entrarSala(){
+  if (semRede()) return;
+  const code = $('inCodigo').value.trim().toUpperCase();
+  if (code.length < 4){ msg('msgRede', 'Digite o código da sala.'); return; }
+  fecharRede();
+  NET.modo = 'cliente';
+  msg('msgRede', 'Conectando...');
+  const peer = new Peer({debug:0});
+  NET.peer = peer;
+  peer.on('open', () => {
+    const conn = peer.connect(PREFIXO + code, {serialization:'json', reliable:true});
+    NET.hostConn = conn;
+    conn.on('open', () => {
+      msg('msgRede', '');
+      enviar(conn, {t:'oi', nome:meuNome()});
+      $('telaInicio').hidden = true; $('telaLobby').hidden = false;
+      $('lobbyHost').hidden = true; $('lobbyCliente').hidden = false; $('lobbyDica').hidden = true;
+      $('codigoSala').textContent = code;
+      $('selo').textContent = `🌐 Sala ${code}`; $('lblRapido').hidden = true; $('btnNovo').textContent = 'Sair da sala';
+    });
+    conn.on('data', clienteRecebe);
+    conn.on('close', () => {
+      if (NET.modo !== 'cliente') return;
+      resetModal();
+      modal('<h3>📴 Conexão perdida</h3><p>A conexão com o anfitrião caiu (ele pode ter fechado a página).</p>', [{l:'Voltar ao início', v:1}]).then(() => location.reload());
+    });
+  });
+  peer.on('error', e => {
+    msg('msgRede', e.type === 'peer-unavailable' ? 'Sala não encontrada. Confira o código e se o anfitrião está com a sala aberta.' : 'Erro de conexão: ' + e.type);
+  });
+}
+let LOG_CLIENTE = [];
+function clienteRecebe(d){
+  if (!d || typeof d !== 'object') return;
+  if (d.t === 'lobby'){
+    $('listaLobby').innerHTML = d.nomes.map((n, i) => `<li>${AV_HUMANOS[i % AV_HUMANOS.length]} ${esc(n)}</li>`).join('');
+  } else if (d.t === 'logs'){
+    if (d.reinicio) LOG_CLIENTE = [];
+    LOG_CLIENTE.push(...(d.novos || []));
+  } else if (d.t === 'view'){
+    $('setup').hidden = true;
+    LOG_CLIENTE.push(...(d.novos || []));
+    if (LOG_CLIENTE.length > 300) LOG_CLIENTE = LOG_CLIENTE.slice(-300);
+    d.v.log = LOG_CLIENTE;
+    desenhar(d.v);
+  } else if (d.t === 'ask'){
+    const botoes = d.botoes.map((b, i) => ({l:b.l, prim:b.prim, v:b.input ? '__input' : i}));
+    modal(d.html, botoes, d.tempo, d.pad >= 0 ? d.pad : null).then(r => {
+      if (typeof r === 'number') enviar(NET.hostConn, {t:'ans', qid:d.qid, idx:r});
+      else if (r === null) enviar(NET.hostConn, {t:'ans', qid:d.qid, idx:d.pad >= 0 ? d.pad : 0});
+      else enviar(NET.hostConn, {t:'ans', qid:d.qid, idx:d.botoes.findIndex(b => b.input), texto:r});
+    });
+  } else if (d.t === 'erro'){
+    msg('msgRede', d.msg); msg('msgLobby', d.msg);
+    $('telaInicio').hidden = false; $('telaLobby').hidden = true;
+  }
+}
+
+// ---------- início / navegação ----------
+function voltarAoInicio(){
+  resetModal();
+  NET.asks.clear();
+  $('setup').hidden = false;
+  if (NET.modo === 'host'){
+    G = null;
+    $('telaInicio').hidden = true; $('telaLobby').hidden = false;
+    atualizarLobby();
+  } else {
+    G = null;
+    $('telaInicio').hidden = false; $('telaLobby').hidden = true;
+  }
+}
+for (let n = 4; n <= 12; n++) $('inN').insertAdjacentHTML('beforeend', `<option value="${n}" ${n === 6 ? 'selected' : ''}>${n} jogadores (${TABELA[n][1]} bruxa${TABELA[n][1] > 1 ? 's' : ''})</option>`);
+function catalogoHTML(){
+  const julg = [
+    {ic:'☾', nome:'Bruxa', desc:'Quem tem (ou já teve) esta carta é da equipe das bruxas para sempre. Se for revelada, o dono morre.'},
+    {ic:'✝', nome:'Não é Bruxa', desc:'Carta inocente. Revelá-la não mata, a menos que seja a última carta fechada do jogador.'},
+    {ic:'🏮', nome:'Guardião', desc:'Enquanto estiver fechada, à Noite o dono protege alguém (não a si mesmo). Também não é bruxa. O Guardião pode ser da equipe das bruxas!'},
+  ];
+  const carta = (c, cor, extra = '', cls = '') => `<div class="carta ${cls}" style="--cor:${cor}">${c.pts ? `<span class="pts">${c.pts}</span>` : ''}
+    <div class="ic">${c.ic}</div><div class="cn">${c.nome}</div><div class="cd">${c.desc}</div>${extra ? `<div class="qtd">${extra}</div>` : ''}</div>`;
+  const grupo = (cor, titulo, sub) => {
+    const ks = Object.keys(CARDS).filter(k => CARDS[k].cor === cor);
+    return `<h4 style="color:${cor === 'preta' ? 'var(--parch)' : COR[cor]}">${titulo}</h4><p class="sub">${sub}</p><div class="cat-grid">` +
+      ks.map(k => carta(CARDS[k], COR[cor], k === 'gato' ? 'não está no baralho' : k === 'noite' ? 'sempre a última' : `×${CARDS[k].qtd || 1} no baralho`, cor === 'preta' ? 'preta' : '')).join('') + '</div>';
+  };
+  return `<div class="cat"><h2 style="color:var(--gold)">Todas as cartas</h2>
+    <h4 style="color:var(--parch)">Cartas de julgamento</h4><p class="sub">5 para cada jogador, fechadas na frente dele. Definem de que lado você está.</p>
+    <div class="cat-grid">${julg.map(c => carta(c, '#777', '', 'julg')).join('')}</div>
+    ${grupo('vermelha', 'Vermelhas: acusações', 'Somam pontos no alvo. Com 7 pontos há julgamento e uma carta de julgamento é revelada.')}
+    ${grupo('azul', 'Azuis: permanentes', 'Ficam na frente do jogador e o efeito continua até serem removidas ou ele morrer.')}
+    ${grupo('verde', 'Verdes: ação imediata', 'O efeito acontece na hora e a carta é descartada.')}
+    ${grupo('preta', 'Pretas: eventos', 'São reveladas e resolvidas na hora em que alguém as compra.')}</div>`;
+}
+function abrirInfo(html){
+  $('info').querySelector('.conteudo').innerHTML = html;
+  $('info').hidden = false;
+  $('info').querySelector('.mbox').scrollTop = 0;
+}
+$('btnFecharInfo').onclick = () => { $('info').hidden = true; };
+$('info').onclick = e => { if (e.target === $('info')) $('info').hidden = true; };
+const mostrarRegras = () => abrirInfo($('tplRegras').innerHTML + '<hr style="border-color:#3a2f46;margin:18px 0">' + catalogoHTML());
+const mostrarCartas = () => abrirInfo(catalogoHTML());
+$('btnRegras').onclick = mostrarRegras; $('btnRegras2').onclick = mostrarRegras;
+$('btnCartas').onclick = mostrarCartas; $('btnCartas2').onclick = mostrarCartas;
+$('btnSolo').onclick = () => { fecharRede(); comecarJogo([{nome:meuNome(), ctl:'local'}], +$('inN').value); };
+$('btnCriar').onclick = () => criarSala();
+$('btnEntrar').onclick = entrarSala;
+$('inCodigo').onkeydown = e => { if (e.key === 'Enter') entrarSala(); };
+$('btnComecarOnline').onclick = comecarOnline;
+const sair = () => { if (NET.modo === 'cliente'){ location.reload(); return; } NET.lobby.forEach(l => { try { l.conn.close(); } catch (e) {} }); fecharRede(); voltarAoInicio(); };
+$('btnSairSala').onclick = sair; $('btnSairSala2').onclick = sair;
+$('btnNovo').onclick = () => {
+  if (NET.modo === 'cliente'){ if (confirm('Sair da sala?')) location.reload(); return; }
+  if (G && !G.over && !confirm(NET.modo === 'host' ? 'Abandonar esta partida e voltar para a sala?' : 'Abandonar esta partida?')) return;
+  voltarAoInicio();
+};
+$('btnCancelar').onclick = () => { UI.sel = null; UI.alvos = []; if (CV) desenhar(CV); };
+$('btnComprar').onclick = () => { if (CV && CV.minhaVez && !CV.jogou) mandarAcao({tipo:'comprar'}); };
+$('btnFim').onclick = () => { if (CV && CV.minhaVez && CV.jogou) mandarAcao({tipo:'fim'}); };
+try { const n = localStorage.getItem('ldc-nome'); if (n) $('inNome').value = n; } catch (e) {}
+$('inNome').onchange = () => { try { localStorage.setItem('ldc-nome', $('inNome').value.trim()); } catch (e) {} };
+</script>
+</body>
+</html>
