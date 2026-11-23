@@ -193,7 +193,7 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 <p>Você <b>nunca</b> pode usar cartas em si mesmo. <b>Exceção:</b> o Furto pode ser entregue a você, mas aí você pega só metade da mão do alvo.</p>
 <p><b>Cores:</b></p>
 <ul><li><span style="color:#ff8a8a">Vermelhas</span>: acusações de 1, 3 ou 7 pontos. Com <b>7 pontos</b> há julgamento: quem colocou a última acusação escolhe uma carta fechada do acusado para revelar. <b>Se o acusado for uma pessoa (não um bot), ela mesma escolhe qual carta mostrar.</b> Se for Bruxa, ele morre. Depois as acusações são descartadas.</li>
-<li><span style="color:#9cc0f0">Azuis</span>: ficam na frente do jogador e o efeito continua.</li>
+<li><span style="color:#9cc0f0">Azuis</span>: ficam na frente do jogador e o efeito continua. A <b>Devoção</b> não pode ser colocada em quem é da equipe das bruxas (se alguém com Devoção virar bruxa na Conspiração, ela se desfaz).</li>
 <li><span style="color:#8fd39a">Verdes</span>: efeito imediato, depois são descartadas.</li>
 <li><b>Pretas</b>: <b>Noite</b> e <b>Conspiração</b>, reveladas ao serem compradas. A <b>Noite é sempre a última carta do baralho</b>: quando ela sai, o descarte é embaralhado e vira um novo baralho, com a Noite de novo no fundo. A Conspiração fica embaralhada no meio.</li></ul>
 <p><b>Noite:</b> as bruxas escolhem uma vítima e o Guardião protege alguém (não a si mesmo). Qualquer um pode <b>confessar</b>, revelando uma carta própria, para ter imunidade naquela noite. O Refúgio também protege.</p>
@@ -216,7 +216,7 @@ const CARDS = {
   suspeita:  {nome:'Suspeita',   cor:'vermelha', pts:1, qtd:20, ic:'👉', desc:'Acusação de 1 ponto.'},
   prova:     {nome:'Prova',      cor:'vermelha', pts:3, qtd:8,  ic:'📌', desc:'Acusação de 3 pontos.'},
   flagrante: {nome:'Flagrante',  cor:'vermelha', pts:7, qtd:2,  ic:'⚡', desc:'Acusação de 7 pontos.'},
-  devocao:   {nome:'Devoção',    cor:'azul', qtd:1, ic:'🙏', desc:'Ninguém pode jogar acusações neste jogador.'},
+  devocao:   {nome:'Devoção',    cor:'azul', qtd:1, ic:'🙏', desc:'Ninguém pode jogar acusações neste jogador. Não pode ser colocada em quem é da equipe das bruxas.'},
   refugio:   {nome:'Refúgio',    cor:'azul', qtd:1, ic:'⛪', desc:'Este jogador não pode ser morto à Noite.'},
   mafama:    {nome:'Má Fama',    cor:'azul', qtd:3, ic:'🐍', desc:'Cada acusação neste jogador vale +1 ponto.'},
   pelourinho:{nome:'Pelourinho', cor:'azul', qtd:3, ic:'⛓️', desc:'O jogador perde o próximo turno.'},
@@ -325,6 +325,7 @@ function visao(vid, comLog = true){
     players:G.players.map(p => ({
       id:p.id, nome:p.nome, av:p.av, alive:p.alive, humano:p.isHuman, pts:pontos(p), azuis:p.azuis.slice(),
       mao:p.hand.length, oc:ocultas(p).length, acus:p.acus.length, time:conheceTime(me, p) ? p.team : null,
+      semDevocao:p.team === 'bruxa', // regra da casa: Devoção não pode ir para a equipe das bruxas
       slots:p.pistas.map(x => x.rev ? {c:'rev-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
         : p === me ? {c:'own own-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
         : me.peek.has(x.id) ? {c:'peek-' + x.t, i:'', t:'Você espiou: ' + TIPO[x.t]}
@@ -392,6 +393,7 @@ function alvoOk(k, pv, sel, meId){ // funciona com a visão (cliente) e é usada
   if (!pv.alive || pv.id === meId) return false;
   const c = CARDS[k];
   if (c.cor === 'vermelha') return !pv.azuis.includes('devocao');
+  if (k === 'devocao' && pv.semDevocao) return false;
   if (c.cor === 'azul') return !pv.azuis.includes(k);
   if (k === 'exorcismo') return pv.azuis.some(a => a !== 'gato');
   if (k === 'confisco') return pv.mao > 0;
@@ -482,7 +484,10 @@ async function jogar(p, i, ts){
     const d = ts[1];
     log(`🐐 ${nm(p)} faz de ${nm(d)} o bode expiatório: tudo que estava na frente de ${nm(t)} passa para ${nm(d)}.`);
     d.acus.push(...t.acus); t.acus = [];
-    t.azuis.forEach(a => { if (d.azuis.includes(a)) G.discard.push(a); else d.azuis.push(a); }); t.azuis = [];
+    t.azuis.forEach(a => {
+      if (a === 'devocao' && d.team === 'bruxa'){ G.discard.push(a); log(`🙏 A Devoção não acompanha ${nm(d)} e é descartada.`); }
+      else if (d.azuis.includes(a)) G.discard.push(a); else d.azuis.push(a);
+    }); t.azuis = [];
     if (!d.isHuman && d.team === 'vila') d.b[p.id] += 1;
     if (pontos(d) >= LIM) await julgamento(d, p);
   } else if (k === 'espiar'){
@@ -694,6 +699,11 @@ async function conspiracao(quem){
   }));
   trocas.forEach(({dador, carta}) => { dador.pistas.splice(dador.pistas.indexOf(carta), 1); });
   trocas.forEach(({rec, carta}) => { rec.pistas.push(carta); if (carta.t === 'bruxa') rec.team = 'bruxa'; });
+  // quem virou bruxa perde a Devoção (ela não pode ficar com a equipe das bruxas)
+  v.forEach(p => { if (p.team === 'bruxa' && p.azuis.includes('devocao')){
+    p.azuis.splice(p.azuis.indexOf('devocao'), 1); G.discard.push('devocao');
+    log(`🙏 A Devoção de ${nm(p)} se desfaz em cinzas...`, 'trial');
+  } });
   G.players.forEach(p => { p.peek = new Set(); if (!p.isHuman) for (const k in p.b) if (Math.abs(p.b[k]) < 40) p.b[k] *= .6; });
   atualizar();
   await Promise.all(trocas.filter(x => x.rec.isHuman).map(({rec, carta}) => perguntar(rec,
@@ -731,7 +741,7 @@ function opcoesBot(me){
     } else if (k === 'mafama' || k === 'pelourinho'){
       outros.forEach(t => { if (t.azuis.includes(k) || amigo(t)) return; add([t], isB ? .3 + ameaca(t) * .5 : B(t) * .7 - .2); });
     } else if (k === 'devocao' || k === 'refugio'){
-      outros.forEach(t => { if (t.azuis.includes(k)) return;
+      outros.forEach(t => { if (t.azuis.includes(k) || (k === 'devocao' && t.team === 'bruxa')) return;
         add([t], isB ? (amigo(t) ? .5 + pontos(t) * .25 : -2) : -B(t) * .5 + (k === 'devocao' ? pontos(t) * .12 : .15)); });
     } else if (k === 'defesa'){
       outros.forEach(t => { const pts = pontos(t); if (!pts) return; add([t], isB ? (amigo(t) ? .8 + pts * .35 : -1.5) : -B(t) * .6 + pts * .2 - .2); });
