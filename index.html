@@ -164,6 +164,7 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
     <span id="placar"></span>
     <label id="lblRapido"><input type="checkbox" id="rapido"> Bots rápidos</label>
     <button id="btnSom" title="Ligar/desligar o som">🔊</button>
+    <button id="btnMusica" title="Ligar/desligar a música">🎵</button>
     <button id="btnRegras">Regras</button>
     <button id="btnCartas">Cartas</button>
     <button id="btnNovo">Novo jogo</button>
@@ -356,7 +357,19 @@ function conheceTime(viewer, p){
 }
 
 // ---------- log (com linhas privadas) ----------
-function log(html, cls = '', to = null){ G.logs.push({h:html, c:cls, to}); atualizar(); }
+function log(html, cls = '', to = null, som = null){
+  G.logs.push(som ? {h:html, c:cls, to, s:som} : {h:html, c:cls, to});
+  const loc = local();
+  if (som && loc && (to == null || to === loc.id)) tocarSomLinha(som, loc.team);
+  atualizar();
+}
+// "fim" depende de quem ouve: fanfarra para quem venceu, melodia triste para quem perdeu
+function tocarSomLinha(som, meuTime){
+  if (som === 'fimVila' || som === 'fimBruxa') som = (som === 'fimVila') === (meuTime === 'vila') ? 'vitoria' : 'derrota';
+  if (som === 'noite') Musica.definirNoite(true);
+  if (som === 'dia') Musica.definirNoite(false);
+  Som.tocar(som);
+}
 const fala = (p, txt) => log(`<b>${esc(p.nome)}:</b> “${esc(txt)}”`, 'chat');
 
 // ---------- visão de cada jogador (só o que ele pode ver) ----------
@@ -485,13 +498,13 @@ async function jogar(p, i, ts){
   if (c.cor === 'vermelha'){
     t.acus.push({k, by:p.id});
     G.history.push({by:p.id, t:t.id, n:c.pts});
-    log(`${c.ic} ${nm(p)} acusa ${nm(t)} com <i>${c.nome}</i> (+${c.pts}). Total: <b>${pontos(t)}/${LIM}</b>`, 'acc');
+    log(`${c.ic} ${nm(p)} acusa ${nm(t)} com <i>${c.nome}</i> (+${c.pts}). Total: <b>${pontos(t)}/${LIM}</b>`, 'acc', null, 'acusar' + c.pts);
     if (!p.isHuman && Math.random() < .4) fala(p, rnd(FALAS_ACUSA).replace('{t}', t.nome));
     if (!t.isHuman && t.team === 'vila') t.b[p.id] += .35 * c.pts;
     if (pontos(t) >= LIM) await julgamento(t, p);
   } else if (c.cor === 'azul'){
     t.azuis.push(k);
-    log(`${c.ic} ${nm(p)} coloca <i>${c.nome}</i> na frente de ${nm(t)}.`);
+    log(`${c.ic} ${nm(p)} coloca <i>${c.nome}</i> na frente de ${nm(t)}.`, '', null, 'azul');
     if (!t.isHuman && t.team === 'vila' && (k === 'mafama' || k === 'pelourinho')) t.b[p.id] += .5;
     if (k === 'mafama' && pontos(t) >= LIM) await julgamento(t, p);
   } else if (k === 'defesa'){
@@ -499,7 +512,7 @@ async function jogar(p, i, ts){
     t.acus.slice().sort((a, b) => CARDS[b.k].pts - CARDS[a.k].pts).forEach(a => { if (CARDS[a.k].pts <= orc){ orc -= CARDS[a.k].pts; rem.push(a); } });
     t.acus = t.acus.filter(a => !rem.includes(a)); G.discard.push(...rem.map(a => a.k));
     G.history.push({by:p.id, t:t.id, n:-1});
-    log(`🛡️ ${nm(p)} defende ${nm(t)} (−${3 - orc} pontos). Total: ${pontos(t)}/${LIM}`);
+    log(`🛡️ ${nm(p)} defende ${nm(t)} (−${3 - orc} pontos). Total: ${pontos(t)}/${LIM}`, '', null, 'defesa');
     if (!p.isHuman && Math.random() < .4) fala(p, rnd(FALAS_DEFENDE).replace('{t}', t.nome));
   } else if (k === 'exorcismo'){
     let alvoK;
@@ -510,9 +523,9 @@ async function jogar(p, i, ts){
       alvoK = pref.find(a => t.azuis.includes(a));
     }
     t.azuis.splice(t.azuis.indexOf(alvoK), 1); G.discard.push(alvoK);
-    log(`✨ ${nm(p)} exorciza <i>${CARDS[alvoK].nome}</i> de ${nm(t)}.`);
+    log(`✨ ${nm(p)} exorciza <i>${CARDS[alvoK].nome}</i> de ${nm(t)}.`, '', null, 'exorcismo');
   } else if (k === 'confisco'){
-    log(`🔥 ${nm(p)} confisca a mão de ${nm(t)} (${t.hand.length} cartas descartadas).`);
+    log(`🔥 ${nm(p)} confisca a mão de ${nm(t)} (${t.hand.length} cartas descartadas).`, '', null, 'fogo');
     G.discard.push(...t.hand); t.hand = [];
   } else if (k === 'furto'){
     const d = ts[1];
@@ -521,16 +534,16 @@ async function jogar(p, i, ts){
       shuffle(t.hand);
       const pegas = t.hand.splice(0, qtd);
       p.hand.push(...pegas);
-      log(`🫳 ${nm(p)} furta ${qtd} carta(s) da mão de ${nm(t)} para si (metade).`);
+      log(`🫳 ${nm(p)} furta ${qtd} carta(s) da mão de ${nm(t)} para si (metade).`, '', null, 'furto');
       log(`Você pegou: ${pegas.map(k => '<i>' + CARDS[k].nome + '</i>').join(', ')}.`, 'priv', p.id);
       log(`${nm(p)} pegou de você: ${pegas.map(k => '<i>' + CARDS[k].nome + '</i>').join(', ')}.`, 'priv', t.id);
     } else {
-      log(`🫳 ${nm(p)} tira as ${t.hand.length} cartas de ${nm(t)} e entrega a ${nm(d)}.`);
+      log(`🫳 ${nm(p)} tira as ${t.hand.length} cartas de ${nm(t)} e entrega a ${nm(d)}.`, '', null, 'furto');
       d.hand.push(...t.hand); t.hand = [];
     }
   } else if (k === 'bode'){
     const d = ts[1];
-    log(`🐐 ${nm(p)} faz de ${nm(d)} o bode expiatório: tudo que estava na frente de ${nm(t)} passa para ${nm(d)}.`);
+    log(`🐐 ${nm(p)} faz de ${nm(d)} o bode expiatório: tudo que estava na frente de ${nm(t)} passa para ${nm(d)}.`, '', null, 'bode');
     d.acus.push(...t.acus); t.acus = [];
     t.azuis.forEach(a => {
       if (a === 'devocao' && d.team === 'bruxa'){ G.discard.push(a); log(`🙏 A Devoção não acompanha ${nm(d)} e é descartada.`); }
@@ -545,7 +558,7 @@ async function jogar(p, i, ts){
 }
 
 async function julgamento(t, by){
-  log(`⚖️ ${nm(t)} chegou a ${pontos(t)} pontos e vai a JULGAMENTO! ${t.isHuman ? nm(t) + ' escolhe qual carta mostrar.' : nm(by) + ' escolhe a carta.'}`, 'trial');
+  log(`⚖️ ${nm(t)} chegou a ${pontos(t)} pontos e vai a JULGAMENTO! ${t.isHuman ? nm(t) + ' escolhe qual carta mostrar.' : nm(by) + ' escolhe a carta.'}`, 'trial', null, 'martelo');
   await delay(1.1);
   const oc = ocultas(t);
   let carta;
@@ -564,10 +577,10 @@ async function julgamento(t, by){
 async function revelarCarta(t, carta, motivo){
   carta.rev = true;
   if (carta.t === 'bruxa'){
-    log(`🔥 A carta de ${nm(t)} é uma <b>BRUXA</b>!`, 'good');
+    log(`🔥 A carta de ${nm(t)} é uma <b>BRUXA</b>!`, 'good', null, 'bruxa');
     await morre(t, motivo === 'confissão' ? 'confessou uma Bruxa' : 'revelou uma Bruxa');
   } else {
-    log(`${carta.t === 'guardiao' ? '🏮' : '✝️'} A carta de ${nm(t)} é <b>${TIPO[carta.t]}</b>.`);
+    log(`${carta.t === 'guardiao' ? '🏮' : '✝️'} A carta de ${nm(t)} é <b>${TIPO[carta.t]}</b>.`, '', null, 'sino');
     G.players.forEach(b => { if (!b.isHuman && b !== t) b.b[t.id] -= .5; });
     if (!ocultas(t).length) await morre(t, 'todas as cartas reveladas');
   }
@@ -582,7 +595,7 @@ async function morre(t, motivo){
   G.discard.push(...removiveis(t), ...t.hand, ...t.acus.map(a => a.k));
   t.hand = []; t.azuis = []; t.acus = [];
   const eraB = t.team === 'bruxa';
-  log(`💀 ${nm(t)} morreu (${motivo}). ${eraB ? '<b>Já foi bruxa!</b>' : 'Nunca foi bruxa.'}`, eraB ? 'good' : 'bad');
+  log(`💀 ${nm(t)} morreu (${motivo}). ${eraB ? '<b>Já foi bruxa!</b>' : 'Nunca foi bruxa.'}`, eraB ? 'good' : 'bad', null, 'morte');
   G.players.forEach(b => {
     if (b.isHuman) return;
     G.history.forEach(h => { if (h.t === t.id) b.b[h.by] += eraB ? (h.n > 0 ? -.4 * h.n : 1.5) : (h.n > 0 ? .4 * h.n : -.5); });
@@ -622,7 +635,7 @@ async function espiar(p, t){
     carta = rnd(cand);
   }
   p.peek.add(carta.id);
-  log(`🔍 ${nm(p)} espia uma carta de ${nm(t)} em segredo.`);
+  log(`🔍 ${nm(p)} espia uma carta de ${nm(t)} em segredo.`, '', null, 'espiar');
   const tipo = carta.t === 'bruxa' ? 'bruxa' : 'inocente';
   if (p.isHuman){
     const r = await perguntar(p, `<h3>🔍 Espiar</h3><p>Você viu uma carta fechada de <b>${esc(t.nome)}</b>:</p><div class="big ${carta.t}">${TIPO[carta.t]}</div>
@@ -638,7 +651,7 @@ async function espiar(p, t){
   }
 }
 function anunciar(p, t, tipo){
-  log(tipo === 'bruxa' ? `📢 ${nm(p)} declara: “Eu vi uma carta de BRUXA com ${esc(t.nome)}!”` : `📢 ${nm(p)} declara: “A carta de ${esc(t.nome)} que eu vi não era bruxa.”`, tipo === 'bruxa' ? 'trial' : 'chat');
+  log(tipo === 'bruxa' ? `📢 ${nm(p)} declara: “Eu vi uma carta de BRUXA com ${esc(t.nome)}!”` : `📢 ${nm(p)} declara: “A carta de ${esc(t.nome)} que eu vi não era bruxa.”`, tipo === 'bruxa' ? 'trial' : 'chat', null, tipo === 'bruxa' ? 'anuncio' : null);
   G.claims.push({by:p.id, t:t.id, tipo});
   G.players.forEach(b => {
     if (b.isHuman || b === p || !b.alive || b.team !== 'vila') return;
@@ -651,7 +664,7 @@ function anunciar(p, t, tipo){
 // ---------- cartas pretas ----------
 async function noite(){
   G.fase = 'Noite'; G.noite = true;
-  log('🌑 NOITE. Todos fecham os olhos...', 'phase'); await delay(1);
+  log('🌑 NOITE. Todos fecham os olhos...', 'phase', null, 'noite'); await delay(1);
   const bruxas = vivos().filter(p => p.team === 'bruxa');
   const alvos = vivos().filter(p => p.team !== 'bruxa');
   let vitima = null;
@@ -702,19 +715,20 @@ async function noite(){
   const confessou = new Set();
   for (const x of conf){
     if (!x || G.over || !x.p.alive || x.c.rev) continue;
-    log(`🙊 ${nm(x.p)} confessa.`); confessou.add(x.p);
+    log(`🙊 ${nm(x.p)} confessa.`, '', null, 'confissao'); confessou.add(x.p);
     await revelarCarta(x.p, x.c, 'confissão'); await delay(.4);
   }
   if (!G.over){
-    if (!vitima || !vitima.alive) log('A noite passou sem mortes.', 'good');
+    if (!vitima || !vitima.alive) log('A noite passou sem mortes.', 'good', null, 'alivio');
     else if (vitima === protegido || vitima.azuis.includes('refugio') || confessou.has(vitima)){
-      log('🕊️ As bruxas atacaram, mas ninguém morreu esta noite.', 'good');
+      log('🕊️ As bruxas atacaram, mas ninguém morreu esta noite.', 'good', null, 'alivio');
     } else {
       log(`🩸 ${nm(vitima)} foi encontrado(a) morto(a) ao amanhecer!`, 'bad');
       await morre(vitima, 'morto pelas bruxas à noite');
     }
   }
   await delay(.8);
+  if (!G.over) log('🌅 Amanhece na vila.', 'phase', null, 'dia');
   G.noite = false; G.fase = `Dia ${G.round}`; atualizar();
 }
 
@@ -726,7 +740,7 @@ async function conspiracao(quem){
   const dono = vivos().find(p => p.azuis.includes('gato'));
   if (dono){
     const oc = ocultas(dono);
-    log(`🐈‍⬛ O Gato da Lua mia na porta de ${nm(dono)}. ${nm(quem)} escolhe uma carta para revelar...`, 'trial');
+    log(`🐈‍⬛ O Gato da Lua mia na porta de ${nm(dono)}. ${nm(quem)} escolhe uma carta para revelar...`, 'trial', null, 'gato');
     await delay(.9);
     let carta;
     if (quem.isHuman && quem.alive){
@@ -837,7 +851,7 @@ async function vezBot(p){
     if (n) await delay(.7);
     await jogar(p, o.i, o.targets); n++;
   }
-  if (!n && p.alive && !G.over){ log(`${nm(p)} compra duas cartas.`); await comprar2(p); }
+  if (!n && p.alive && !G.over){ log(`${nm(p)} compra duas cartas.`, '', null, 'comprar'); await comprar2(p); }
 }
 
 // ---------- fluxo ----------
@@ -851,7 +865,7 @@ async function comprar2(p){
       else { await conspiracao(p); G.discard.push(k); }
     } else {
       p.hand.push(k);
-      if (p.isHuman) log(`Você comprou <i>${CARDS[k].nome}</i>.`, 'priv', p.id);
+      if (p.isHuman) log(`Você comprou <i>${CARDS[k].nome}</i>.`, 'priv', p.id, 'carta');
     }
     atualizar();
   }
@@ -867,7 +881,7 @@ async function loop(){
       G.current = p.id; atualizar();
       if (p.azuis.includes('pelourinho')){
         p.azuis.splice(p.azuis.indexOf('pelourinho'), 1); G.discard.push('pelourinho');
-        log(`⛓️ ${nm(p)} está no pelourinho e perde o turno.`); await delay(.6); continue;
+        log(`⛓️ ${nm(p)} está no pelourinho e perde o turno.`, '', null, 'corrente'); await delay(.6); continue;
       }
       if (p.isHuman) await vezHumana(p);
       else { await delay(); if (G !== meu) return; await vezBot(p); }
@@ -883,7 +897,7 @@ function checarVitoria(){
 }
 async function fim(lado){
   G.over = true; G.current = null; G.turno = null; G.noite = false;
-  log(lado === 'vila' ? '🌅 Todas as bruxas foram reveladas. A vila está salva!' : '🔥 Só restaram bruxas vivas. A vila caiu...', 'phase');
+  log(lado === 'vila' ? '🌅 Todas as bruxas foram reveladas. A vila está salva!' : '🔥 Só restaram bruxas vivas. A vila caiu...', 'phase', null, lado === 'vila' ? 'fimVila' : 'fimBruxa');
   const meuG = G;
   await sleep(700);
   if (G !== meuG) return;
@@ -909,6 +923,7 @@ async function comecarJogo(pessoas, n){
   $('setup').hidden = true;
   UI.sel = null; UI.alvos = []; CV = null;
   novoJogo(pessoas, n);
+  Musica.iniciar();
   const meuG = G;
   log(NET.modo === 'host' ? `🌐 Partida online: ${humanos().map(p => nm(p)).join(', ')}${n > humanos().length ? ` + ${n - humanos().length} bot(s)` : ''}.` : '🤖 Partida contra bots.', 'phase');
   await Promise.all(humanos().map(p => perguntar(p, introHTML(p), [{l:'Começar', prim:true, v:1}])));
@@ -919,7 +934,7 @@ async function comecarJogo(pessoas, n){
 }
 async function madrugada(){
   G.fase = 'Madrugada'; G.noite = true;
-  log('🌘 MADRUGADA. As bruxas abrem os olhos e entregam o Gato da Lua a alguém...', 'phase'); await delay(1);
+  log('🌘 MADRUGADA. As bruxas abrem os olhos e entregam o Gato da Lua a alguém...', 'phase', null, 'noite'); await delay(1);
   const bruxas = G.players.filter(p => p.team === 'bruxa');
   const decide = bruxas.find(p => p.isHuman);
   let dono;
@@ -932,17 +947,20 @@ async function madrugada(){
     dono = rnd(G.players.filter(p => p.team !== 'bruxa'));
   }
   dono.azuis.push('gato');
-  log(`🐈‍⬛ Ao amanhecer, um gato negro de olhos prateados está sentado na porta de ${nm(dono)}.`);
-  await delay(.8);
+  log(`🐈‍⬛ Ao amanhecer, um gato negro de olhos prateados está sentado na porta de ${nm(dono)}.`, '', null, 'gato');
+  await delay(1.2);
+  log('🌅 Amanhece na vila.', 'phase', null, 'dia');
   G.noite = false; atualizar();
 }
 
 // =====================================================================
 //  TELA (igual para anfitrião e convidados: desenha a partir da visão)
 // =====================================================================
-let assinaturaLog = '';
+let assinaturaLog = '', eraMinhaVez = false;
 function desenhar(v){
   CV = v;
+  if (v.minhaVez && !eraMinhaVez && !v.jogou) Som.tocar('suaVez');
+  eraMinhaVez = v.minhaVez;
   document.body.classList.toggle('noite', !!v.noite);
   $('fase').textContent = v.fase;
   $('placar').innerHTML = v.placar;
@@ -989,7 +1007,7 @@ function desenhar(v){
     el.className = 'carta' + (v.minhaVez ? ' jogavel' : '') + (UI.sel === i ? ' sel' : '');
     el.style.setProperty('--cor', COR[c.cor]);
     el.innerHTML = `${c.pts ? `<span class="pts">${c.pts}</span>` : ''}<div class="ic">${c.ic}</div><div class="cn">${c.nome}</div><div class="cd">${c.desc}</div>`;
-    el.onclick = () => { if (!CV.minhaVez) return; UI.sel = UI.sel === i ? null : i; UI.alvos = []; desenhar(CV); };
+    el.onclick = () => { if (!CV.minhaVez) return; Som.tocar('clique'); UI.sel = UI.sel === i ? null : i; UI.alvos = []; desenhar(CV); };
     $('mao').appendChild(el);
   });
   $('btnComprar').disabled = !(v.minhaVez && !v.jogou);
@@ -1033,12 +1051,19 @@ const Som = {
     try {
       if (!this.ctx){
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        this.saida = this.ctx.createDynamicsCompressor();
-        this.saida.connect(this.ctx.destination);
+        this.saida = this.montar(this.ctx);
       }
       if (this.ctx.state === 'suspended') this.ctx.resume();
     } catch (e) { return null; }
     return this.ctx;
+  },
+  // volume geral: amplifica tudo e um limitador segura os picos para não estourar
+  montar(c){
+    const mestre = c.createGain(), lim = c.createDynamicsCompressor();
+    mestre.gain.value = 2.4;
+    lim.threshold.value = -9; lim.knee.value = 4; lim.ratio.value = 20; lim.attack.value = .002; lim.release.value = .2;
+    mestre.connect(lim).connect(c.destination);
+    return mestre;
   },
   ruido(c, dur){
     const b = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate), d = b.getChannelData(0);
@@ -1108,8 +1133,128 @@ const Som = {
     lfo.start(t); lfo.stop(t + 2.7);
   },
 };
-try { Som.mudo = localStorage.getItem('ldc-mudo') === '1'; } catch (e) {}
-document.addEventListener('pointerdown', () => Som.ok()); // navegadores só liberam som depois de um toque
+// ----- blocos básicos para montar os efeitos -----
+Som.tom = function(freq, tipo, t, dur, vol, op = {}){
+  const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+  o.type = tipo; o.frequency.setValueAtTime(freq, t);
+  if (op.para) o.frequency.exponentialRampToValueAtTime(op.para, t + (op.glide || dur));
+  if (op.vib){ const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = op.vib; lg.gain.value = op.vibAmt || freq * .02; l.connect(lg).connect(o.frequency); l.start(t); l.stop(t + dur + .05); }
+  this.env(g, t, vol, op.ataque || .01, dur);
+  let ult = o;
+  if (op.filtro){ const f = c.createBiquadFilter(); f.type = op.filtro; f.frequency.value = op.ff || 1200; f.Q.value = op.q || 1; o.connect(f); ult = f; }
+  ult.connect(g).connect(this.saida); o.start(t); o.stop(t + dur + .05);
+  return o;
+};
+Som.chiado = function(t, dur, vol, tipo, f, op = {}){
+  const c = this.ctx, n = this.ruido(c, dur + .05), fl = c.createBiquadFilter(), g = c.createGain();
+  fl.type = tipo; fl.frequency.setValueAtTime(f, t); fl.Q.value = op.q || 1;
+  if (op.para) fl.frequency.exponentialRampToValueAtTime(op.para, t + dur);
+  this.env(g, t, vol, op.ataque || .005, dur);
+  n.connect(fl).connect(g).connect(this.saida); n.start(t);
+};
+Som.batida = function(t, vol, grave = 150){ // pancada seca na madeira
+  this.tom(grave, 'sine', t, .25, vol, {para:grave * .35, glide:.2, ataque:.003});
+  this.chiado(t, .07, vol * .7, 'bandpass', 1600, {q:.8});
+};
+Som.sinoNota = function(f, t, vol, dur = 1.6){ // sino com parciais inarmônicas
+  [[1, 1], [2.01, .5], [2.76, .35], [5.4, .15]].forEach(([m, v]) => this.tom(f * m, 'sine', t, dur / m ** .4, vol * v, {ataque:.004}));
+};
+// ----- catálogo de efeitos -----
+const EFEITOS = {
+  clique(t){ Som.tom(1400, 'sine', t, .06, .25, {para:900, ataque:.002}); Som.chiado(t, .03, .15, 'highpass', 3000); },
+  aviso(t){ Som.tom(660, 'triangle', t, .25, .12); Som.tom(990, 'triangle', t + .07, .3, .08); },
+  suaVez(t){ Som.sinoNota(784, t, .16, 1); Som.sinoNota(1046, t + .16, .16, 1.2); },
+  comprar(t){ Som.puxar(); setTimeout(() => Som.puxar(), 140); },
+  carta(t){ Som.puxar(); },
+  acusar1(t){ Som.batida(t, .55); },
+  acusar3(t){ Som.batida(t, .75, 120); Som.batida(t + .12, .6, 110); Som.tom(98, 'sawtooth', t, .5, .1, {filtro:'lowpass', ff:600}); },
+  acusar7(t){ Som.batida(t, 1, 95); [98, 116.5, 146.8].forEach(f => Som.tom(f, 'sawtooth', t, 1, .1, {filtro:'lowpass', ff:900})); Som.chiado(t, .6, .25, 'bandpass', 900, {para:2500, q:.6}); },
+  defesa(t){ [523, 659, 784, 1046].forEach((f, i) => Som.tom(f, 'sine', t + i * .07, .6, .12)); },
+  azul(t){ for (let i = 0; i < 7; i++) Som.tom(1200 + Math.random() * 1600, 'sine', t + i * .045, .4, .06); },
+  exorcismo(t){ Som.chiado(t, .6, .3, 'bandpass', 3000, {para:300, q:1.5}); Som.tom(880, 'sine', t, .5, .08, {para:220}); },
+  fogo(t){ Som.chiado(t, .8, .45, 'lowpass', 300, {para:3500, ataque:.08}); Som.chiado(t + .1, .6, .2, 'highpass', 4000); },
+  furto(t){ Som.chiado(t, .18, .35, 'bandpass', 1200, {para:4500, q:2}); Som.puxar(); },
+  bode(t){ Som.tom(420, 'sawtooth', t, .7, .45, {vib:18, vibAmt:40, para:380, filtro:'bandpass', ff:1100, q:2, ataque:.04}); },
+  espiar(t){ Som.chiado(t, .5, .2, 'bandpass', 5000, {q:3, ataque:.08}); Som.chiado(t + .45, .45, .16, 'bandpass', 3500, {q:3, ataque:.08}); },
+  corrente(t){ for (let i = 0; i < 5; i++){ const tt = t + i * .07 + Math.random() * .03; Som.chiado(tt, .09, .3, 'bandpass', 3000 + Math.random() * 2500, {q:8}); Som.tom(2200 + Math.random() * 900, 'square', tt, .08, .03); } },
+  anuncio(t){ Som.chiado(t, .45, .35, 'bandpass', 700, {para:1600, q:1.2, ataque:.05}); Som.tom(440, 'triangle', t, .5, .08, {para:620}); },
+  confissao(t){ Som.chiado(t, .7, .25, 'bandpass', 900, {para:400, q:1.5, ataque:.15}); },
+  martelo(t){ [0, .32, .64].forEach(d => { Som.batida(t + d, .38, 130); Som.chiado(t + d, .05, .22, 'highpass', 2500); }); Som.tom(65, 'sine', t + .64, 1.2, .2, {ataque:.01}); },
+  sino(t){ Som.sinoNota(880, t, .18, 1.8); },
+  bruxa(t){
+    Som.chiado(t, 1, .55, 'lowpass', 200, {para:5000, ataque:.05});
+    Som.tom(1500, 'sawtooth', t + .15, .9, .1, {para:500, vib:11, vibAmt:60, filtro:'bandpass', ff:1800, q:3});
+    [110, 155.6].forEach(f => Som.tom(f, 'sawtooth', t, 1.4, .12, {filtro:'lowpass', ff:700}));
+  },
+  morte(t){ Som.sinoNota(98, t, .5, 4); Som.sinoNota(98, t + 1.9, .35, 4); },
+  noite(t){
+    Som.tom(330, 'triangle', t, 2.6, .16, {ataque:.5, para:640, glide:1.1, vib:5, vibAmt:6});
+    Som.chiado(t, 3.5, .18, 'lowpass', 400, {para:900, ataque:1});
+  },
+  dia(t){ for (let i = 0; i < 6; i++){ const tt = t + i * .18 + Math.random() * .08; Som.tom(2400 + Math.random() * 1200, 'sine', tt, .1, .07, {para:3600 + Math.random() * 800, ataque:.005}); } },
+  alivio(t){ [392, 494, 587].forEach(f => Som.tom(f, 'sine', t, 1.2, .08, {ataque:.15})); },
+  gato(t){ Som.tom(520, 'sawtooth', t, .75, .5, {para:780, glide:.25, filtro:'bandpass', ff:1300, q:3, ataque:.05}); Som.tom(780, 'sawtooth', t + .3, .45, .4, {para:430, filtro:'bandpass', ff:1000, q:3}); },
+  saiu(t){ Som.tom(440, 'triangle', t, .35, .25, {para:220}); },
+  vitoria(t){ [523, 659, 784, 1046, 784, 1046].forEach((f, i) => Som.tom(f, 'sawtooth', t + i * .16, i === 5 ? 1.2 : .3, .12, {filtro:'lowpass', ff:2400})); },
+  derrota(t){ [392, 370, 349, 262].forEach((f, i) => Som.tom(f, 'triangle', t + i * .4, i === 3 ? 1.6 : .5, .14)); },
+};
+// Toca um efeito; evita empilhar muitos sons no mesmo instante
+let ultimoSom = 0, filaSons = 0;
+Som.tocar = function(nome, atraso = 0){
+  if (!EFEITOS[nome]) return;
+  const c = this.ok(); if (!c) return;
+  const agora = performance.now(), espera = Math.max(0, ultimoSom + 140 - agora) + atraso;
+  if (filaSons >= 4) return;
+  filaSons++; ultimoSom = agora + espera;
+  setTimeout(() => { filaSons--; try { EFEITOS[nome](c.currentTime + .01); } catch (e) { console.warn(e); } }, espera);
+};
+
+// ----- música ambiente (bem baixinha): zumbido grave + notas soltas misteriosas -----
+const Musica = {
+  ligada:true, tocando:false, noite:false, nos:[], timer:null,
+  iniciar(){
+    if (this.tocando || !this.ligada) return;
+    const c = Som.ok(); if (!c) return;
+    this.tocando = true;
+    this.geral = c.createGain(); this.geral.gain.setValueAtTime(0.0001, c.currentTime);
+    this.geral.gain.exponentialRampToValueAtTime(.25, c.currentTime + 3);
+    this.geral.connect(Som.saida);
+    this.filtro = c.createBiquadFilter(); this.filtro.type = 'lowpass'; this.filtro.frequency.value = 500; this.filtro.connect(this.geral);
+    const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = .07; lg.gain.value = 220; lfo.connect(lg).connect(this.filtro.frequency); lfo.start();
+    this.nos.push(lfo);
+    [[55, -6], [55, 7], [82.4, 0], [110, 4]].forEach(([f, det]) => {
+      const o = c.createOscillator(), g = c.createGain(); o.type = 'triangle'; o.frequency.value = f; o.detune.value = det;
+      g.gain.value = .05; o.connect(g).connect(this.filtro); o.start(); this.nos.push(o);
+    });
+    const escala = [220, 261.6, 293.7, 329.6, 392, 440, 523.3]; // lá menor pentatônica
+    const tocarNota = () => {
+      if (!this.tocando) return;
+      const cc = Som.ctx, t = cc.currentTime, f = rnd(escala) * (this.noite ? .5 : 1);
+      const o = cc.createOscillator(), g = cc.createGain(); o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.05, t + .4); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.5);
+      o.connect(g).connect(this.geral); o.start(t); o.stop(t + 3.6);
+      if (Math.random() < .35){ const o2 = cc.createOscillator(), g2 = cc.createGain(); o2.type = 'sine'; o2.frequency.value = f * 1.5;
+        g2.gain.setValueAtTime(0.0001, t + .5); g2.gain.exponentialRampToValueAtTime(.03, t + .9); g2.gain.exponentialRampToValueAtTime(0.0001, t + 3.8);
+        o2.connect(g2).connect(this.geral); o2.start(t + .5); o2.stop(t + 3.9); }
+      this.timer = setTimeout(tocarNota, 2500 + Math.random() * 4000);
+    };
+    this.timer = setTimeout(tocarNota, 1500);
+  },
+  parar(){
+    if (!this.tocando) return;
+    this.tocando = false; clearTimeout(this.timer);
+    const c = Som.ctx, t = c.currentTime;
+    try { this.geral.gain.cancelScheduledValues(t); this.geral.gain.setValueAtTime(this.geral.gain.value, t); this.geral.gain.exponentialRampToValueAtTime(0.0001, t + .8); } catch (e) {}
+    const nos = this.nos; this.nos = [];
+    setTimeout(() => nos.forEach(o => { try { o.stop(); } catch (e) {} }), 900);
+  },
+  definirNoite(n){
+    if (this.noite === n) return; this.noite = n;
+    if (this.tocando) this.filtro.frequency.setTargetAtTime(n ? 260 : 500, Som.ctx.currentTime, .8);
+  },
+};
+try { Som.mudo = localStorage.getItem('ldc-mudo') === '1'; Musica.ligada = localStorage.getItem('ldc-musica') !== '0'; } catch (e) {}
+document.addEventListener('pointerdown', () => { Som.ok(); if (G || CV) Musica.iniciar(); }); // navegadores só liberam som depois de um toque
 
 // ---------- cena animada da Conspiração ----------
 const DUR_CENA = 6300;
@@ -1286,6 +1431,7 @@ function modal(html, botoes, tempo = 0, padrao = null){
       timer = setInterval(() => { s--; t.textContent = `⏳ ${s}s`; if (s <= 0) fim(padrao); }, 1000);
     }
     m.hidden = false;
+    Som.tocar('aviso');
     const inp = m.querySelector('input'); if (inp) inp.focus();
   }));
   filaModal = p.catch(() => {});
@@ -1391,7 +1537,7 @@ function hostDesconectou(conn){
   const p = G.players.find(q => q.conn === conn && q.ctl === 'remoto');
   if (!p) return;
   p.ctl = 'bot'; p.isHuman = false; p.conn = null;
-  if (!G.over) log(`📴 ${nm(p)} saiu da partida. Um bot assume o lugar.`, 'bad');
+  if (!G.over) log(`📴 ${nm(p)} saiu da partida. Um bot assume o lugar.`, 'bad', null, 'saiu');
   [...NET.asks.values()].filter(a => a.pid === p.id).forEach(a => a.reserva());
   if (G.turno && G.turno.pid === p.id && G.turno.res){ const r = G.turno.res; G.turno.res = null; r({tipo:'bot'}); }
 }
@@ -1449,6 +1595,9 @@ function clienteRecebe(d){
     if (LOG_CLIENTE.length > 300) LOG_CLIENTE = LOG_CLIENTE.slice(-300);
     d.v.log = LOG_CLIENTE;
     desenhar(d.v);
+    Musica.iniciar();
+    const eu = d.v.players[d.v.meId];
+    (d.novos || []).forEach(l => { if (l.s) tocarSomLinha(l.s, eu && eu.time); });
   } else if (d.t === 'ask'){
     const botoes = d.botoes.map((b, i) => ({l:b.l, prim:b.prim, v:b.input ? '__input' : i}));
     modal(d.html, botoes, d.tempo, d.pad >= 0 ? d.pad : null).then(r => {
@@ -1527,8 +1676,18 @@ $('btnFim').onclick = () => { if (CV && CV.minhaVez && CV.jogou) mandarAcao({tip
 try { const n = localStorage.getItem('ldc-nome'); if (n) $('inNome').value = n; } catch (e) {}
 $('inNome').onchange = () => { try { localStorage.setItem('ldc-nome', $('inNome').value.trim()); } catch (e) {} };
 const mostrarSom = () => { $('btnSom').textContent = Som.mudo ? '🔇' : '🔊'; $('btnSom').title = Som.mudo ? 'Som desligado (clique para ligar)' : 'Som ligado (clique para desligar)'; };
-$('btnSom').onclick = () => { Som.mudo = !Som.mudo; try { localStorage.setItem('ldc-mudo', Som.mudo ? '1' : '0'); } catch (e) {} mostrarSom(); if (!Som.mudo) Som.virar(); };
-mostrarSom();
+$('btnSom').onclick = () => {
+  Som.mudo = !Som.mudo; try { localStorage.setItem('ldc-mudo', Som.mudo ? '1' : '0'); } catch (e) {}
+  mostrarSom();
+  if (Som.mudo) Musica.parar(); else { Som.tocar('clique'); if (G || CV) Musica.iniciar(); }
+};
+const mostrarMusica = () => { $('btnMusica').style.opacity = Musica.ligada ? 1 : .45; $('btnMusica').title = Musica.ligada ? 'Música ligada (clique para desligar)' : 'Música desligada (clique para ligar)'; };
+$('btnMusica').onclick = () => {
+  Musica.ligada = !Musica.ligada; try { localStorage.setItem('ldc-musica', Musica.ligada ? '1' : '0'); } catch (e) {}
+  mostrarMusica();
+  if (Musica.ligada) Musica.iniciar(); else Musica.parar();
+};
+mostrarSom(); mostrarMusica();
 $('btnCopiar').onclick = async () => {
   const link = $('linkConvite').value;
   try { await navigator.clipboard.writeText(link); } catch (e) { $('linkConvite').select(); document.execCommand('copy'); }
