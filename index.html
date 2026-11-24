@@ -146,6 +146,43 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 #adminC td button{font-size:12px;padding:4px 7px;margin:1px}
 #adminC .bru{color:#ff7a7a}#adminC .vil{color:#8fd39a}
 #adminC .aviso{background:#2f2410;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:14px}
+/* ---------- abertura ---------- */
+#intro{position:fixed;inset:0;z-index:50;overflow:hidden;cursor:pointer;background:linear-gradient(#02030a 0%,#0b0f2a 45%,#2a1638 78%,#3b1a2e 100%);transition:opacity .9s ease}
+#intro.saindo{opacity:0;pointer-events:none}
+#intro .i-estrelas i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:piscar 2.4s infinite alternate}
+#intro .i-lua{position:absolute;left:50%;top:12%;width:min(240px,46vw);height:min(240px,46vw);margin-left:calc(min(240px,46vw) / -2);border-radius:50%;
+ background:radial-gradient(circle at 38% 35%,#fffbe8,#f3e2a8 45%,#d9bf72 75%,#b89a4e);box-shadow:0 0 80px 30px #f6e6a844,0 0 200px 90px #f6e6a81a;
+ animation:i-lua 4s cubic-bezier(.2,.7,.3,1) both}
+@keyframes i-lua{from{transform:translateY(60vh);filter:brightness(.5)}to{transform:translateY(0);filter:brightness(1)}}
+#intro .i-nuvem{position:absolute;left:-300px;height:40px;border-radius:30px;background:#2a2f55aa;filter:blur(4px);animation:i-nuvem linear infinite}
+#intro .i-nuvem::before{content:'';position:absolute;width:44%;height:130%;left:18%;top:-60%;border-radius:50%;background:inherit}
+@keyframes i-nuvem{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 600px))}}
+#intro .i-corvo{position:absolute;width:70px;top:26%;left:-90px;animation:i-corvo 9s linear 1.5s infinite}
+#intro .i-corvo .asa{transform-origin:30px 16px;animation:i-asa .35s ease-in-out infinite alternate}
+@keyframes i-corvo{0%{transform:translate(0,0)}50%{transform:translate(55vw,-6vh)}100%{transform:translate(calc(100vw + 180px),4vh)}}
+@keyframes i-asa{from{transform:scaleY(1)}to{transform:scaleY(-.5)}}
+#intro .i-vila{position:absolute;left:0;right:0;bottom:0;height:34%;display:flex;align-items:flex-end;justify-content:space-between;padding:0 1%}
+#intro .i-vila .casaI{position:relative;background:#06050c;flex:0 0 auto}
+#intro .i-vila .casaI::before{content:'';position:absolute;left:-14%;right:-14%;bottom:100%;height:55%;background:#06050c;clip-path:polygon(50% 0,100% 100%,0 100%)}
+#intro .i-vila .casaI i{position:absolute;width:20%;height:14%;background:#ffc95c;box-shadow:0 0 14px #ffb020aa;animation:janela 3s infinite alternate}
+#intro .i-nevoa{position:absolute;left:-20%;right:-20%;bottom:6%;height:30%;background:radial-gradient(ellipse at 30% 60%,#9a8cc033,#0000 60%),radial-gradient(ellipse at 75% 50%,#9a8cc02a,#0000 55%);
+ filter:blur(12px);animation:i-nevoa 12s ease-in-out infinite alternate}
+@keyframes i-nevoa{from{transform:translateX(-4%)}to{transform:translateX(4%)}}
+#intro .i-cinzas i{position:absolute;top:-10px;width:4px;height:4px;border-radius:50%;background:#b8b2c2;opacity:.7;animation:i-cinza linear infinite}
+@keyframes i-cinza{from{transform:translate(0,0)}to{transform:translate(var(--dx),110vh)}}
+#intro .i-conteudo{position:absolute;left:0;right:0;top:42%;text-align:center;padding:0 16px}
+#intro .i-crescente{font-size:clamp(30px,6vw,46px);color:var(--gold);text-shadow:0 0 20px #c9a23f;opacity:0;animation:i-surge 1.2s ease 1.6s both}
+#intro .i-titulo{font-family:Cinzel,serif;font-weight:700;font-size:clamp(38px,10vw,92px);letter-spacing:.08em;color:#f3e6c4;margin:4px 0;line-height:1.05;
+ text-shadow:0 0 24px #c9a23faa,0 0 60px #7a3cff66,0 4px 10px #000}
+#intro .i-titulo span{display:inline-block;opacity:0;animation:i-letra .9s cubic-bezier(.2,.8,.3,1) both}
+@keyframes i-letra{from{opacity:0;transform:translateY(24px) scale(1.3);filter:blur(10px)}to{opacity:1;transform:none;filter:blur(0)}}
+#intro .i-sub{font-style:italic;font-size:clamp(17px,3.4vw,24px);color:#d8cfe8;margin:6px 0 0;opacity:0;animation:i-surge 1.2s ease 3.6s both;text-shadow:0 2px 6px #000}
+#intro .i-toque{font-family:Cinzel,serif;font-size:clamp(15px,3vw,19px);color:var(--gold);margin-top:clamp(28px,6vh,60px);opacity:0;
+ animation:i-surge .8s ease 4.6s both,i-pulso 1.6s ease-in-out 5.4s infinite}
+@keyframes i-surge{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes i-pulso{0%,100%{opacity:1;text-shadow:0 0 6px #c9a23f}50%{opacity:.45;text-shadow:none}}
+#intro.pronto *{animation-delay:0s !important}
+#intro.pronto .i-lua,#intro.pronto .i-crescente,#intro.pronto .i-titulo span,#intro.pronto .i-sub{animation-duration:.01s !important}
 /* ---------- a mesona ---------- */
 #jogadores.mesaModo{display:block;position:relative;height:clamp(560px,74vh,820px)}
 main:has(#jogadores.mesaModo) #log{height:calc(clamp(560px,74vh,820px) - 48px)}
@@ -296,6 +333,22 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
 </style>
 </head>
 <body>
+<div id="intro" role="button" aria-label="Toque para entrar">
+  <div class="i-estrelas"></div>
+  <div class="i-lua"></div>
+  <div class="i-nuvem" style="top:20%;width:260px;animation-duration:38s"></div>
+  <div class="i-nuvem" style="top:34%;width:180px;animation-duration:52s;animation-delay:-20s"></div>
+  <svg class="i-corvo" viewBox="0 0 60 30" aria-hidden="true"><path class="asa" d="M30 16 C22 4 10 4 0 10 C12 10 20 14 26 20 Z M30 16 C38 4 50 4 60 10 C48 10 40 14 34 20 Z" fill="#0a0810"/><ellipse cx="30" cy="18" rx="6" ry="3.5" fill="#0a0810"/><path d="M35 17 l5 1 l-5 1 Z" fill="#0a0810"/></svg>
+  <div class="i-vila"></div>
+  <div class="i-nevoa"></div>
+  <div class="i-cinzas"></div>
+  <div class="i-conteudo">
+    <div class="i-crescente">☾</div>
+    <h1 class="i-titulo" aria-label="Lua de Cinzas"></h1>
+    <p class="i-sub">Bruxas, mentiras e cinzas</p>
+    <p class="i-toque">✦ Toque para entrar ✦</p>
+  </div>
+</div>
 <header>
   <h1>☾ Lua de Cinzas</h1>
   <span id="fase">—</span>
@@ -1462,6 +1515,12 @@ const EFEITOS = {
   suaVez(t){ Som.sinoNota(784, t, .16, 1); Som.sinoNota(1046, t + .16, .16, 1.2); },
   comprar(t){ Som.puxar(); setTimeout(() => Som.puxar(), 140); },
   carta(t){ Som.puxar(); },
+  entrada(t){ // acorde mágico da abertura
+    Som.tom(55, 'sine', t, 2.6, .35, {ataque:.3});
+    [220, 261.6, 329.6, 392, 523.3].forEach((f, i) => Som.tom(f, 'triangle', t + i * .11, 2.2 - i * .2, .09, {ataque:.04}));
+    Som.sinoNota(1046.5, t + .55, .12, 2);
+    Som.chiado(t, 1.6, .12, 'bandpass', 2500, {para:7000, q:.7, ataque:.4});
+  },
   chat(t){ Som.tom(880, 'sine', t, .16, .12, {para:1175, glide:.06, ataque:.005}); Som.tom(1320, 'sine', t + .07, .18, .07, {ataque:.005}); },
   sombra(t){ Som.chiado(t, 1.2, .35, 'lowpass', 120, {para:600, ataque:.4}); Som.tom(55, 'sawtooth', t, 1.4, .12, {para:41, filtro:'lowpass', ff:300, ataque:.4}); },
   feiticoCarga(t){ Som.tom(180, 'sawtooth', t, 1, .14, {para:900, filtro:'bandpass', ff:900, q:3, ataque:.2, vib:9, vibAmt:30}); Som.chiado(t, 1, .18, 'bandpass', 600, {para:3000, q:4, ataque:.3}); },
@@ -2729,6 +2788,33 @@ function atualizarConexao(){
 window.addEventListener('online', atualizarConexao);
 window.addEventListener('offline', atualizarConexao);
 atualizarConexao();
+// ---------- abertura animada ----------
+(() => {
+  const el = $('intro'); if (!el) return;
+  el.querySelector('.i-estrelas').innerHTML = Array.from({length:110}, () =>
+    `<i style="left:${(Math.random() * 100).toFixed(2)}%;top:${(Math.random() * 66).toFixed(2)}%;animation-delay:${(Math.random() * 2.4).toFixed(2)}s;opacity:${(.2 + Math.random() * .8).toFixed(2)};${Math.random() < .12 ? 'width:3px;height:3px;' : ''}"></i>`).join('');
+  el.querySelector('.i-vila').innerHTML = Array.from({length:11}, () => {
+    const w = 5 + Math.random() * 6, h = 30 + Math.random() * 60;
+    const jan = Math.random() < .75 ? `<i style="left:${25 + Math.random() * 40}%;top:${20 + Math.random() * 35}%;animation-delay:${(Math.random() * 3).toFixed(2)}s"></i>` : '';
+    return `<div class="casaI" style="width:${w.toFixed(1)}%;height:${h.toFixed(0)}%">${jan}</div>`;
+  }).join('');
+  el.querySelector('.i-cinzas').innerHTML = Array.from({length:45}, () =>
+    `<i style="left:${(Math.random() * 100).toFixed(2)}%;--dx:${((Math.random() - .3) * 160).toFixed(0)}px;animation-duration:${(7 + Math.random() * 9).toFixed(1)}s;animation-delay:${(-Math.random() * 16).toFixed(1)}s;opacity:${(.25 + Math.random() * .6).toFixed(2)};${Math.random() < .3 ? 'background:#e08a5a;' : ''}"></i>`).join('');
+  // o título surge letra por letra
+  el.querySelector('.i-titulo').innerHTML = [...'Lua de Cinzas'].map((ch, i) =>
+    ch === ' ' ? '<span style="width:.35em"> </span>' : `<span style="animation-delay:${(2.1 + i * .09).toFixed(2)}s">${ch}</span>`).join('');
+  let pronto = false;
+  setTimeout(() => { pronto = true; }, 4600);
+  const entrar = () => {
+    if (!pronto){ pronto = true; el.classList.add('pronto'); return; } // 1º toque: mostra tudo
+    Som.tocar('entrada'); Musica.iniciar();
+    el.classList.add('saindo');
+    setTimeout(() => { el.remove(); const n = $('inNome'); if (n && !n.value) n.focus(); }, 950);
+  };
+  el.addEventListener('click', entrar);
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') entrar(); });
+  el.tabIndex = 0;
+})();
 // Aberto por um link de convite (?sala=CODIGO): já preenche a sala e só pede o nome
 (() => {
   const sala = (new URLSearchParams(location.search).get('sala') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
