@@ -72,6 +72,9 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 .ln.trial{color:#ffb35a}.ln.bad{color:#ff8a8a}.ln.good{color:#8fd39a}.ln.acc{color:#f1c9b9}
 .ln.chat{color:#cfc3e0;font-style:italic}.ln.chat b{font-style:normal;color:var(--parch)}
 .ln.priv{color:#9cc0f0}
+.pl.falando{box-shadow:0 0 0 3px #4ade80,0 0 20px #4ade80aa !important;border-color:#4ade80 !important}
+.pl.falando::after{content:"🔊";position:absolute;top:-10px;right:-8px;font-size:18px;filter:drop-shadow(0 0 4px #4ade80)}
+.pl{position:relative}
 .ln.fala{color:var(--txt);background:#ffffff08;border-left:3px solid var(--gold);padding:4px 6px;margin:3px 0;border-radius:0 6px 6px 0;word-wrap:break-word}
 .ln.fala b{color:var(--gold)}
 .ln.fala.minha{border-left-color:#8fd39a}.ln.fala.minha b{color:#8fd39a}
@@ -303,6 +306,10 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
     <button id="btnSom" title="Ligar/desligar o som">🔊</button>
     <button id="btnMusica" title="Ligar/desligar a música">🎵</button>
     <button id="btnPainel" title="Painel do administrador" hidden>🛠️</button>
+    <span id="vozInfo" hidden style="font-size:13px;color:#8fd39a"></span>
+    <button id="btnVoz" hidden title="Entrar na conversa de voz">🎙️ Voz</button>
+    <button id="btnMicro" hidden>🎤</button>
+    <button id="btnSairVoz" hidden title="Sair da conversa de voz">📴</button>
     <button id="btnRegras">Regras</button>
     <button id="btnCartas">Cartas</button>
     <button id="btnNovo">Novo jogo</button>
@@ -372,6 +379,8 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
         <div class="linha" style="margin-top:12px"><button class="prim" id="btnComecarOnline">Começar partida</button><button id="btnSairSala">Sair</button></div>
       </div>
       <div id="lobbyCliente" hidden><p>⏳ Aguardando o anfitrião começar a partida...</p><button id="btnSairSala2">Sair</button></div>
+      <div class="linha" style="margin-top:12px;justify-content:center"><button id="btnVozLobby" hidden>🎙️ Entrar na conversa de voz</button></div>
+      <p id="vozLobbyInfo" style="text-align:center;color:#8fd39a;font-size:14px;margin:6px 0 0"></p>
       <p class="msg" id="msgLobby"></p>
     </div>
   </div>
@@ -1141,6 +1150,7 @@ async function comecarJogo(pessoas, n, teste = null){
     ajustarPapel(local(), teste.papel);
     log('🛠️ PARTIDA DE TESTE do administrador (trapaças liberadas no painel 🛠️).', 'phase');
   }
+  anunciarVoz();
   Musica.iniciar();
   const meuG = G;
   log(NET.modo === 'host' ? `🌐 Partida online: ${humanos().map(p => nm(p)).join(', ')}${n > humanos().length ? ` + ${n - humanos().length} bot(s)` : ''}.` : '🤖 Partida contra bots.', 'phase');
@@ -1178,6 +1188,8 @@ let assinaturaLog = '', eraMinhaVez = false;
 function desenhar(v){
   CV = v;
   if (v.minhaVez && !eraMinhaVez && !v.jogou) Som.tocar('suaVez');
+  const mortoMudo = !v.alive && !v.over;
+  if (mortoMudo !== VOZ.mudoMorte){ VOZ.mudoMorte = mortoMudo; mostrarVoz(); }
   eraMinhaVez = v.minhaVez;
   document.body.classList.toggle('noite', !!v.noite);
   $('fase').textContent = v.fase;
@@ -1235,6 +1247,7 @@ function desenhar(v){
       <div class="pistas">${slots}</div>
       <div class="azuis">${azuis}</div>
       <div class="status">${p.id === v.meId ? '' : (p.alive ? '🂠 ' + p.mao + ' na mão' : '')}</div>`;
+    d.dataset.pid = p.id;
     d.onclick = () => cliqueJogador(p);
     if (modoMesa){
       const [lx, ly] = lugares[(idx - meIdx + nJog) % nJog]; // você embaixo, os outros em volta na ordem da mesa
@@ -1286,6 +1299,10 @@ function desenhar(v){
   else ins = 'Aguarde...';
   $('instr').innerHTML = ins;
 }
+$('btnVoz').onclick = entrarVoz;
+$('btnSairVoz').onclick = () => sairVoz();
+$('btnMicro').onclick = () => { if (VOZ.mudoMorte) return; VOZ.mudo = !VOZ.mudo; mostrarVoz(); Som.tocar('clique'); };
+$('btnVozLobby').onclick = () => VOZ.ativo ? sairVoz() : entrarVoz();
 $('chat').hidden = true;
 $('chat').onsubmit = e => { e.preventDefault(); enviarChat(); };
 $('chatCanal').onchange = () => { if (CV) desenhar(CV); $('chatTxt').focus(); };
@@ -2154,9 +2171,11 @@ function msg(id, t){ $(id).textContent = t || ''; }
 function gerarCodigo(){ const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; return Array.from({length:5}, () => a[Math.floor(Math.random() * a.length)]).join(''); }
 function semRede(){ if (typeof Peer === 'undefined'){ msg('msgRede', 'Não foi possível carregar o módulo online (sem internet?).'); return true; } return false; }
 function fecharRede(){
+  sairVoz(false); vozRegistro.clear(); VOZ.lista = [];
   try { if (NET.peer) NET.peer.destroy(); } catch (e) {}
   NET.peer = null; NET.hostConn = null; NET.lobby = []; NET.code = null; NET.modo = 'solo';
   $('selo').textContent = ''; $('lblRapido').hidden = false; $('btnNovo').textContent = 'Novo jogo';
+  mostrarVoz();
 }
 
 // ----- anfitrião -----
@@ -2190,8 +2209,10 @@ function criarSala(tent = 0){
     $('codigoSala').textContent = NET.code;
     $('convite').hidden = false; mostrarConvite(NET.code);
     $('selo').textContent = `🌐 Sala ${NET.code} · anfitrião`; $('lblRapido').hidden = true;
+    mostrarVoz();
     atualizarLobby();
   });
+  peer.on('call', receberChamada);
   peer.on('connection', conn => {
     conn.on('data', d => hostRecebe(conn, d));
     conn.on('close', () => hostDesconectou(conn));
@@ -2226,9 +2247,10 @@ function hostRecebe(conn, d){
     const usados = new Set([meuNome().toLowerCase(), ...NET.lobby.map(l => l.nome.toLowerCase())]);
     let base = nome, k = 2; while (usados.has(nome.toLowerCase())) nome = `${base} ${k++}`;
     if (!NET.lobby.find(l => l.conn === conn)) NET.lobby.push({conn, nome});
-    atualizarLobby();
+    atualizarLobby(); anunciarVoz();
     return;
   }
+  if (d.t === 'voz'){ const l = NET.lobby.find(x => x.conn === conn); registrarVoz(conn.peer, l ? l.nome : d.nome, !!d.on); return; }
   if (!G) return;
   const p = G.players.find(q => q.conn === conn && q.ctl === 'remoto');
   if (!p) return;
@@ -2237,6 +2259,7 @@ function hostRecebe(conn, d){
   else if (d.t === 'ans'){ const a = NET.asks.get(d.qid); if (a && a.pid === p.id) a.conclui(d.idx, d.texto); }
 }
 function hostDesconectou(conn){
+  if (vozRegistro.delete(conn.peer)) anunciarVoz();
   const antes = NET.lobby.length;
   NET.lobby = NET.lobby.filter(l => l.conn !== conn);
   if (NET.lobby.length !== antes && !$('telaLobby').hidden) atualizarLobby();
@@ -2254,6 +2277,131 @@ function comecarOnline(){
   comecarJogo(pessoas, n);
 }
 
+// =====================================================================
+//  VOZ (áudio direto entre os navegadores; o anfitrião só mantém a lista de quem está na conversa)
+// =====================================================================
+const VOZ = {ativo:false, stream:null, mudo:false, mudoMorte:false, calls:new Map(), audios:new Map(), lista:[], ctx:null, medidores:new Map(), timer:null};
+const vozRegistro = new Map(); // só no anfitrião: peerId -> nome
+function pidDoPeer(peer){
+  if (!G) return null;
+  if (NET.modo === 'host' && NET.peer && peer === NET.peer.id) return local() ? local().id : null;
+  const p = G.players.find(q => q.conn && q.conn.peer === peer);
+  return p ? p.id : null;
+}
+function anunciarVoz(){ // anfitrião: manda a lista atualizada para todos
+  if (NET.modo !== 'host') return;
+  const lista = [...vozRegistro].map(([peer, nome]) => ({peer, nome, pid:pidDoPeer(peer)}));
+  NET.lobby.forEach(l => enviar(l.conn, {t:'vozLista', lista}));
+  aplicarListaVoz(lista);
+}
+function registrarVoz(peer, nome, on){
+  if (on) vozRegistro.set(peer, String(nome || 'Jogador').slice(0, 14)); else vozRegistro.delete(peer);
+  anunciarVoz();
+}
+async function entrarVoz(){
+  if (!NET.peer || NET.modo === 'solo') return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ alert('Este navegador não permite usar o microfone aqui.'); return; }
+  try {
+    VOZ.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true, autoGainControl:true}});
+  } catch (e) {
+    alert('Não foi possível usar o microfone. Verifique se você deu permissão ao navegador.');
+    return;
+  }
+  VOZ.ativo = true; VOZ.mudo = false;
+  medirNivel('eu', VOZ.stream);
+  if (NET.modo === 'host') registrarVoz(NET.peer.id, meuNome(), true);
+  else enviar(NET.hostConn, {t:'voz', on:true, nome:meuNome()});
+  Som.tocar('aviso');
+  mostrarVoz();
+}
+function sairVoz(avisar = true){
+  if (!VOZ.ativo) return;
+  VOZ.ativo = false;
+  VOZ.calls.forEach(c => { try { c.close(); } catch (e) {} });
+  VOZ.calls.clear();
+  [...VOZ.audios.keys()].forEach(limparAudio);
+  if (VOZ.stream) VOZ.stream.getTracks().forEach(t => t.stop());
+  VOZ.stream = null; VOZ.medidores.delete('eu');
+  if (avisar){
+    if (NET.modo === 'host' && NET.peer) registrarVoz(NET.peer.id, '', false);
+    else if (NET.modo === 'cliente') enviar(NET.hostConn, {t:'voz', on:false});
+  }
+  mostrarVoz();
+}
+function aplicarListaVoz(lista){
+  VOZ.lista = Array.isArray(lista) ? lista : [];
+  if (VOZ.ativo && NET.peer){
+    const meu = NET.peer.id, outros = VOZ.lista.filter(x => x.peer !== meu);
+    for (const [peer, call] of VOZ.calls) if (!outros.some(x => x.peer === peer)){ try { call.close(); } catch (e) {} VOZ.calls.delete(peer); limparAudio(peer); }
+    // para não ligar duas vezes: quem tem o id "menor" é quem liga
+    for (const x of outros) if (!VOZ.calls.has(x.peer) && meu < x.peer) prepararChamada(NET.peer.call(x.peer, VOZ.stream));
+  }
+  mostrarVoz();
+}
+function prepararChamada(call){
+  if (!call) return;
+  VOZ.calls.set(call.peer, call);
+  call.on('stream', s => tocarRemoto(call.peer, s));
+  const fim = () => { if (VOZ.calls.get(call.peer) === call) VOZ.calls.delete(call.peer); limparAudio(call.peer); };
+  call.on('close', fim); call.on('error', fim);
+}
+function receberChamada(call){
+  if (!VOZ.ativo || !VOZ.stream){ try { call.close(); } catch (e) {} return; }
+  call.answer(VOZ.stream); prepararChamada(call);
+}
+function tocarRemoto(peer, stream){
+  limparAudio(peer);
+  const a = new Audio(); a.autoplay = true; a.srcObject = stream;
+  a.play().catch(() => {});
+  VOZ.audios.set(peer, a);
+  medirNivel(peer, stream);
+}
+function limparAudio(peer){
+  const a = VOZ.audios.get(peer);
+  if (a){ try { a.pause(); a.srcObject = null; } catch (e) {} VOZ.audios.delete(peer); }
+  VOZ.medidores.delete(peer);
+}
+// mede o volume de cada um para acender quem está falando
+function medirNivel(chave, stream){
+  try {
+    if (!VOZ.ctx) VOZ.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (VOZ.ctx.state === 'suspended') VOZ.ctx.resume();
+    const src = VOZ.ctx.createMediaStreamSource(stream), an = VOZ.ctx.createAnalyser();
+    an.fftSize = 512; src.connect(an);
+    VOZ.medidores.set(chave, {an, buf:new Float32Array(an.fftSize)});
+  } catch (e) {}
+  if (!VOZ.timer) VOZ.timer = setInterval(atualizarFalando, 150);
+}
+function nivelDe(chave){
+  const m = VOZ.medidores.get(chave); if (!m) return 0;
+  m.an.getFloatTimeDomainData(m.buf);
+  let s = 0; for (const x of m.buf) s += x * x;
+  return Math.sqrt(s / m.buf.length);
+}
+function atualizarFalando(){
+  const falando = new Set();
+  if (VOZ.ativo && !VOZ.mudo && !VOZ.mudoMorte && nivelDe('eu') > .025){ const eu = CV ? CV.meId : null; if (eu != null) falando.add(eu); }
+  VOZ.lista.forEach(x => { if (x.pid != null && x.peer !== (NET.peer && NET.peer.id) && nivelDe(x.peer) > .02) falando.add(x.pid); });
+  document.querySelectorAll('.pl[data-pid]').forEach(el => el.classList.toggle('falando', falando.has(+el.dataset.pid)));
+}
+// microfone ligado/desligado (o jogador muta; a regra muta os mortos)
+function aplicarMicrofone(){
+  if (VOZ.stream) VOZ.stream.getAudioTracks().forEach(t => { t.enabled = !VOZ.mudo && !VOZ.mudoMorte; });
+}
+function mostrarVoz(){
+  const online = NET.modo === 'host' || NET.modo === 'cliente';
+  const n = VOZ.lista.length;
+  $('btnVoz').hidden = !online || VOZ.ativo;
+  $('btnMicro').hidden = !VOZ.ativo; $('btnSairVoz').hidden = !VOZ.ativo;
+  $('btnMicro').textContent = VOZ.mudoMorte ? '💀' : VOZ.mudo ? '🔇' : '🎤';
+  $('btnMicro').title = VOZ.mudoMorte ? 'Os mortos ficam em silêncio (você continua ouvindo)' : VOZ.mudo ? 'Microfone desligado (clique para ligar)' : 'Microfone ligado (clique para mutar)';
+  $('vozInfo').hidden = !online || !n; $('vozInfo').textContent = `🔊 ${n} na voz`;
+  $('vozInfo').title = VOZ.lista.map(x => x.nome).join(', ');
+  const bl = $('btnVozLobby'); if (bl){ bl.hidden = !online; bl.textContent = VOZ.ativo ? '📴 Sair da conversa de voz' : '🎙️ Entrar na conversa de voz'; }
+  $('vozLobbyInfo').textContent = n ? `🔊 Na voz: ${VOZ.lista.map(x => x.nome).join(', ')}` : '';
+  aplicarMicrofone();
+}
+
 // ----- convidado -----
 function entrarSala(){
   if (semRede()) return;
@@ -2265,6 +2413,7 @@ function entrarSala(){
   const peer = new Peer({debug:0});
   NET.peer = peer;
   peer.on('open', () => {
+    peer.on('call', receberChamada);
     const conn = peer.connect(PREFIXO + code, {serialization:'json', reliable:true});
     NET.hostConn = conn;
     conn.on('open', () => {
@@ -2274,6 +2423,7 @@ function entrarSala(){
       $('lobbyHost').hidden = true; $('lobbyCliente').hidden = false; $('lobbyDica').hidden = true; $('convite').hidden = true;
       $('codigoSala').textContent = code;
       $('selo').textContent = `🌐 Sala ${code}`; $('lblRapido').hidden = true; $('btnNovo').textContent = 'Sair da sala';
+      mostrarVoz();
     });
     conn.on('data', clienteRecebe);
     conn.on('close', () => {
@@ -2291,6 +2441,8 @@ function clienteRecebe(d){
   if (!d || typeof d !== 'object') return;
   if (d.t === 'lobby'){
     $('listaLobby').innerHTML = d.nomes.map((n, i) => `<li>${AV_HUMANOS[i % AV_HUMANOS.length]} ${esc(n)}</li>`).join('');
+  } else if (d.t === 'vozLista'){
+    aplicarListaVoz(d.lista);
   } else if (d.t === 'cena'){
     if (d.tipo === 'conspiracao') cenaConspiracao(String(d.nome || ''));
     else if (d.tipo === 'final' && d.d) cenaFinal({vitima:String(d.d.vitima || ''), bruxa:String(d.d.bruxa || ''), parceiras:Array.isArray(d.d.parceiras) ? d.d.parceiras.map(String) : []});
