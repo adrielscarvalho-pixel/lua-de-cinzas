@@ -130,6 +130,44 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 #adminC td button{font-size:12px;padding:4px 7px;margin:1px}
 #adminC .bru{color:#ff7a7a}#adminC .vil{color:#8fd39a}
 #adminC .aviso{background:#2f2410;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:14px}
+/* ---------- a mesona ---------- */
+#jogadores.mesaModo{display:block;position:relative;height:clamp(560px,74vh,820px)}
+#jogadores.mesaModo ~ #log, main:has(#jogadores.mesaModo) #log{height:clamp(560px,74vh,820px)}
+.mesaTampo{position:absolute;left:10%;right:10%;top:14%;bottom:14%;border-radius:50%;border:26px solid transparent;
+ background:radial-gradient(ellipse at 50% 42%,#6a2329 0%,#4a171c 50%,#2c0d10 78%) padding-box,
+  linear-gradient(160deg,#8a5428 0%,#5a3216 30%,#7a4a22 52%,#4a2810 75%,#6b3f1c 100%) border-box;
+ box-shadow:0 40px 70px #000d,0 10px 0 #2a160a,inset 0 0 70px #000b,0 0 0 2px #c9a23f66;transition:filter .8s}
+.mesaTampo::before{content:'';position:absolute;inset:5%;border-radius:50%;border:2px solid #c9a23f55;box-shadow:inset 0 0 0 6px #00000022}
+.mesaTampo::after{content:'☾';position:absolute;left:50%;top:50%;transform:translate(-50%,-56%);font-size:clamp(140px,17vw,250px);line-height:1;color:#c9a23f12;font-family:Cinzel,serif;pointer-events:none}
+.mesaBrilho{position:absolute;left:10%;right:10%;top:14%;bottom:14%;border-radius:50%;pointer-events:none;
+ background:radial-gradient(ellipse at 30% 25%,#ffffff12,#0000 45%)}
+body.noite .mesaTampo{filter:brightness(.62) saturate(.55) hue-rotate(-12deg)}
+body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#0000 50%)}
+.velaM{position:absolute;top:50%;width:14px;height:40px;margin-top:-20px;background:linear-gradient(#efe6d0,#c4b490);border-radius:3px;z-index:1;box-shadow:0 6px 8px #0008}
+.velaM::before{content:'';position:absolute;left:50%;top:-20px;width:12px;height:20px;margin-left:-6px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+ background:radial-gradient(circle at 50% 70%,#fff6c0,#ffb030 55%,#ff600000 75%);animation:chama .18s infinite alternate}
+.velaM::after{content:'';position:absolute;left:50%;top:-70px;width:140px;height:140px;margin-left:-70px;border-radius:50%;background:radial-gradient(circle,#ffb03026,#0000 65%);pointer-events:none}
+.mesaCentro{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:1;text-align:center;pointer-events:none}
+.faseM{font-family:Cinzel,serif;color:var(--gold);font-size:20px;font-weight:700;text-shadow:0 2px 6px #000}
+.vezM{color:var(--parch);font-size:15px;text-shadow:0 1px 4px #000;max-width:260px}
+.monteM{display:flex;gap:26px;align-items:flex-end;margin:8px 0 18px}
+.pilha{position:relative;width:58px;height:82px}
+.pilha i{position:absolute;inset:0;border-radius:6px;background:repeating-linear-gradient(45deg,#3b2a55 0 6px,#30224a 6px 12px);border:2px solid #c9a23f;box-shadow:0 3px 5px #0009}
+.pilha i::after{content:'☾';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#c9a23f;font-size:22px}
+.pilha.descarte i{background:linear-gradient(var(--parch),var(--parch2));border-color:#8a7a55}
+.pilha.descarte i::after{content:''}
+.pilha span{position:absolute;bottom:-21px;left:-20px;right:-20px;font-size:12.5px;color:var(--parch2);text-shadow:0 1px 3px #000}
+.bruxasM{font-size:14px;color:#ffb3a8;text-shadow:0 1px 3px #000}
+.assento{position:absolute;transform:translate(-50%,-50%);width:clamp(134px,11.5vw,162px);z-index:2;transition:left .4s,top .4s}
+.assento .pl{background:#1d1626ee;backdrop-filter:blur(3px);box-shadow:0 8px 18px #000a}
+.assento .pl.eu{background:#2a2135f2}
+.assento .pl .av{font-size:24px}.assento .nome{font-size:13.5px}.assento .tag{font-size:12px}
+.assento .acus{margin:5px 0 4px}.assento .pip{width:10px;height:10px}
+.assento .pista{height:28px;font-size:14px}.assento .azuis{min-height:0;margin-top:4px}.assento .status{font-size:12px;margin-top:2px}
+#jogadores.lotado .assento{width:clamp(118px,10vw,140px)}
+#jogadores.lotado .assento .pista{height:22px;font-size:12px}
+#jogadores.lotado .assento .av{font-size:20px}
+@media (max-width:759px){#jogadores{background:linear-gradient(160deg,#5a3216,#3a200d);border-radius:14px;padding:10px;box-shadow:inset 0 0 30px #000a}}
 /* ---------- cena da Conspiração ---------- */
 #cena{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
  background:radial-gradient(ellipse at 50% 55%,#2a1830ee,#07040bf5 70%)}
@@ -474,6 +512,7 @@ function visao(vid, comLog = true){
   return {
     meId:vid, fase:G.fase, noite:G.noite, over:G.over, current:G.current, atualNome:atual ? atual.nome : '',
     placar:`☾ Bruxas reveladas: <b>${rev}/${G.totalBruxas}</b> · 🂠 ${G.deck.length}`,
+    monte:G.deck.length, descarte:G.discard.length, bruxasRev:rev, totalBruxas:G.totalBruxas,
     minhaVez: !!(G.turno && G.turno.pid === vid && G.turno.res), jogou: !!(G.turno && G.turno.pid === vid && G.turno.jogou),
     esperando:[...G.esperando].filter(id => id !== vid).map(id => G.players[id].nome),
     alive:me.alive, hand:me.hand.slice(),
@@ -1097,7 +1136,35 @@ function desenhar(v){
   if (UI.sel != null && UI.sel >= v.hand.length){ UI.sel = null; UI.alvos = []; }
   const selK = UI.sel != null ? v.hand[UI.sel] : null;
   const grid = $('jogadores'); grid.innerHTML = '';
-  v.players.forEach(p => {
+  // A mesona: em telas largas os jogadores sentam em volta de uma mesa oval (você sempre embaixo)
+  const modoMesa = innerWidth >= 760, nJog = v.players.length;
+  const meIdx = Math.max(0, v.players.findIndex(p => p.id === v.meId));
+  grid.classList.toggle('mesaModo', modoMesa);
+  grid.classList.toggle('lotado', modoMesa && nJog > 8);
+  if (modoMesa){
+    const camadas = Math.max(1, Math.min(5, Math.ceil(v.monte / 12)));
+    const vez = v.over ? 'Fim de jogo' : v.minhaVez ? '🕯️ <b>Sua vez!</b>' : v.esperando.length ? `⏳ Aguardando ${v.esperando.map(esc).join(', ')}` : v.atualNome ? `Vez de <b>${esc(v.atualNome)}</b>` : '';
+    grid.innerHTML = `<div class="mesaTampo"></div><div class="mesaBrilho"></div><i class="velaM" style="left:6.5%"></i><i class="velaM" style="right:6.5%"></i>
+      <div class="mesaCentro"><div class="faseM">${esc(v.fase || '')}</div><div class="vezM">${vez}</div>
+        <div class="monteM"><div class="pilha">${'<i></i>'.repeat(camadas)}<span>🂠 ${v.monte} no monte</span></div>
+          <div class="pilha descarte">${v.descarte ? '<i></i><i></i>' : ''}<span>${v.descarte} no descarte</span></div></div>
+        <div class="bruxasM">☾ Bruxas reveladas: <b>${v.bruxasRev ?? 0}/${v.totalBruxas ?? '?'}</b></div></div>`;
+    grid.querySelectorAll('.pilha i').forEach((i, k, todas) => { const s = todas.length - 1 - k; i.style.transform = i.closest('.descarte') ? `rotate(${k ? 7 : -5}deg)` : `translate(${-s * 1.6}px,${s * 1.6}px)`; });
+  }
+  // lugares igualmente espaçados ao longo da borda da mesa oval (começando por você, embaixo)
+  let lugares = [];
+  if (modoMesa){
+    const W = grid.clientWidth || 900, H = grid.clientHeight || 640, a = W * .405, b = H * .375, PASSOS = 720;
+    const pts = [], acum = [0];
+    for (let i = 0; i <= PASSOS; i++){ const t = Math.PI / 2 + i / PASSOS * 2 * Math.PI; pts.push([a * Math.cos(t), b * Math.sin(t)]); }
+    for (let i = 1; i <= PASSOS; i++) acum.push(acum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const total = acum[PASSOS];
+    for (let k = 0; k < nJog; k++){
+      const alvo = total * k / nJog; let i = acum.findIndex(x => x >= alvo); if (i < 0) i = PASSOS;
+      lugares.push([50 + pts[i][0] / W * 100, 50 + pts[i][1] / H * 100]);
+    }
+  }
+  v.players.forEach((p, idx) => {
     const d = document.createElement('div');
     let cls = 'pl';
     if (p.id === v.meId) cls += ' eu';
@@ -1119,7 +1186,13 @@ function desenhar(v){
       <div class="azuis">${azuis}</div>
       <div class="status">${p.id === v.meId ? '' : (p.alive ? '🂠 ' + p.mao + ' na mão' : '')}</div>`;
     d.onclick = () => cliqueJogador(p);
-    grid.appendChild(d);
+    if (modoMesa){
+      const [lx, ly] = lugares[(idx - meIdx + nJog) % nJog]; // você embaixo, os outros em volta na ordem da mesa
+      const s = document.createElement('div'); s.className = 'assento';
+      s.style.left = lx + '%';
+      s.style.top = ly + '%';
+      s.appendChild(d); grid.appendChild(s);
+    } else grid.appendChild(d);
   });
   // log
   const ult = v.log[v.log.length - 1];
@@ -1155,6 +1228,9 @@ function desenhar(v){
   else ins = 'Aguarde...';
   $('instr').innerHTML = ins;
 }
+// redesenha a mesa quando a janela muda de tamanho (troca entre mesa e grade)
+let timerResize = null;
+window.addEventListener('resize', () => { clearTimeout(timerResize); timerResize = setTimeout(() => { if (CV) desenhar(CV); }, 120); });
 function cliqueJogador(pv){
   if (!CV || !CV.minhaVez || UI.sel == null) return;
   const k = CV.hand[UI.sel];
