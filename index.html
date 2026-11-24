@@ -116,6 +116,20 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 .carta.preta{background:linear-gradient(#2a2430,#17131c);color:var(--txt);border-color:#555}
 .carta.preta .qtd{color:var(--muted)}
 .carta.julg{border-top-color:#777}
+/* ---------- painel do administrador ---------- */
+#adminC h2{color:var(--gold)}
+#adminC h3{font-size:16px;color:var(--parch);margin:18px 0 8px;border-top:1px solid #3a2f46;padding-top:12px}
+#adminC .grade{display:flex;flex-wrap:wrap;gap:6px}
+#adminC .grade button{font-size:13px;padding:6px 10px}
+#adminC .nota{font-size:14px;color:var(--muted);margin:4px 0 8px}
+#adminC select{width:auto}
+#adminC input[type=checkbox]{width:auto;margin:0 4px 0 0;vertical-align:middle}
+#adminC label{display:inline-flex;align-items:center;gap:4px}
+#adminC table{width:100%;border-collapse:collapse;font-size:14px}
+#adminC td{padding:5px 4px;border-bottom:1px solid #3a2f46;vertical-align:middle}
+#adminC td button{font-size:12px;padding:4px 7px;margin:1px}
+#adminC .bru{color:#ff7a7a}#adminC .vil{color:#8fd39a}
+#adminC .aviso{background:#2f2410;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:14px}
 /* ---------- cena da Conspiração ---------- */
 #cena{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
  background:radial-gradient(ellipse at 50% 55%,#2a1830ee,#07040bf5 70%)}
@@ -229,6 +243,7 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
     <label id="lblRapido"><input type="checkbox" id="rapido"> Bots rápidos</label>
     <button id="btnSom" title="Ligar/desligar o som">🔊</button>
     <button id="btnMusica" title="Ligar/desligar a música">🎵</button>
+    <button id="btnPainel" title="Painel do administrador" hidden>🛠️</button>
     <button id="btnRegras">Regras</button>
     <button id="btnCartas">Cartas</button>
     <button id="btnNovo">Novo jogo</button>
@@ -268,6 +283,10 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
       <p class="msg" id="msgRede"></p>
       <div class="linha" style="margin-top:10px"><button id="btnRegras2">Regras</button><button id="btnCartas2">Cartas</button><button id="btnInstalar" class="prim" hidden>📲 Instalar app</button></div>
       <p id="dicaInstalar" hidden style="font-size:14px;color:var(--muted);margin:8px 0 0"></p>
+      <div class="secao" id="secaoAdmin">
+        <div class="linha"><label for="inAdmin" style="margin:0;font-size:15px;color:var(--muted)">🔑 Código de Administrador:</label>
+          <input id="inAdmin" type="password" autocomplete="off" maxlength="20" style="flex:1;min-width:110px"><button id="btnAdmin">Entrar</button></div>
+      </div>
     </div>
     <div id="telaLobby" hidden>
       <h2 style="color:var(--gold)">🌐 Sala</h2>
@@ -293,6 +312,7 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 </div>
 
 <div class="modal" id="modal" hidden><div class="mbox"><div class="conteudo"></div><div class="botoes"></div></div></div>
+<div class="modal" id="admin" hidden style="z-index:30"><div class="mbox largo"><div id="adminC"></div><div class="botoes"><button id="btnFecharAdmin" class="prim">Fechar</button></div></div></div>
 <div class="modal" id="info" hidden style="z-index:20"><div class="mbox largo"><div class="conteudo"></div><div class="botoes"><button id="btnFecharInfo" class="prim">Fechar</button></div></div></div>
 
 <template id="tplRegras">
@@ -439,6 +459,7 @@ const fala = (p, txt) => log(`<b>${esc(p.nome)}:</b> “${esc(txt)}”`, 'chat')
 // ---------- visão de cada jogador (só o que ele pode ver) ----------
 function visao(vid, comLog = true){
   const me = G.players[vid];
+  const verTudo = !!(G.teste && G.verTudo && me.ctl === 'local'); // painel do administrador: ver as cartas de todos
   const rev = G.players.reduce((s, p) => s + p.pistas.filter(x => x.rev && x.t === 'bruxa').length, 0);
   const atual = G.current != null ? G.players[G.current] : null;
   return {
@@ -449,10 +470,10 @@ function visao(vid, comLog = true){
     alive:me.alive, hand:me.hand.slice(),
     players:G.players.map(p => ({
       id:p.id, nome:p.nome, av:p.av, alive:p.alive, humano:p.isHuman, pts:pontos(p), azuis:p.azuis.slice(),
-      mao:p.hand.length, oc:ocultas(p).length, acus:p.acus.length, time:conheceTime(me, p) ? p.team : null,
+      mao:p.hand.length, oc:ocultas(p).length, acus:p.acus.length, time:(verTudo || conheceTime(me, p)) ? p.team : null,
       semDevocao:p.team === 'bruxa', // regra da casa: Devoção não pode ir para a equipe das bruxas
       slots:p.pistas.map(x => x.rev ? {c:'rev-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
-        : p === me ? {c:'own own-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
+        : (p === me || verTudo) ? {c:'own own-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
         : me.peek.has(x.id) ? {c:'peek-' + x.t, i:'', t:'Você espiou: ' + TIPO[x.t]}
         : {c:'', i:'?', t:'Carta fechada'}),
     })),
@@ -939,7 +960,7 @@ async function comprar2(p){
     const k = tirar(); if (!k) return;
     if (CARDS[k].cor === 'preta'){
       log(`${CARDS[k].ic} ${nm(p)} comprou e revelou <b>${CARDS[k].nome}</b>!`, 'phase'); await delay(.8);
-      if (k === 'noite'){ await noite(); if (!G.over) novoBaralho(); }
+      if (k === 'noite'){ await noite(); if (!G.over && !G.deck.length) novoBaralho(); } // (Noite forçada no teste não reembaralha)
       else { await conspiracao(p); G.discard.push(k); }
     } else {
       p.hand.push(k);
@@ -996,11 +1017,16 @@ function introHTML(p){
     ${p.team === 'bruxa' ? (parc.length ? `<p>Sua parceira: <b>${parc.join(', ')}</b>.</p>` : '<p>Você é a única bruxa... por enquanto.</p>') + '<p>Vença quando todos os vivos forem da equipe das bruxas.</p>'
       : `<p>Há <b>${G.totalBruxas}</b> carta(s) Bruxa escondida(s). Revele todas para vencer.</p>`}`;
 }
-async function comecarJogo(pessoas, n){
+async function comecarJogo(pessoas, n, teste = null){
   resetModal();
   $('setup').hidden = true;
   UI.sel = null; UI.alvos = []; CV = null;
   novoJogo(pessoas, n);
+  if (teste){ // partida de teste do administrador
+    G.teste = true; G.verTudo = !!teste.verTudo;
+    ajustarPapel(local(), teste.papel);
+    log('🛠️ PARTIDA DE TESTE do administrador (trapaças liberadas no painel 🛠️).', 'phase');
+  }
   Musica.iniciar();
   const meuG = G;
   log(NET.modo === 'host' ? `🌐 Partida online: ${humanos().map(p => nm(p)).join(', ')}${n > humanos().length ? ` + ${n - humanos().length} bot(s)` : ''}.` : '🤖 Partida contra bots.', 'phase');
@@ -1976,6 +2002,140 @@ function clienteRecebe(d){
     $('telaInicio').hidden = false; $('telaLobby').hidden = true;
   }
 }
+
+// =====================================================================
+//  PAINEL DO ADMINISTRADOR (para testar tudo)
+// =====================================================================
+// Troque o código aqui. Obs.: é só para esconder o painel; quem abrir o código-fonte da página consegue ver.
+const ADMIN_CODIGO = 'CINZAS';
+const NOMES_SONS = {clique:'Clique', aviso:'Janela', suaVez:'Sua vez', comprar:'Comprar 2', carta:'Comprar 1', acusar1:'Suspeita', acusar3:'Prova', acusar7:'Flagrante',
+  defesa:'Defesa', azul:'Carta azul', exorcismo:'Exorcismo', fogo:'Confisco', furto:'Furto', bode:'Bode 🐐', espiar:'Espiar', corrente:'Pelourinho', anuncio:'Anúncio de bruxa',
+  confissao:'Confissão', martelo:'Julgamento', sino:'Carta inocente', bruxa:'Carta Bruxa', morte:'Morte', noite:'Noite (uivo)', dia:'Amanhecer', alivio:'Alívio', gato:'Gato 🐈‍⬛',
+  saiu:'Alguém saiu', vitoria:'Vitória', derrota:'Derrota', tremor:'Dentes batendo', sombra:'Sombra da bruxa', feiticoCarga:'Feitiço carregando', feiticoRaio:'Feitiço lançado',
+  feiticoAcerta:'Feitiço acerta', cinzas:'Cinzas', escudo:'Escudo'};
+const adminAtivo = () => { try { return sessionStorage.getItem('ldc-admin') === '1'; } catch (e) { return false; } };
+const emTeste = () => !!(G && G.teste && !G.over);
+const minhaVezAgora = () => !!(G && G.turno && G.turno.res && local() && G.turno.pid === local().id);
+
+// coloca na mão (de cartas de julgamento) o papel pedido, trocando cartas com outros jogadores
+function ajustarPapel(p, papel){
+  if (!p || !papel || papel === 'aleatorio') return;
+  const trocar = (minhaIdx, tipoQuero) => {
+    const outro = shuffle(G.players.filter(q => q !== p)).find(q => q.pistas.some(x => x.t === tipoQuero));
+    if (!outro) return;
+    const oi = outro.pistas.findIndex(x => x.t === tipoQuero);
+    [p.pistas[minhaIdx], outro.pistas[oi]] = [outro.pistas[oi], p.pistas[minhaIdx]];
+  };
+  if (papel === 'bruxa' && !p.pistas.some(x => x.t === 'bruxa')) trocar(p.pistas.findIndex(x => x.t === 'inocente'), 'bruxa');
+  if (papel === 'morador' || papel === 'guardiao'){
+    let i; while ((i = p.pistas.findIndex(x => x.t === 'bruxa')) >= 0) trocar(i, 'inocente');
+  }
+  if (papel === 'guardiao' && !p.pistas.some(x => x.t === 'guardiao')) trocar(p.pistas.findIndex(x => x.t === 'inocente'), 'guardiao');
+  G.players.forEach(q => { q.team = q.pistas.some(x => x.t === 'bruxa') ? 'bruxa' : 'vila'; });
+}
+
+function painelHTML(){
+  const b = (acao, texto, extra = '') => `<button data-a="${acao}" ${extra}>${texto}</button>`;
+  let h = `<h2>🛠️ Painel do Administrador</h2>
+    <p class="nota">Tudo aqui é só no seu aparelho. As trapaças funcionam apenas na <b>partida de teste</b>, nunca nas partidas online com amigos.</p>
+    <h3>🎬 Cenas</h3>
+    <div class="grade">${b('cena:conspiracao', '🕸️ Conspiração')}
+      <span class="linha" style="gap:4px">${b('cena:noite', '🌑 Noite com')}<select id="admN">${Array.from({length:12}, (_, i) => `<option ${i + 1 === 6 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select> pessoas</span></div>
+    <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}</div>
+    <h3>🔊 Sons</h3>
+    <div class="grade">${Object.keys(NOMES_SONS).filter(k => EFEITOS[k]).map(k => b('som:' + k, NOMES_SONS[k])).join('')}
+      ${b('som2:susto', 'Susto (Conspiração)')}${b('som2:pancada', 'Pancada na mesa')}${b('som2:sinistro', 'Acorde sinistro')}</div>
+    <div class="grade" style="margin-top:6px">${b('musica', Musica.tocando ? '🎵 Parar a música' : '🎵 Tocar a música')}</div>
+    ${Som.mudo ? '<p class="aviso">🔇 O som está desligado (botão 🔊 no topo). Ligue para ouvir os testes.</p>' : ''}
+    <h3>🧪 Partida de teste</h3>
+    <div class="linha">
+      <label style="margin:0">Jogadores <select id="admJog">${Array.from({length:9}, (_, i) => `<option ${i + 4 === 6 ? 'selected' : ''}>${i + 4}</option>`).join('')}</select></label>
+      <label style="margin:0">Seu papel <select id="admPapel"><option value="aleatorio">Aleatório</option><option value="morador">Morador</option><option value="bruxa">Bruxa</option><option value="guardiao">Guardião (morador)</option></select></label>
+      <label style="margin:0"><input type="checkbox" id="admVer" checked> Ver as cartas de todos</label>
+      <label style="margin:0"><input type="checkbox" id="admRapido" checked> Bots rápidos</label>
+    </div>
+    <div class="grade" style="margin-top:8px">${b('teste:comecar', '▶️ Começar partida de teste', 'class="prim"')}</div>`;
+  if (emTeste()){
+    const vez = minhaVezAgora();
+    h += `<h3>🃏 Trapaças (partida de teste)</h3>
+      <div class="grade">${b('ver', G.verTudo ? '🙈 Esconder as cartas dos outros' : '👁️ Ver as cartas de todos')}${b('mao3', '➕ 3 cartas aleatórias')}</div>
+      <p class="nota" style="margin-top:10px">Receber uma carta na mão:</p>
+      <div class="grade">${Object.keys(CARDS).filter(k => ['vermelha', 'azul', 'verde'].includes(CARDS[k].cor) && k !== 'gato').map(k => b('carta:' + k, `${CARDS[k].ic} ${CARDS[k].nome}`)).join('')}</div>
+      <p class="nota" style="margin-top:10px">Eventos: a carta vai para o topo do baralho e sai na próxima compra${vez ? ' (é sua vez: já compra na hora)' : ''}.</p>
+      <div class="grade">${b('evento:noite', '🌑 Noite na próxima compra')}${b('evento:conspiracao', '🕸️ Conspiração na próxima compra')}</div>
+      <p class="nota" style="margin-top:10px">Jogadores ${vez ? '' : '— <i>julgar e matar só na sua vez</i>'}:</p>
+      <table>${G.players.map(p => `<tr><td>${p.av} <b>${esc(p.nome)}</b>${p.ctl === 'local' ? ' (você)' : ''}${p.alive ? '' : ' 💀'}<br>
+        <span class="${p.team === 'bruxa' ? 'bru' : 'vil'}">${p.team === 'bruxa' ? 'Bruxa' : 'Morador'}</span> · ${p.pistas.map(x => x.rev ? `<s>${ICONE[x.t]}</s>` : ICONE[x.t]).join(' ')} · ${pontos(p)}/${LIM} pts${p.azuis.length ? ' · ' + p.azuis.map(k => CARDS[k].ic).join('') : ''}</td>
+        <td style="text-align:right">${p.alive ? `${b('pts:' + p.id + ':1', '+1')}${b('pts:' + p.id + ':3', '+3')}${b('zerar:' + p.id, 'Zerar')}${b('gato:' + p.id, '🐈‍⬛')}
+          ${b('julgar:' + p.id, '⚖️ Julgar', vez ? '' : 'disabled')}${b('matar:' + p.id, '💀 Matar', vez ? '' : 'disabled')}` : ''}</td></tr>`).join('')}</table>`;
+  } else if (G && G.teste && G.over){
+    h += '<h3>🃏 Trapaças</h3><p class="nota">A partida de teste acabou. Comece outra acima.</p>';
+  }
+  return h;
+}
+function abrirPainel(){ $('adminC').innerHTML = painelHTML(); $('admin').hidden = false; }
+const atualizarPainel = () => { if (!$('admin').hidden) { const s = $('admin').querySelector('.mbox').scrollTop; $('adminC').innerHTML = painelHTML(); $('admin').querySelector('.mbox').scrollTop = s; } };
+
+async function acaoPainel(a){
+  const [tipo, x, y] = a.split(':');
+  if (tipo === 'cena'){
+    $('admin').hidden = true;
+    const nomes = shuffle(NOMES.map(n => n[0]));
+    if (x === 'conspiracao') await cenaConspiracao(meuNome());
+    else if (x === 'noite'){ const n = +$('admN').value || 6; await cenaNoite([{nome:meuNome(), eu:true}, ...nomes.slice(0, n - 1).map(nome => ({nome}))]); }
+    else if (x === 'morte') await cenaFeitico({tipo:'morte', nome:nomes[0]});
+    else if (x === 'protegido') await cenaFeitico({tipo:'protegido', nome:''});
+    else if (x.startsWith('conf-')) await cenaFeitico({tipo:'confissao', nome:nomes[1], carta:x.slice(5)});
+    abrirPainel(); return;
+  }
+  if (tipo === 'som'){ Som.tocar(x); return; }
+  if (tipo === 'som2'){ if (Som.ok()) Som[x](); return; }
+  if (tipo === 'musica'){ if (Musica.tocando) Musica.parar(); else { Musica.ligada = true; mostrarMusica(); Musica.iniciar(); } setTimeout(atualizarPainel, 50); return; }
+  if (tipo === 'teste'){
+    const n = +$('admJog').value, papel = $('admPapel').value, ver = $('admVer').checked;
+    $('rapido').checked = $('admRapido').checked;
+    $('admin').hidden = true;
+    fecharRede();
+    comecarJogo([{nome:meuNome(), ctl:'local'}], n, {papel, verTudo:ver});
+    return;
+  }
+  if (!emTeste()) return; // daqui para baixo: só na partida de teste
+  const eu = local(), alvo = x != null ? G.players[+x] : null;
+  if (tipo === 'ver') G.verTudo = !G.verTudo;
+  else if (tipo === 'mao3'){
+    const normais = Object.keys(CARDS).filter(k => CARDS[k].qtd > 0 && CARDS[k].cor !== 'preta');
+    const novas = [rnd(normais), rnd(normais), rnd(normais)]; eu.hand.push(...novas);
+    log(`🛠️ Você recebeu: ${novas.map(k => '<i>' + CARDS[k].nome + '</i>').join(', ')} (teste).`, 'priv', eu.id, 'comprar');
+  }
+  else if (tipo === 'carta'){ eu.hand.push(x); log(`🛠️ Você recebeu <i>${CARDS[x].nome}</i> (teste).`, 'priv', eu.id, 'carta'); }
+  else if (tipo === 'evento'){
+    G.deck.push(x); log(`🛠️ ${CARDS[x].nome} colocada no topo do baralho (teste).`, 'priv', eu.id);
+    if (minhaVezAgora() && !G.turno.jogou){ $('admin').hidden = true; mandarAcao({tipo:'comprar'}); return; }
+  }
+  else if (tipo === 'pts' && alvo && alvo.alive){ for (let i = 0; i < +y; i++) alvo.acus.push({k:'suspeita', by:eu.id}); log(`🛠️ +${y} ponto(s) de acusação em ${nm(alvo)} (teste). Total: ${pontos(alvo)}/${LIM}`, 'acc', null, 'acusar' + (y === '3' ? 3 : 1)); }
+  else if (tipo === 'zerar' && alvo){ G.discard.push(...alvo.acus.map(a => a.k)); alvo.acus = []; log(`🛠️ Acusações de ${nm(alvo)} zeradas (teste).`); }
+  else if (tipo === 'gato' && alvo && alvo.alive){ G.players.forEach(p => { const i = p.azuis.indexOf('gato'); if (i >= 0) p.azuis.splice(i, 1); }); alvo.azuis.push('gato'); log(`🐈‍⬛ O Gato da Lua foi para ${nm(alvo)} (teste).`, '', null, 'gato'); }
+  else if ((tipo === 'julgar' || tipo === 'matar') && alvo && alvo.alive && minhaVezAgora()){
+    $('admin').hidden = true;
+    if (tipo === 'julgar') await julgamento(alvo, eu);
+    else { log(`🛠️ ${nm(alvo)} foi eliminado(a) pelo administrador (teste).`, 'bad'); await morre(alvo, 'teste do administrador'); }
+    atualizar(); return;
+  }
+  atualizar(); atualizarPainel();
+}
+$('adminC').addEventListener('click', e => { const bt = e.target.closest('button[data-a]'); if (bt && !bt.disabled) acaoPainel(bt.dataset.a); });
+$('btnFecharAdmin').onclick = () => { $('admin').hidden = true; };
+$('btnPainel').onclick = abrirPainel;
+const entrarAdmin = () => {
+  if ($('inAdmin').value.trim().toUpperCase() === ADMIN_CODIGO){
+    try { sessionStorage.setItem('ldc-admin', '1'); } catch (e) {}
+    $('inAdmin').value = ''; msg('msgRede', ''); $('btnPainel').hidden = false;
+    Som.tocar('suaVez'); abrirPainel();
+  } else { msg('msgRede', '🔑 Código de administrador incorreto.'); Som.tocar('saiu'); }
+};
+$('btnAdmin').onclick = entrarAdmin;
+$('inAdmin').onkeydown = e => { if (e.key === 'Enter') entrarAdmin(); };
+if (adminAtivo()) $('btnPainel').hidden = false;
 
 // ---------- início / navegação ----------
 function voltarAoInicio(){
