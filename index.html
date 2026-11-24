@@ -183,6 +183,39 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
  color:#dfe6ff;text-shadow:0 0 18px #6b84ff,0 0 40px #223a99;letter-spacing:3px;opacity:0}
 #cenaNoite .sub{position:absolute;left:0;right:0;top:calc(44% + clamp(36px,8vw,58px));text-align:center;color:#c9c3dc;font-size:18px;font-style:italic;opacity:0}
 #cenaNoite .pular{position:absolute;bottom:8px;right:14px;color:#ffffff55;font-size:13px}
+/* ---------- cena do feitiço (morte à noite) ---------- */
+#cenaFeitico{position:fixed;inset:0;z-index:40;overflow:hidden;cursor:pointer;background:radial-gradient(ellipse at 55% 60%,#2a1940,#07050d 70%)}
+#cenaFeitico .luaP{position:absolute;right:8%;top:7%;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#fffbe8,#e9d28c 60%,#b89a4e);box-shadow:0 0 40px 10px #f6e6a833}
+#cenaFeitico .chaoF{position:absolute;left:0;right:0;bottom:0;height:24%;background:linear-gradient(#17121f,#08060c)}
+#cenaFeitico .nevoa{position:absolute;left:-30%;width:160%;height:120px;bottom:16%;background:radial-gradient(ellipse at center,#8a7cb033,#0000 65%);filter:blur(10px)}
+#cenaFeitico .vitima{position:absolute;left:55%;bottom:15%;width:min(190px,36vw);margin-left:calc(min(190px,36vw) / -2);z-index:3}
+#cenaFeitico .vitima svg{width:100%;height:auto;overflow:visible;display:block}
+#cenaFeitico .vitima .pupila,#cenaFeitico .vitima .boca{transform-box:fill-box;transform-origin:center}
+#cenaFeitico .nomeV{text-align:center;font-family:Cinzel,serif;color:var(--parch);text-shadow:0 1px 4px #000;font-size:16px;margin-top:-6px}
+#cenaFeitico .sombra{position:absolute;left:40%;bottom:17%;width:min(400px,66vw);margin-left:calc(min(400px,66vw) / -2);z-index:2;
+ transform-origin:50% 100%;transform:scaleY(0);filter:drop-shadow(0 0 18px #7a3cff88)}
+#cenaFeitico .sombra svg{width:100%;height:auto;display:block;overflow:visible}
+#cenaFeitico .orbe{position:absolute;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;z-index:5;opacity:0;
+ background:radial-gradient(circle,#fff,#d9a8ff 30%,#8a2bff 60%,#8a2bff00 72%);box-shadow:0 0 30px 12px #9b4dff99}
+#cenaFeitico .rastro{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#b77cff;z-index:4;pointer-events:none;filter:blur(1px)}
+#cenaFeitico .cinza{position:absolute;width:6px;height:6px;border-radius:50%;background:#8d8a94;z-index:6;pointer-events:none}
+#cenaFeitico .anel{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:4px solid #fff;z-index:6;pointer-events:none;opacity:0}
+#cenaFeitico .escudo{position:absolute;border-radius:50%;z-index:4;opacity:0;pointer-events:none;
+ background:radial-gradient(circle,#ffe9a000 55%,#ffe9a055 68%,#ffd24a 72%,#ffe9a000 76%);box-shadow:0 0 40px #ffd24a88}
+#cenaFeitico .cartaV{position:absolute;width:76px;height:106px;margin:-53px 0 0 -38px;perspective:500px;z-index:5;opacity:0}
+#cenaFeitico .cartaV .giro{position:absolute;inset:0;transform-style:preserve-3d}
+#cenaFeitico .cartaV .face{position:absolute;inset:0;border-radius:8px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ font-family:Cinzel,serif;font-weight:700;font-size:11px;text-align:center;gap:4px;padding:4px}
+#cenaFeitico .cartaV .verso{background:repeating-linear-gradient(45deg,#3a2c48 0 6px,#33263f 6px 12px);border:2px solid #574670;color:#b9a9cc;font-size:26px}
+#cenaFeitico .cartaV .frente{transform:rotateY(180deg)}
+#cenaFeitico .cartaV .frente b{font-size:28px}
+#cenaFeitico .cartaV .frente.inocente{background:var(--parch);color:#2d5a33;border:2px solid #8a7a55}
+#cenaFeitico .cartaV .frente.guardiao{background:#d9e4f2;color:#24497a;border:2px solid #6a86ad}
+#cenaFeitico .cartaV .frente.bruxa{background:#3b0d0d;color:#ff8a8a;border:2px solid #c33}
+#cenaFeitico .tituloF{position:absolute;left:0;right:0;top:9%;text-align:center;font-family:Cinzel,serif;font-weight:700;font-size:clamp(22px,5.2vw,40px);
+ color:#efe6ff;text-shadow:0 0 16px #9b4dff,0 0 34px #4a1a99;opacity:0;padding:0 12px}
+#cenaFeitico .subF{position:absolute;left:0;right:0;top:calc(9% + clamp(34px,7vw,54px));text-align:center;color:#d8cfe8;font-size:18px;opacity:0;padding:0 12px}
+#cenaFeitico .pular{position:absolute;bottom:8px;right:14px;color:#ffffff55;font-size:13px;z-index:9}
 #cena .exclama{position:absolute;font-family:Cinzel,serif;font-weight:700;font-size:44px;color:#ffd04a;text-shadow:0 0 10px #f80;opacity:0}
 </style>
 </head>
@@ -618,7 +651,7 @@ async function revelarCarta(t, carta, motivo){
   checarVitoria();
 }
 
-async function morre(t, motivo){
+async function morre(t, motivo, semSom = false){
   if (!t.alive) return;
   t.alive = false;
   t.pistas.forEach(x => x.rev = true);
@@ -626,7 +659,7 @@ async function morre(t, motivo){
   G.discard.push(...removiveis(t), ...t.hand, ...t.acus.map(a => a.k));
   t.hand = []; t.azuis = []; t.acus = [];
   const eraB = t.team === 'bruxa';
-  log(`💀 ${nm(t)} morreu (${motivo}). ${eraB ? '<b>Já foi bruxa!</b>' : 'Nunca foi bruxa.'}`, eraB ? 'good' : 'bad', null, 'morte');
+  log(`💀 ${nm(t)} morreu (${motivo}). ${eraB ? '<b>Já foi bruxa!</b>' : 'Nunca foi bruxa.'}`, eraB ? 'good' : 'bad', null, semSom ? null : 'morte');
   G.players.forEach(b => {
     if (b.isHuman) return;
     G.history.forEach(h => { if (h.t === t.id) b.b[h.by] += eraB ? (h.n > 0 ? -.4 * h.n : 1.5) : (h.n > 0 ? .4 * h.n : -.5); });
@@ -746,19 +779,30 @@ async function noite(){
     const chance = p.team === 'bruxa' ? .12 : .12 + pontos(p) / LIM * .15 + (oc.length >= 3 ? .08 : 0);
     if (Math.random() < chance) conf.push({p, c:rnd(seguras)});
   });
-  const confessou = new Set();
+  const confessou = new Map(); // quem confessou -> carta revelada
   for (const x of conf){
     if (!x || G.over || !x.p.alive || x.c.rev) continue;
-    log(`🙊 ${nm(x.p)} confessa.`, '', null, 'confissao'); confessou.add(x.p);
+    log(`🙊 ${nm(x.p)} confessa.`, '', null, 'confissao'); confessou.set(x.p, x.c);
     await revelarCarta(x.p, x.c, 'confissão'); await delay(.4);
   }
   if (!G.over){
+    const meuGF = G;
     if (!vitima || !vitima.alive) log('A noite passou sem mortes.', 'good', null, 'alivio');
-    else if (vitima === protegido || vitima.azuis.includes('refugio') || confessou.has(vitima)){
-      log('🕊️ As bruxas atacaram, mas ninguém morreu esta noite.', 'good', null, 'alivio');
+    else if (confessou.has(vitima)){
+      // a vítima confessou: joga a carta revelada na frente do feitiço
+      await mostrarCenaFeitico({tipo:'confissao', nome:vitima.nome, carta:confessou.get(vitima).t});
+      if (G !== meuGF) return;
+      log(`🕊️ As bruxas atacaram ${nm(vitima)}, mas a confissão a(o) salvou.`, 'good');
+    } else if (vitima === protegido || vitima.azuis.includes('refugio')){
+      // protegida: a cena não mostra quem era (continua segredo)
+      await mostrarCenaFeitico({tipo:'protegido', nome:''});
+      if (G !== meuGF) return;
+      log('🕊️ As bruxas atacaram, mas ninguém morreu esta noite.', 'good');
     } else {
+      await mostrarCenaFeitico({tipo:'morte', nome:vitima.nome});
+      if (G !== meuGF) return;
       log(`🩸 ${nm(vitima)} foi encontrado(a) morto(a) ao amanhecer!`, 'bad');
-      await morre(vitima, 'morto pelas bruxas à noite');
+      await morre(vitima, 'morto pelas bruxas à noite', true);
     }
   }
   await delay(.8);
@@ -1200,6 +1244,12 @@ const EFEITOS = {
   suaVez(t){ Som.sinoNota(784, t, .16, 1); Som.sinoNota(1046, t + .16, .16, 1.2); },
   comprar(t){ Som.puxar(); setTimeout(() => Som.puxar(), 140); },
   carta(t){ Som.puxar(); },
+  sombra(t){ Som.chiado(t, 1.2, .35, 'lowpass', 120, {para:600, ataque:.4}); Som.tom(55, 'sawtooth', t, 1.4, .12, {para:41, filtro:'lowpass', ff:300, ataque:.4}); },
+  feiticoCarga(t){ Som.tom(180, 'sawtooth', t, 1, .14, {para:900, filtro:'bandpass', ff:900, q:3, ataque:.2, vib:9, vibAmt:30}); Som.chiado(t, 1, .18, 'bandpass', 600, {para:3000, q:4, ataque:.3}); },
+  feiticoRaio(t){ Som.tom(1600, 'sawtooth', t, .4, .2, {para:120, filtro:'lowpass', ff:3000}); Som.chiado(t, .4, .3, 'bandpass', 4000, {para:600, q:2}); },
+  feiticoAcerta(t){ Som.batida(t, .6, 90); Som.chiado(t, .5, .4, 'highpass', 1500, {para:6000}); [146.8, 155.6].forEach(f => Som.tom(f, 'sawtooth', t, .9, .1, {filtro:'lowpass', ff:800})); },
+  cinzas(t){ Som.chiado(t, 1.6, .25, 'bandpass', 3000, {para:800, q:.8, ataque:.2}); },
+  escudo(t){ Som.sinoNota(1318, t, .2, 1.2); Som.tom(1976, 'sine', t + .05, .6, .1); Som.chiado(t, .3, .2, 'highpass', 5000); },
   tremor(t){ for (let i = 0; i < 16; i++){ const tt = t + i * .055 + Math.random() * .015; Som.chiado(tt, .025, .35, 'bandpass', 2600 + Math.random() * 900, {q:6}); } },
   acusar1(t){ Som.batida(t, .55); },
   acusar3(t){ Som.batida(t, .75, 120); Som.batida(t + .12, .6, 110); Som.tom(98, 'sawtooth', t, .5, .1, {filtro:'lowpass', ff:600}); },
@@ -1291,8 +1341,11 @@ const Musica = {
 try { Som.mudo = localStorage.getItem('ldc-mudo') === '1'; Musica.ligada = localStorage.getItem('ldc-musica') !== '0'; } catch (e) {}
 document.addEventListener('pointerdown', () => { Som.ok(); if (G || CV) Musica.iniciar(); }); // navegadores só liberam som depois de um toque
 
+// Espera uma animação, mas nunca mais que a duração dela (com a aba em segundo plano o navegador pausa animações)
+const terminar = a => a ? Promise.race([a.finished.catch(() => {}), sleep((a.effect && a.effect.getTiming().duration || 0) + 200)]) : Promise.resolve();
 // ---------- cena animada da Conspiração ----------
 const DUR_CENA = 6300;
+const TRAVA_CENA = 12000; // nenhuma cena passa disso, aconteça o que acontecer
 let cenaAtiva = null;
 function corManto(nome){
   let h = 0; for (const ch of String(nome)) h = (h * 31 + ch.charCodeAt(0)) % 360;
@@ -1342,10 +1395,11 @@ function cenaConspiracao(nome){
     document.body.appendChild(el);
     const fim = () => {
       if (acabou) return; acabou = true; cenaAtiva = null;
-      el.animate([{opacity:1}, {opacity:0}], {duration:pulou ? 150 : 450, fill:'forwards'}).finished.then(() => { el.remove(); resolve(); });
+      el.animate([{opacity:1}, {opacity:0}], {duration:pulou ? 150 : 450, fill:'forwards'}); setTimeout(() => { el.remove(); resolve(); }, pulou ? 170 : 470);
     };
     const pular = () => { pulou = true; fim(); };
     cenaAtiva = {pular};
+    setTimeout(pular, TRAVA_CENA);
     el.onclick = pular;
     const esperar = ms => new Promise(r => setTimeout(r, ms));
     const q = s => el.querySelector(s), qa = s => [...el.querySelectorAll(s)];
@@ -1392,15 +1446,15 @@ function cenaConspiracao(nome){
       A(ex, [{opacity:1}, {opacity:0}], {duration:200});
       // 5) ergue a carta...
       const cd = q('.cartaC.dir');
-      await A(cd, [{transform:'rotate(7deg) translateY(-16px) scale(1.1)'}, {transform:'rotate(-16deg) translateY(-95px) scale(1.15)'}],
-        {duration:340, easing:'cubic-bezier(.3,0,.3,1)'}).finished; if (pulou) return;
+      await terminar(A(cd, [{transform:'rotate(7deg) translateY(-16px) scale(1.1)'}, {transform:'rotate(-16deg) translateY(-95px) scale(1.15)'}],
+        {duration:340, easing:'cubic-bezier(.3,0,.3,1)'})); if (pulou) return;
       // ...e BATE NA MESA
       const palco = q('.palco'), pr = palco.getBoundingClientRect();
       const baseX = pr.left + cd.offsetLeft + cd.offsetWidth / 2, baseY = pr.top + cd.offsetTop + cd.offsetHeight / 2;
       const tx = pr.left + pr.width / 2, ty = pr.bottom - pr.height * .15;
       const dx = tx - baseX, dy = ty - baseY;
-      await A(cd, [{transform:'rotate(-16deg) translateY(-95px) scale(1.15)'}, {transform:`translate(${dx}px,${dy}px) rotate(4deg) scale(1.35)`}],
-        {duration:170, easing:'cubic-bezier(.7,0,1,1)'}).finished; if (pulou) return;
+      await terminar(A(cd, [{transform:'rotate(-16deg) translateY(-95px) scale(1.15)'}, {transform:`translate(${dx}px,${dy}px) rotate(4deg) scale(1.35)`}],
+        {duration:170, easing:'cubic-bezier(.7,0,1,1)'})); if (pulou) return;
       Som.pancada();
       A(cd.querySelector('.polegar'), [{opacity:1}, {opacity:0}], {duration:250});
       A(cd, [{transform:`translate(${dx}px,${dy}px) rotate(4deg) scale(1.35)`}, {transform:`translate(${dx}px,${dy + 5}px) rotate(4deg) scale(1.42,1.22)`}, {transform:`translate(${dx}px,${dy}px) rotate(4deg) scale(1.32)`}], {duration:280});
@@ -1487,10 +1541,11 @@ function cenaNoite(pessoas){ // pessoas: [{nome, eu}]
     document.body.appendChild(el);
     const fim = () => {
       if (acabou) return; acabou = true; cenaAtiva = null; clearInterval(bafos);
-      el.animate([{opacity:1}, {opacity:0}], {duration:pulou ? 150 : 600, fill:'forwards'}).finished.then(() => { el.remove(); resolve(); });
+      el.animate([{opacity:1}, {opacity:0}], {duration:pulou ? 150 : 600, fill:'forwards'}); setTimeout(() => { el.remove(); resolve(); }, pulou ? 170 : 620);
     };
     const pular = () => { pulou = true; fim(); };
     cenaAtiva = {pular};
+    setTimeout(pular, TRAVA_CENA);
     el.onclick = pular;
     const esperar = ms => new Promise(r => setTimeout(r, ms));
     const q = s => el.querySelector(s), qa = s => [...el.querySelectorAll(s)];
@@ -1517,7 +1572,7 @@ function cenaNoite(pessoas){ // pessoas: [{nome, eu}]
         b.style.left = (m.offsetWidth / 2 - 5) + 'px'; b.style.top = (m.offsetWidth * .62) + 'px';
         m.appendChild(b);
         b.animate([{opacity:.75, transform:'translate(0,0) scale(.6)'}, {opacity:0, transform:`translate(${8 + Math.random() * 10}px,-${18 + Math.random() * 14}px) scale(2.2)`}],
-          {duration:1100, easing:'ease-out'}).finished.then(() => b.remove());
+          {duration:1100, easing:'ease-out'}); setTimeout(() => b.remove(), 1150);
       }, 260);
       await esperar(500); if (pulou) return;
       A('.titulo', [{opacity:0, transform:'translateY(14px)', filter:'blur(6px)'}, {opacity:1, transform:'translateY(0)', filter:'blur(0px)'}], {duration:700, easing:'ease-out'});
@@ -1535,6 +1590,182 @@ async function mostrarCenaNoite(){
   const loc = local();
   if (loc) await cenaNoite(vs.map(q => ({nome:q.nome, eu:q === loc})));
   else await sleep(DUR_NOITE);
+}
+
+// ---------- cena do feitiço: a sombra da bruxa ataca a vítima da noite ----------
+const DUR_FEITICO = 7600;
+function svgVitima(nome, anonimo){
+  const [m, me] = anonimo ? ['#3a3448', '#221d2c'] : corManto(nome);
+  return `<svg viewBox="0 0 100 150" aria-hidden="true">
+    <defs><radialGradient id="peleV" cx=".45" cy=".38" r=".7"><stop offset="0" stop-color="#f6dcb6"/><stop offset="1" stop-color="#d4a171"/></radialGradient></defs>
+    <path d="M10 150 C14 108 30 92 50 92 C70 92 86 108 90 150 Z" fill="${m}"/>
+    <path d="M20 62 C19 26 34 12 50 12 C66 12 81 26 80 62 C80 82 70 96 50 96 C30 96 20 82 20 62 Z" fill="${me}"/>
+    ${anonimo ? `<ellipse cx="50" cy="56" rx="22" ry="25" fill="#110e18"/><text x="50" y="66" text-anchor="middle" font-size="28" font-family="Cinzel,serif" fill="#8d84a3">?</text>` : `
+    <ellipse class="rosto" cx="50" cy="56" rx="22" ry="25" fill="url(#peleV)"/>
+    <path d="M33 44 L44 39" stroke="#4a2e1e" stroke-width="2.6" stroke-linecap="round"/><path d="M56 39 L67 44" stroke="#4a2e1e" stroke-width="2.6" stroke-linecap="round"/>
+    <ellipse cx="41" cy="52" rx="7" ry="6.2" fill="#fff" stroke="#3a2418" stroke-width=".8"/>
+    <ellipse cx="59" cy="52" rx="7" ry="6.2" fill="#fff" stroke="#3a2418" stroke-width=".8"/>
+    <circle class="pupila" cx="39" cy="52" r="1.9" fill="#24160d"/><circle class="pupila" cx="57" cy="52" r="1.9" fill="#24160d"/>
+    <ellipse class="boca" cx="50" cy="70" rx="4.5" ry="6" fill="#4a1714"/>
+    <path d="M70 40 q4 6 0 9 q-4 -3 0 -9z" fill="#a8dcff"/>`}
+    <path d="M22 118 Q50 134 78 118" stroke="${me}" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <ellipse cx="25" cy="117" rx="6" ry="5" fill="${anonimo ? '#3a3448' : '#d9a979'}"/><ellipse cx="75" cy="117" rx="6" ry="5" fill="${anonimo ? '#3a3448' : '#d9a979'}"/>
+  </svg>`;
+}
+// Só a silhueta: ninguém sabe quem é a bruxa
+const SVG_SOMBRA = `<svg viewBox="0 0 220 280" aria-hidden="true"><g fill="#000">
+  <path d="M64 72 C80 50 92 22 96 4 C104 18 108 30 112 40 C118 34 128 32 134 36 C124 40 118 50 120 70 Z"/>
+  <ellipse cx="98" cy="72" rx="62" ry="10"/>
+  <ellipse cx="98" cy="94" rx="25" ry="27"/>
+  <path d="M98 112 C58 122 36 176 22 280 L178 280 C170 196 152 132 98 112 Z"/>
+  <path d="M24 280 L10 262 L32 268 Z M176 280 L194 258 L170 270 Z"/>
+  </g>
+  <path class="braco" d="M118 132 C146 128 170 118 196 104" stroke="#000" stroke-width="18" stroke-linecap="round" fill="none"/>
+  <path d="M195 98 l17 -12 M198 104 l20 -3 M197 110 l18 9 M190 96 l4 -18" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+  <circle class="olhoS" cx="89" cy="92" r="2.6" fill="#ff3b3b"/><circle class="olhoS" cx="107" cy="92" r="2.6" fill="#ff3b3b"/>
+</svg>`;
+function cenaFeitico(d){ // d: {tipo:'morte'|'confissao'|'protegido', nome, carta}
+  if (cenaAtiva) cenaAtiva.pular();
+  return new Promise(resolve => {
+    let pulou = false, acabou = false;
+    const anon = d.tipo === 'protegido';
+    const el = document.createElement('div'); el.id = 'cenaFeitico';
+    const tipoCarta = d.carta === 'guardiao' ? 'guardiao' : d.carta === 'bruxa' ? 'bruxa' : 'inocente';
+    el.innerHTML = `<div class="luaP"></div><div class="nevoa"></div><div class="chaoF"></div>
+      <div class="sombra">${SVG_SOMBRA}</div>
+      <div class="vitima"><div class="corpoV">${svgVitima(d.nome, anon)}</div><div class="nomeV">${anon ? '???' : esc(d.nome)}</div></div>
+      <div class="orbe"></div>
+      ${d.tipo === 'confissao' ? `<div class="cartaV"><div class="giro"><div class="face verso">☾</div><div class="face frente ${tipoCarta}"><b>${ICONE[tipoCarta]}</b>${TIPO[tipoCarta].replace(/^\S+\s/, '')}</div></div></div>` : ''}
+      <div class="tituloF"></div><div class="subF"></div><div class="pular">toque para pular</div>`;
+    const titulo = d.tipo === 'morte' ? `💀 ${esc(d.nome)} foi levado(a) pela escuridão` : d.tipo === 'confissao' ? `🙊 ${esc(d.nome)} confessou e se salvou!` : '🕊️ Algo protegeu a vítima esta noite';
+    const sub = d.tipo === 'morte' ? 'A bruxa continua escondida entre vocês...' : d.tipo === 'confissao' ? `Revelou: ${TIPO[tipoCarta]}` : 'O feitiço das bruxas falhou.';
+    el.querySelector('.tituloF').innerHTML = titulo; el.querySelector('.subF').innerHTML = sub;
+    document.body.appendChild(el);
+    const fim = () => {
+      if (acabou) return; acabou = true; cenaAtiva = null;
+      el.animate([{opacity:1}, {opacity:0}], {duration:pulou ? 150 : 600, fill:'forwards'}); setTimeout(() => { el.remove(); resolve(); }, pulou ? 170 : 620);
+    };
+    const pular = () => { pulou = true; fim(); };
+    cenaAtiva = {pular};
+    setTimeout(pular, TRAVA_CENA); el.onclick = pular;
+    const esperar = ms => new Promise(r => setTimeout(r, ms));
+    const q = s => el.querySelector(s), qa = s => [...el.querySelectorAll(s)];
+    const A = (alvo, kf, op) => { const e = typeof alvo === 'string' ? q(alvo) : alvo; return e ? e.animate(kf, {fill:'forwards', ...op}) : null; };
+    const centro = e => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+    const tremer = (e, ms, forca = 2) => A(e, Array.from({length:9}, (_, i) => ({transform:i === 8 ? 'translate(0,0)' : `translate(${(Math.random() - .5) * 2 * forca}px,${(Math.random() - .5) * forca}px)`})), {duration:ms, iterations:Infinity});
+
+    (async () => {
+      A(el, [{opacity:0}, {opacity:1}], {duration:500});
+      qa('.nevoa').forEach(nv => A(nv, [{transform:'translateX(-5%)'}, {transform:'translateX(5%)'}], {duration:4000, direction:'alternate', iterations:Infinity}));
+      // a vítima aparece, olhando em volta assustada
+      A('.vitima', [{opacity:0, transform:'translateY(20px)'}, {opacity:1, transform:'translateY(0)'}], {duration:500, easing:'ease-out'});
+      const corpo = q('.corpoV');
+      await esperar(500); if (pulou) return;
+      // a SOMBRA cresce do chão, atrás dela
+      Som.tocar('sombra');
+      A('.sombra', [{transform:'scaleY(0)', opacity:.2}, {transform:'scaleY(1.06)', opacity:1, offset:.8}, {transform:'scaleY(1)', opacity:1}], {duration:1000, easing:'cubic-bezier(.3,.9,.3,1)'});
+      qa('.olhoS').forEach(o => A(o, [{opacity:0}, {opacity:0, offset:.6}, {opacity:1}], {duration:1200}));
+      await esperar(400);
+      // a vítima percebe: arregala os olhos e treme
+      qa('.vitima .pupila').forEach(p => A(p, [{transform:'translate(0,0)'}, {transform:'translate(-1.5px,-.5px) scale(.8)'}], {duration:250}));
+      A('.vitima .boca', [{transform:'scale(1)'}, {transform:'scale(1.25,1.35)'}], {duration:250});
+      const tremor = tremer(corpo, 110, anon ? 1.5 : 3);
+      Som.tocar('tremor');
+      await esperar(900); if (pulou) return;
+      // a bruxa junta energia na mão...
+      const sombraR = q('.sombra').getBoundingClientRect();
+      const mao = [sombraR.left + sombraR.width * .93, sombraR.top + sombraR.height * .36];
+      const orbe = q('.orbe'); orbe.style.left = mao[0] + 'px'; orbe.style.top = mao[1] + 'px';
+      Som.tocar('feiticoCarga');
+      A(orbe, [{opacity:0, transform:'scale(.2)'}, {opacity:1, transform:'scale(1.3)'}, {opacity:1, transform:'scale(1)'}], {duration:900, easing:'ease-out'});
+      A(orbe, [{filter:'hue-rotate(0deg)'}, {filter:'hue-rotate(40deg)'}], {duration:300, iterations:Infinity, direction:'alternate'});
+      await esperar(700); if (pulou) return;
+      // a confissão: a vítima joga a carta na frente do feitiço
+      const [vx, vy] = centro(corpo), rc = corpo.getBoundingClientRect();
+      // na confissão a carta é erguida acima da cabeça, como um escudo contra o feitiço que vem de cima
+      const alvoX = d.tipo === 'confissao' ? vx - rc.width * .14 : vx, alvoY = d.tipo === 'confissao' ? rc.top - 14 : vy - 10;
+      if (d.tipo === 'confissao'){
+        const cv = q('.cartaV'); cv.style.left = alvoX + 'px'; cv.style.top = alvoY + 'px';
+        Som.tocar('carta');
+        A(cv, [{opacity:1, transform:`translate(${vx - alvoX}px,${vy - alvoY + 30}px) rotate(20deg) scale(.5)`}, {opacity:1, transform:'translate(0,0) rotate(-6deg) scale(1.15)'}],
+          {duration:420, easing:'cubic-bezier(.2,.9,.3,1)'});
+        await esperar(420); if (pulou) return;
+        Som.tocar('virar');
+        await terminar(A(q('.cartaV .giro'), [{transform:'rotateY(0)'}, {transform:'rotateY(180deg)'}], {duration:420, easing:'ease-in-out'})); if (pulou) return;
+        await esperar(250); if (pulou) return;
+      }
+      if (d.tipo === 'protegido'){
+        const r = corpo.getBoundingClientRect(), tam = Math.max(r.width, r.height) * 1.25;
+        const esc2 = document.createElement('div'); esc2.className = 'escudo';
+        Object.assign(esc2.style, {width:tam + 'px', height:tam + 'px', left:(vx - tam / 2) + 'px', top:(vy - tam / 2) + 'px'});
+        el.appendChild(esc2);
+        Som.tocar('escudo');
+        A(esc2, [{opacity:0, transform:'scale(.6)'}, {opacity:1, transform:'scale(1)'}], {duration:400, easing:'ease-out'});
+        await esperar(350); if (pulou) return;
+      }
+      // ...e LANÇA O FEITIÇO
+      Som.tocar('feiticoRaio');
+      const voo = d.tipo === 'protegido' ? [vx - rc.width * .5, rc.top + rc.height * .28] : [alvoX, alvoY];
+      const rastro = setInterval(() => {
+        const [ox, oy] = centro(orbe), t = document.createElement('div'); t.className = 'rastro';
+        t.style.left = ox + 'px'; t.style.top = oy + 'px'; el.appendChild(t);
+        t.animate([{opacity:.8, transform:'scale(1)'}, {opacity:0, transform:'scale(.2)'}], {duration:350}); setTimeout(() => t.remove(), 400);
+      }, 25);
+      await terminar(A(orbe, [{left:mao[0] + 'px', top:mao[1] + 'px'}, {left:voo[0] + 'px', top:(voo[1] - 30) + 'px', offset:.5}, {left:voo[0] + 'px', top:voo[1] + 'px'}],
+        {duration:480, easing:'cubic-bezier(.5,0,.9,.6)'}));
+      clearInterval(rastro); if (pulou) return;
+      // impacto
+      const anel = document.createElement('div'); anel.className = 'anel'; anel.style.left = voo[0] + 'px'; anel.style.top = voo[1] + 'px'; el.appendChild(anel);
+      A(anel, [{opacity:1, transform:'scale(.5)'}, {opacity:0, transform:'scale(6)'}], {duration:600, easing:'ease-out'});
+      A(orbe, [{opacity:1, transform:'scale(1)'}, {opacity:0, transform:'scale(3)'}], {duration:300});
+      A(el, [{filter:'brightness(2.2)'}, {filter:'brightness(1)'}], {duration:350});
+      if (d.tipo === 'morte'){
+        Som.tocar('feiticoAcerta');
+        tremor.cancel();
+        // a vítima vira cinzas
+        A(corpo, [{filter:'grayscale(0) brightness(1)'}, {filter:'grayscale(1) brightness(.55)'}], {duration:600, fill:'forwards'});
+        await esperar(500); if (pulou) return;
+        Som.tocar('cinzas');
+        const r = corpo.getBoundingClientRect();
+        for (let i = 0; i < 70; i++){
+          const c = document.createElement('div'); c.className = 'cinza';
+          const x = r.left + Math.random() * r.width, y = r.top + Math.random() * r.height;
+          c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.background = rnd(['#8d8a94', '#5c5866', '#b3aeb9', '#3f3b47']);
+          el.appendChild(c);
+          A(c, [{opacity:1, transform:'translate(0,0)'}, {opacity:0, transform:`translate(${40 + Math.random() * 160}px,${-60 - Math.random() * 160}px) scale(${.3 + Math.random()})`}],
+            {duration:1200 + Math.random() * 900, delay:Math.random() * 500, easing:'ease-out'});
+        }
+        A(corpo, [{opacity:1, transform:'translateY(0)'}, {opacity:0, transform:'translateY(16px) scaleY(.85)'}], {duration:1100, delay:200});
+        A('.nomeV', [{opacity:1}, {opacity:.35}], {duration:800});
+        setTimeout(() => Som.tocar('morte'), 700);
+      } else {
+        Som.tocar('escudo');
+        // o feitiço se despedaça
+        for (let i = 0; i < 26; i++){
+          const s = document.createElement('div'); s.className = 'rastro';
+          s.style.left = voo[0] + 'px'; s.style.top = voo[1] + 'px'; el.appendChild(s);
+          const a = Math.random() * Math.PI * 2, dist = 50 + Math.random() * 120;
+          A(s, [{opacity:1, transform:'translate(0,0) scale(1)'}, {opacity:0, transform:`translate(${Math.cos(a) * dist}px,${Math.sin(a) * dist}px) scale(.3)`}], {duration:700, easing:'ease-out'});
+        }
+        if (d.tipo === 'confissao') A(q('.cartaV .frente'), [{boxShadow:'0 0 0 #fff'}, {boxShadow:'0 0 40px #fff'}, {boxShadow:'0 0 16px #fff8'}], {duration:700});
+        else A(q('.escudo'), [{opacity:1}, {opacity:1, filter:'brightness(2)'}, {opacity:.5}], {duration:700});
+        // a sombra recua e some
+        A('.sombra', [{transform:'scaleY(1)', opacity:1}, {transform:'scaleY(0)', opacity:0}], {duration:900, delay:300, easing:'ease-in'});
+        await esperar(700); tremor.cancel();
+        A(corpo, [{transform:'translateY(0)'}, {transform:'translateY(-6px)'}, {transform:'translateY(0)'}], {duration:500});
+        Som.tocar('alivio');
+      }
+      await esperar(500); if (pulou) return;
+      A('.tituloF', [{opacity:0, transform:'translateY(12px)'}, {opacity:1, transform:'translateY(0)'}], {duration:600, easing:'ease-out'});
+      A('.subF', [{opacity:0}, {opacity:1}], {duration:600, delay:300});
+      await esperar(2400);
+      fim();
+    })();
+  });
+}
+async function mostrarCenaFeitico(d){
+  G.players.forEach(p => { if (p.ctl === 'remoto') enviar(p.conn, {t:'cena', tipo:'feitico', d}); });
+  if (local()) await cenaFeitico(d); else await sleep(DUR_FEITICO);
 }
 
 // No anfitrião: mostra a cena para todos (convidados recebem uma mensagem) e espera ela acabar
@@ -1719,6 +1950,7 @@ function clienteRecebe(d){
     $('listaLobby').innerHTML = d.nomes.map((n, i) => `<li>${AV_HUMANOS[i % AV_HUMANOS.length]} ${esc(n)}</li>`).join('');
   } else if (d.t === 'cena'){
     if (d.tipo === 'conspiracao') cenaConspiracao(String(d.nome || ''));
+    else if (d.tipo === 'feitico' && d.d) cenaFeitico({tipo:['morte', 'confissao', 'protegido'].includes(d.d.tipo) ? d.d.tipo : 'protegido', nome:String(d.d.nome || ''), carta:String(d.d.carta || '')});
     else if (d.tipo === 'noite' && Array.isArray(d.pessoas)) cenaNoite(d.pessoas.map(p => ({nome:String(p.nome || ''), eu:CV && p.id === CV.meId})));
   } else if (d.t === 'logs'){
     if (d.reinicio) LOG_CLIENTE = [];
