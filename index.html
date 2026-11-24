@@ -72,6 +72,19 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 .ln.trial{color:#ffb35a}.ln.bad{color:#ff8a8a}.ln.good{color:#8fd39a}.ln.acc{color:#f1c9b9}
 .ln.chat{color:#cfc3e0;font-style:italic}.ln.chat b{font-style:normal;color:var(--parch)}
 .ln.priv{color:#9cc0f0}
+.ln.fala{color:var(--txt);background:#ffffff08;border-left:3px solid var(--gold);padding:4px 6px;margin:3px 0;border-radius:0 6px 6px 0;word-wrap:break-word}
+.ln.fala b{color:var(--gold)}
+.ln.fala.minha{border-left-color:#8fd39a}.ln.fala.minha b{color:#8fd39a}
+.ln.sussurro{color:#e6c8ff;background:#4a1a6a33;border-left:3px solid #b77cff;padding:4px 6px;margin:3px 0;border-radius:0 6px 6px 0;font-style:italic;word-wrap:break-word}
+.ln.sussurro b{color:#d9a8ff;font-style:normal}
+#lado{display:flex;flex-direction:column;gap:8px;min-width:0}
+#chat{display:flex;gap:6px}
+#chat input{flex:1;min-width:0;font:inherit;font-size:15px;padding:8px 10px;border-radius:8px;border:1px solid #574670;background:#1a1420;color:var(--txt)}
+#chat input:focus{outline:none;border-color:var(--gold)}
+#chat select{font:inherit;font-size:13px;border-radius:8px;border:1px solid #574670;background:#1a1420;color:var(--txt);padding:0 4px}
+#chat select.bru{border-color:#b77cff;color:#e6c8ff}
+#chat button{padding:6px 12px;font-size:16px}
+#chat input:disabled{opacity:.5}
 #maoBox{padding:6px 16px 22px}
 #instr{margin:0 0 8px;color:var(--parch2);min-height:24px}
 #mao{display:flex;gap:10px;flex-wrap:wrap}
@@ -132,7 +145,7 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 #adminC .aviso{background:#2f2410;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:14px}
 /* ---------- a mesona ---------- */
 #jogadores.mesaModo{display:block;position:relative;height:clamp(560px,74vh,820px)}
-#jogadores.mesaModo ~ #log, main:has(#jogadores.mesaModo) #log{height:clamp(560px,74vh,820px)}
+main:has(#jogadores.mesaModo) #log{height:calc(clamp(560px,74vh,820px) - 48px)}
 .mesaTampo{position:absolute;left:10%;right:10%;top:14%;bottom:14%;border-radius:50%;border:26px solid transparent;
  background:radial-gradient(ellipse at 50% 42%,#6a2329 0%,#4a171c 50%,#2c0d10 78%) padding-box,
   linear-gradient(160deg,#8a5428 0%,#5a3216 30%,#7a4a22 52%,#4a2810 75%,#6b3f1c 100%) border-box;
@@ -297,7 +310,14 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
 </header>
 <main>
   <section id="jogadores"></section>
-  <aside id="log"><h3>Crônica da Vila</h3><div id="logL"></div></aside>
+  <aside id="lado">
+    <div id="log"><h3>Crônica da Vila</h3><div id="logL"></div></div>
+    <form id="chat" autocomplete="off">
+      <select id="chatCanal" hidden title="Para quem"><option value="todos">💬 Todos</option><option value="bruxas">☾ Só bruxas</option></select>
+      <input id="chatTxt" maxlength="160" placeholder="Fale com a vila...">
+      <button id="chatEnviar" type="submit" title="Enviar">➤</button>
+    </form>
+  </aside>
 </main>
 <section id="maoBox">
   <p id="instr"></p>
@@ -489,10 +509,12 @@ function conheceTime(viewer, p){
 
 // ---------- log (com linhas privadas) ----------
 function log(html, cls = '', to = null, som = null){
-  G.logs.push(som ? {h:html, c:cls, to, s:som} : {h:html, c:cls, to});
+  const linha = som ? {h:html, c:cls, to, s:som} : {h:html, c:cls, to};
+  G.logs.push(linha);
   const loc = local();
   if (som && loc && (to == null || to === loc.id)) tocarSomLinha(som, loc.team);
   atualizar();
+  return linha;
 }
 // "fim" depende de quem ouve: fanfarra para quem venceu, melodia triste para quem perdeu
 function tocarSomLinha(som, meuTime){
@@ -502,6 +524,34 @@ function tocarSomLinha(som, meuTime){
   Som.tocar(som);
 }
 const fala = (p, txt) => log(`<b>${esc(p.nome)}:</b> “${esc(txt)}”`, 'chat');
+
+// ---------- chat entre os jogadores (passa sempre pelo anfitrião) ----------
+const ultimoChat = new Map();
+function receberChat(pid, texto, canal){
+  if (!G) return;
+  const p = G.players[pid]; if (!p || !p.isHuman) return;
+  const txt = String(texto || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+  if (!txt) return;
+  const agora = Date.now();
+  if (agora - (ultimoChat.get(pid) || 0) < 700) return; // sem spam
+  ultimoChat.set(pid, agora);
+  if (!p.alive && !G.over){ log('💀 Os mortos ficam em silêncio: você não pode mais falar nesta partida.', 'priv', pid); return; }
+  if (canal === 'bruxas' && p.team === 'bruxa' && !G.over){
+    G.players.filter(q => q.team === 'bruxa').forEach(q => {
+      log(`☾ <b>${esc(p.nome)}</b> <small>(só bruxas)</small>: ${esc(txt)}`, 'sussurro', q.id, q === p ? null : 'chat').de = pid;
+    });
+    return;
+  }
+  log(`<b>${esc(p.nome)}:</b> ${esc(txt)}`, 'fala', null, 'chat').de = pid;
+}
+function enviarChat(){
+  const inp = $('chatTxt'), txt = inp.value.trim();
+  if (!txt) return;
+  const canal = $('chatCanal').hidden ? 'todos' : $('chatCanal').value;
+  if (NET.modo === 'cliente') enviar(NET.hostConn, {t:'chat', txt, canal});
+  else if (G && local()) receberChat(local().id, txt, canal);
+  inp.value = '';
+}
 
 // ---------- visão de cada jogador (só o que ele pode ver) ----------
 function visao(vid, comLog = true){
@@ -1199,7 +1249,7 @@ function desenhar(v){
   const sig = v.log.length + '|' + (ult ? ult.h : '');
   if (sig !== assinaturaLog){
     assinaturaLog = sig;
-    $('logL').innerHTML = v.log.map(l => `<div class="ln ${l.c}">${l.h}</div>`).join('');
+    $('logL').innerHTML = v.log.map(l => `<div class="ln ${l.c}${l.de != null && l.de === v.meId ? ' minha' : ''}">${l.h}</div>`).join('');
     $('log').scrollTop = $('log').scrollHeight;
   }
   // mão
@@ -1212,6 +1262,14 @@ function desenhar(v){
     el.onclick = () => { if (!CV.minhaVez) return; Som.tocar('clique'); UI.sel = UI.sel === i ? null : i; UI.alvos = []; desenhar(CV); };
     $('mao').appendChild(el);
   });
+  // chat: mortos ficam em silêncio; bruxas podem sussurrar só entre elas
+  const euV = v.players[v.meId], silencio = !v.alive && !v.over, souBruxa = euV && euV.time === 'bruxa' && v.alive && !v.over;
+  $('chat').hidden = false;
+  $('chatTxt').disabled = silencio; $('chatEnviar').disabled = silencio;
+  $('chatCanal').hidden = !souBruxa;
+  if (!souBruxa) $('chatCanal').value = 'todos';
+  $('chatCanal').classList.toggle('bru', $('chatCanal').value === 'bruxas');
+  $('chatTxt').placeholder = silencio ? '💀 Os mortos ficam em silêncio...' : $('chatCanal').value === 'bruxas' ? '☾ Sussurre para as bruxas...' : 'Fale com a vila...';
   $('btnComprar').disabled = !(v.minhaVez && !v.jogou);
   $('btnFim').disabled = !(v.minhaVez && v.jogou);
   $('btnCancelar').disabled = !(v.minhaVez && UI.sel != null);
@@ -1228,6 +1286,9 @@ function desenhar(v){
   else ins = 'Aguarde...';
   $('instr').innerHTML = ins;
 }
+$('chat').hidden = true;
+$('chat').onsubmit = e => { e.preventDefault(); enviarChat(); };
+$('chatCanal').onchange = () => { if (CV) desenhar(CV); $('chatTxt').focus(); };
 // redesenha a mesa quando a janela muda de tamanho (troca entre mesa e grade)
 let timerResize = null;
 window.addEventListener('resize', () => { clearTimeout(timerResize); timerResize = setTimeout(() => { if (CV) desenhar(CV); }, 120); });
@@ -1371,6 +1432,7 @@ const EFEITOS = {
   suaVez(t){ Som.sinoNota(784, t, .16, 1); Som.sinoNota(1046, t + .16, .16, 1.2); },
   comprar(t){ Som.puxar(); setTimeout(() => Som.puxar(), 140); },
   carta(t){ Som.puxar(); },
+  chat(t){ Som.tom(880, 'sine', t, .16, .12, {para:1175, glide:.06, ataque:.005}); Som.tom(1320, 'sine', t + .07, .18, .07, {ataque:.005}); },
   sombra(t){ Som.chiado(t, 1.2, .35, 'lowpass', 120, {para:600, ataque:.4}); Som.tom(55, 'sawtooth', t, 1.4, .12, {para:41, filtro:'lowpass', ff:300, ataque:.4}); },
   feiticoCarga(t){ Som.tom(180, 'sawtooth', t, 1, .14, {para:900, filtro:'bandpass', ff:900, q:3, ataque:.2, vib:9, vibAmt:30}); Som.chiado(t, 1, .18, 'bandpass', 600, {para:3000, q:4, ataque:.3}); },
   feiticoRaio(t){ Som.tom(1600, 'sawtooth', t, .4, .2, {para:120, filtro:'lowpass', ff:3000}); Som.chiado(t, .4, .3, 'bandpass', 4000, {para:600, q:2}); },
@@ -2171,6 +2233,7 @@ function hostRecebe(conn, d){
   const p = G.players.find(q => q.conn === conn && q.ctl === 'remoto');
   if (!p) return;
   if (d.t === 'acao') receberAcao(p.id, d.act);
+  else if (d.t === 'chat') receberChat(p.id, d.txt, d.canal);
   else if (d.t === 'ans'){ const a = NET.asks.get(d.qid); if (a && a.pid === p.id) a.conclui(d.idx, d.texto); }
 }
 function hostDesconectou(conn){
