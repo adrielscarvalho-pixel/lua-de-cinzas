@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lua de Cinzas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#120e17">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lua de Cinzas">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
@@ -144,7 +152,8 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
       <p><i>Uma vila assustada. Bruxas se escondem entre os vizinhos. Ninguém é confiável.</i></p>
       <div id="convidado"></div>
       <label>Seu nome</label><input id="inNome" value="" maxlength="14" placeholder="Seu nome">
-      <div class="secao">
+      <div id="avisoOffline" class="secao" hidden style="color:#ffb35a">📴 <b>Sem internet.</b> O modo online com amigos precisa de conexão, mas você pode jogar contra os bots normalmente.</div>
+      <div class="secao" id="secaoOnline">
         <h3>🌐 Jogar online com amigos</h3>
         <div class="linha"><button class="prim" id="btnCriar">Criar sala</button><span style="color:var(--muted)">ou</span>
           <input id="inCodigo" maxlength="5" placeholder="CÓDIGO" style="text-transform:uppercase"><button id="btnEntrar">Entrar na sala</button></div>
@@ -154,7 +163,8 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
         <div class="linha"><select id="inN" style="flex:1"></select><button id="btnSolo">Começar</button></div>
       </div>
       <p class="msg" id="msgRede"></p>
-      <div class="linha" style="margin-top:10px"><button id="btnRegras2">Regras</button><button id="btnCartas2">Cartas</button></div>
+      <div class="linha" style="margin-top:10px"><button id="btnRegras2">Regras</button><button id="btnCartas2">Cartas</button><button id="btnInstalar" class="prim" hidden>📲 Instalar app</button></div>
+      <p id="dicaInstalar" hidden style="font-size:14px;color:var(--muted);margin:8px 0 0"></p>
     </div>
     <div id="telaLobby" hidden>
       <h2 style="color:var(--gold)">🌐 Sala</h2>
@@ -1238,6 +1248,32 @@ $('btnCopiar').onclick = async () => {
   try { await navigator.clipboard.writeText(link); } catch (e) { $('linkConvite').select(); document.execCommand('copy'); }
   $('btnCopiar').textContent = '✔ Copiado!'; setTimeout(() => { $('btnCopiar').textContent = 'Copiar link'; }, 2000);
 };
+// ---------- app instalável / sem internet ----------
+if ('serviceWorker' in navigator && window.isSecureContext && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch(e => console.warn('modo offline indisponível', e));
+}
+let pedidoInstalar = null;
+const instalado = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); pedidoInstalar = e; if (!instalado()) $('btnInstalar').hidden = false; });
+window.addEventListener('appinstalled', () => { $('btnInstalar').hidden = true; pedidoInstalar = null; });
+$('btnInstalar').onclick = async () => {
+  if (!pedidoInstalar) return;
+  pedidoInstalar.prompt();
+  await pedidoInstalar.userChoice.catch(() => {});
+  pedidoInstalar = null; $('btnInstalar').hidden = true;
+};
+if (!instalado() && /iphone|ipad|ipod/i.test(navigator.userAgent) && location.protocol === 'https:'){
+  $('dicaInstalar').hidden = false;
+  $('dicaInstalar').innerHTML = '📲 Para instalar no iPhone: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.';
+}
+function atualizarConexao(){
+  const sem = !navigator.onLine || typeof Peer === 'undefined';
+  $('avisoOffline').hidden = !sem;
+  ['btnCriar','btnEntrar','inCodigo'].forEach(id => { $(id).disabled = sem; });
+}
+window.addEventListener('online', atualizarConexao);
+window.addEventListener('offline', atualizarConexao);
+atualizarConexao();
 // Aberto por um link de convite (?sala=CODIGO): já preenche a sala e só pede o nome
 (() => {
   const sala = (new URLSearchParams(location.search).get('sala') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
