@@ -491,7 +491,7 @@ function novoJogo(pessoas, n){
   });
   players.forEach(p => players.forEach(q => { if (q !== p) p.b[q.id] = (Math.random() - .5) * .6; }));
   G = {players, deck:[], discard:[], round:0, current:null, over:false, history:[], claims:[], totalBruxas:nb,
-       turno:null, fase:'', noite:false, logs:[], esperando:new Set()};
+       turno:null, fase:'', noite:false, logs:[], esperando:new Set(), secretos:new Set()};
   for (const k in CARDS) for (let i = 0; i < (CARDS[k].qtd || 0); i++) G.deck.push(k);
   shuffle(G.deck);
   players.forEach(p => { for (let i = 0; i < 3; i++) p.hand.push(G.deck.pop()); });
@@ -574,6 +574,7 @@ function visao(vid, comLog = true){
     monte:G.deck.length, descarte:G.discard.length, bruxasRev:rev, totalBruxas:G.totalBruxas,
     minhaVez: !!(G.turno && G.turno.pid === vid && G.turno.res), jogou: !!(G.turno && G.turno.pid === vid && G.turno.jogou),
     esperando:[...G.esperando].filter(id => id !== vid).map(id => G.players[id].nome),
+    segredo:[...G.secretos].some(id => id !== vid),
     alive:me.alive, hand:me.hand.slice(),
     players:G.players.map(p => ({
       id:p.id, nome:p.nome, av:p.av, alive:p.alive, humano:p.isHuman, pts:pontos(p), azuis:p.azuis.slice(),
@@ -617,11 +618,12 @@ function atualizar(){
 
 // ---------- perguntas para pessoas (locais ou remotas) ----------
 let QID = 0;
-function perguntar(p, html, botoes, tempo = 0, padrao = null){
+// secreto = true: os outros NÃO veem quem está decidindo (bruxas, Guardião, confissões, Conspiração)
+function perguntar(p, html, botoes, tempo = 0, padrao = null, secreto = false){
   if (!p.isHuman) return Promise.resolve(padrao != null ? padrao : botoes[0].v);
-  G.esperando.add(p.id); atualizar();
+  (secreto ? G.secretos : G.esperando).add(p.id); atualizar();
   const meuG = G;
-  const terminou = v => { meuG.esperando.delete(p.id); if (G === meuG) atualizar(); return v; };
+  const terminou = v => { meuG.esperando.delete(p.id); meuG.secretos.delete(p.id); if (G === meuG) atualizar(); return v; };
   if (p.ctl === 'local') return modal(html, botoes, tempo, padrao).then(terminou);
   return new Promise(res => {
     const qid = ++QID;
@@ -640,6 +642,13 @@ function perguntar(p, html, botoes, tempo = 0, padrao = null){
   });
 }
 
+// No online, decisões feitas por bots também levam alguns segundos (senão o tempo entrega se a bruxa/Guardião é pessoa)
+async function pausaSecreta(){
+  if (!G || !G.players.some(p => p.ctl === 'remoto')) return;
+  const meuG = G; G.secretos.add(-1); atualizar();
+  await sleep(3000 + Math.random() * 3500);
+  meuG.secretos.delete(-1); if (G === meuG) atualizar();
+}
 // ---------- ações de turno ----------
 function alvoOk(k, pv, sel, meId){ // funciona com a visão (cliente) e é usada também para validar no anfitrião
   if (k === 'furto' && sel.length && pv.id === meId) return true; // o Furto pode ser para você mesmo (metade)
@@ -882,9 +891,10 @@ async function noite(){
     if (decide){
       const parc = bruxas.filter(p => p !== decide).map(p => esc(p.nome)).join(', ');
       vitima = await perguntar(decide, `<h3>🌑 As bruxas abrem os olhos</h3>${parc ? `<p>Suas parceiras: <b>${parc}</b></p>` : ''}<p>Escolha a vítima desta noite:</p>`,
-        alvos.map(t => ({l:`${t.av} ${t.nome}${t.azuis.includes('refugio') ? ' ⛪' : ''}`, v:t})));
+        alvos.map(t => ({l:`${t.av} ${t.nome}${t.azuis.includes('refugio') ? ' ⛪' : ''}`, v:t})), 0, null, true);
       bruxas.filter(p => p.isHuman && p !== decide).forEach(p => log(`🌑 ${nm(decide)} escolheu ${nm(vitima)} como vítima.`, 'priv', p.id));
     } else {
+      await pausaSecreta();
       let bv = -1e9;
       alvos.forEach(t => { const v = ameaca(t) + Math.random() * 1.2 - (t.azuis.includes('refugio') ? 6 : 0); if (v > bv){ bv = v; vitima = t; } });
       bruxas.filter(p => p.isHuman).forEach(p => log(`🌑 Suas parceiras escolheram ${nm(vitima)} como vítima.`, 'priv', p.id));
@@ -892,11 +902,12 @@ async function noite(){
   }
   const guard = vivos().find(ehGuardiao);
   let protegido = null;
+  if (!guard || !guard.isHuman) await pausaSecreta();
   if (guard){
     const opc = vivos().filter(p => p !== guard);
     if (guard.isHuman){
       protegido = await perguntar(guard, `<h3>🏮 O Guardião abre os olhos</h3><p>Escolha alguém para proteger esta noite (não pode ser você):</p>`,
-        opc.map(t => ({l:`${t.av} ${t.nome}`, v:t})));
+        opc.map(t => ({l:`${t.av} ${t.nome}`, v:t})), 0, null, true);
     } else if (guard.team === 'bruxa'){
       protegido = opc.find(p => p.team === 'bruxa') || rnd(opc);
     } else {
@@ -908,11 +919,11 @@ async function noite(){
   // Confissões: todas as pessoas decidem ao mesmo tempo
   const conf = await Promise.all(vivos().filter(p => p.isHuman && ocultas(p).length >= 2).map(async p => {
     const r = await perguntar(p, `<h3>🙊 Confissão</h3><p>Alguém foi escolhido pelas bruxas. Você pode revelar uma das suas cartas de julgamento para ter imunidade esta noite.</p>`,
-      [{l:'Confessar', prim:true, v:true}, {l:'Não confessar', v:false}], 15, false);
+      [{l:'Confessar', prim:true, v:true}, {l:'Não confessar', v:false}], 15, false, true);
     if (!r) return null;
-    const c = await perguntar(p, `<h3>Qual carta revelar?</h3>`, [...ocultas(p).map(x => ({l:TIPO[x.t], v:x})), {l:'Desistir', v:null}]);
+    const c = await perguntar(p, `<h3>Qual carta revelar?</h3>`, [...ocultas(p).map(x => ({l:TIPO[x.t], v:x})), {l:'Desistir', v:null}], 0, null, true);
     if (!c) return null;
-    if (c.t === 'bruxa' && !(await perguntar(p, `<p>Revelar uma Bruxa vai te matar. Tem certeza?</p>`, [{l:'Sim', v:true}, {l:'Não', v:false}]))) return null;
+    if (c.t === 'bruxa' && !(await perguntar(p, `<p>Revelar uma Bruxa vai te matar. Tem certeza?</p>`, [{l:'Sim', v:true}, {l:'Não', v:false}], 0, null, true))) return null;
     return {p, c};
   }));
   vivos().filter(p => !p.isHuman).forEach(p => {
@@ -980,7 +991,7 @@ async function conspiracao(quem){
   const trocas = await Promise.all(v.map(async (rec, i) => {
     const dador = v[(i + 1) % v.length], oc = ocultas(dador);
     const carta = rec.isHuman
-      ? await perguntar(rec, `<h3>🕸️ Conspiração</h3><p>Escolha uma carta fechada de <b>${esc(dador.nome)}</b> (à sua esquerda):</p>`, oc.map(x => ({l:`🂠 Carta ${dador.pistas.indexOf(x) + 1}`, v:x})))
+      ? await perguntar(rec, `<h3>🕸️ Conspiração</h3><p>Escolha uma carta fechada de <b>${esc(dador.nome)}</b> (à sua esquerda):</p>`, oc.map(x => ({l:`🂠 Carta ${dador.pistas.indexOf(x) + 1}`, v:x})), 0, null, true)
       : rnd(oc);
     return {rec, dador, carta};
   }));
@@ -997,7 +1008,7 @@ async function conspiracao(quem){
     `<h3>🕸️ Você recebeu</h3><div class="big ${carta.t}">${TIPO[carta.t]}</div>
      ${carta.t === 'bruxa' ? '<p><b>Agora você pertence à equipe das bruxas!</b> Seu objetivo mudou.</p>' : ''}
      ${rec.team === 'bruxa' ? `<p>Equipe das bruxas: <b>${vivos().filter(p => p.team === 'bruxa').map(p => esc(p.nome)).join(', ')}</b></p>` : ''}`,
-    [{l:'Entendi', v:1}])));
+    [{l:'Entendi', v:1}], 0, null, true)));
 }
 
 // ---------- IA dos bots ----------
@@ -1170,8 +1181,9 @@ async function madrugada(){
     const parc = bruxas.filter(p => p !== decide).map(p => esc(p.nome)).join(', ');
     dono = await perguntar(decide, `<h3>🐈‍⬛ Gato da Lua</h3>${parc ? `<p>Suas parceiras: <b>${parc}</b></p>` : ''}
       <p>Escolha quem recebe o Gato da Lua. Toda vez que sair <b>Conspiração</b>, esse jogador terá uma carta de julgamento revelada.</p>`,
-      G.players.map(t => ({l:`${t.av} ${t.nome}${t === decide ? ' (você)' : ''}`, v:t})));
+      G.players.map(t => ({l:`${t.av} ${t.nome}${t === decide ? ' (você)' : ''}`, v:t})), 0, null, true);
   } else {
+    await pausaSecreta();
     dono = rnd(G.players.filter(p => p.team !== 'bruxa'));
   }
   dono.azuis.push('gato');
@@ -1205,7 +1217,7 @@ function desenhar(v){
   grid.classList.toggle('lotado', modoMesa && nJog > 8);
   if (modoMesa){
     const camadas = Math.max(1, Math.min(5, Math.ceil(v.monte / 12)));
-    const vez = v.over ? 'Fim de jogo' : v.minhaVez ? '🕯️ <b>Sua vez!</b>' : v.esperando.length ? `⏳ Aguardando ${v.esperando.map(esc).join(', ')}` : v.atualNome ? `Vez de <b>${esc(v.atualNome)}</b>` : '';
+    const vez = v.over ? 'Fim de jogo' : v.minhaVez ? '🕯️ <b>Sua vez!</b>' : v.esperando.length ? `⏳ Aguardando ${v.esperando.map(esc).join(', ')}` : v.segredo ? '🌑 Decisões secretas nas sombras...' : v.atualNome ? `Vez de <b>${esc(v.atualNome)}</b>` : '';
     grid.innerHTML = `<div class="mesaTampo"></div><div class="mesaBrilho"></div><i class="velaM" style="left:6.5%"></i><i class="velaM" style="right:6.5%"></i>
       <div class="mesaCentro"><div class="faseM">${esc(v.fase || '')}</div><div class="vezM">${vez}</div>
         <div class="monteM"><div class="pilha">${'<i></i>'.repeat(camadas)}<span>🂠 ${v.monte} no monte</span></div>
@@ -1295,6 +1307,7 @@ function desenhar(v){
     else ins = `Escolha o alvo de <b>${CARDS[selK].nome}</b> (destacados em roxo).`;
   }
   else if (v.esperando.length) ins = `⏳ Aguardando ${v.esperando.map(esc).join(', ')} decidir...`;
+  else if (v.segredo) ins = '🌑 Decisões secretas acontecendo nas sombras... aguarde.';
   else if (v.atualNome) ins = `Vez de <b>${esc(v.atualNome)}</b>...`;
   else ins = 'Aguarde...';
   $('instr').innerHTML = ins;
