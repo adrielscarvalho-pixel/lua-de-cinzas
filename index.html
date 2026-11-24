@@ -116,6 +116,43 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 .carta.preta{background:linear-gradient(#2a2430,#17131c);color:var(--txt);border-color:#555}
 .carta.preta .qtd{color:var(--muted)}
 .carta.julg{border-top-color:#777}
+/* ---------- cena da Conspiração ---------- */
+#cena{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
+ background:radial-gradient(ellipse at 50% 55%,#2a1830ee,#07040bf5 70%)}
+#cena .palco{position:relative;width:min(560px,94vw);height:min(470px,82vh)}
+#cena .mesa{position:absolute;left:-6%;right:-6%;bottom:0;height:32%;border-radius:50% 50% 8px 8px/30px 30px 8px 8px;
+ background:linear-gradient(#6b4423,#4a2d15 60%,#2e1b0c);box-shadow:0 -6px 30px #000a inset,0 -2px 0 #8a5a30}
+#cena .mesa::before{content:'';position:absolute;inset:14px 6% auto;height:2px;background:#ffffff14;border-radius:2px;box-shadow:0 22px 0 #00000030,0 46px 0 #ffffff0d}
+#cena .vela{position:absolute;bottom:22%;right:6%;width:16px;height:46px;background:linear-gradient(#efe6d0,#cbbd9a);border-radius:3px}
+#cena .vela::before{content:'';position:absolute;left:50%;top:-22px;width:12px;height:22px;margin-left:-6px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+ background:radial-gradient(circle at 50% 70%,#fff6c0,#ffb030 55%,#ff600000 75%);animation:chama .18s infinite alternate}
+#cena .luz{position:absolute;right:-10%;bottom:10%;width:60%;height:70%;background:radial-gradient(circle,#ffb03022,#0000 65%);pointer-events:none}
+@keyframes chama{from{transform:scale(1,1) rotate(-3deg)}to{transform:scale(.9,1.12) rotate(3deg)}}
+#cena .monte{position:absolute;left:7%;bottom:9%;width:74px;height:104px}
+#cena .monte i{position:absolute;inset:0;border-radius:7px;background:linear-gradient(135deg,#3b2a55,#241838);border:2px solid #c9a23f88}
+#cena .monte i:nth-child(1){transform:translate(-4px,4px)}#cena .monte i:nth-child(2){transform:translate(-2px,2px)}
+#cena .pers{position:absolute;left:50%;bottom:22%;width:min(270px,60%);margin-left:calc(min(270px,60%) / -2);transform:translateY(130%)}
+#cena .pers .olho,#cena .pers .pupila,#cena .pers .sobr,#cena .pers .boca2,#cena .pers .boca1{transform-box:fill-box;transform-origin:center}
+#cena .cartaC{position:absolute;width:84px;height:118px;perspective:600px;left:50%;bottom:17%}
+#cena .cartaC.esq{margin-left:-118px;transform:rotate(-8deg)}
+#cena .cartaC.dir{margin-left:30px;transform:rotate(7deg)}
+#cena .giro{position:absolute;inset:0;transform-style:preserve-3d}
+#cena .face{position:absolute;inset:0;border-radius:8px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#cena .verso{background:repeating-linear-gradient(45deg,#3b2a55 0 7px,#30224a 7px 14px);border:2px solid #c9a23f;color:#c9a23f;font-size:30px}
+#cena .frente{transform:rotateY(180deg);background:radial-gradient(circle at 50% 40%,#3a0e14,#0d0507 75%);border:2px solid #d33;color:#ff9a9a;
+ font-family:Cinzel,serif;font-size:10px;font-weight:700;letter-spacing:.5px;box-shadow:0 0 18px #ff303066}
+#cena .frente svg{width:58px;height:58px}
+#cena .polegar{position:absolute;width:30px;height:22px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f3d7b0,#cf9c6c);
+ bottom:-6px;left:50%;margin-left:-15px;box-shadow:0 2px 4px #0006}
+#cena .titulo{position:absolute;left:0;right:0;top:4%;text-align:center;font-family:Cinzel,serif;font-weight:700;font-size:clamp(28px,7vw,50px);
+ color:#ff6a5a;text-shadow:0 0 18px #ff2a1a,0 0 40px #a00;letter-spacing:3px;opacity:0}
+#cena .sub{position:absolute;left:0;right:0;top:calc(4% + clamp(40px,9vw,62px));text-align:center;color:var(--parch);font-size:18px;opacity:0}
+#cena .pular{position:absolute;bottom:10px;right:14px;color:#ffffff55;font-size:13px}
+#cena .flash{position:absolute;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;background:radial-gradient(circle,#fff8,#ff505033 40%,#0000 70%);opacity:0;pointer-events:none}
+#cena .poeira{position:absolute;width:8px;height:8px;border-radius:50%;background:#c9b48a;pointer-events:none}
+#cena .rachas{position:absolute;width:300px;height:160px;margin:-80px 0 0 -150px;pointer-events:none;overflow:visible}
+#cena .rachas path{fill:none;stroke:#ff4a3a;stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 4px #f00)}
+#cena .exclama{position:absolute;font-family:Cinzel,serif;font-weight:700;font-size:44px;color:#ffd04a;text-shadow:0 0 10px #f80;opacity:0}
 </style>
 </head>
 <body>
@@ -126,6 +163,7 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
     <span id="selo"></span>
     <span id="placar"></span>
     <label id="lblRapido"><input type="checkbox" id="rapido"> Bots rápidos</label>
+    <button id="btnSom" title="Ligar/desligar o som">🔊</button>
     <button id="btnRegras">Regras</button>
     <button id="btnCartas">Cartas</button>
     <button id="btnNovo">Novo jogo</button>
@@ -682,6 +720,9 @@ async function noite(){
 
 async function conspiracao(quem){
   log('🕸️ CONSPIRAÇÃO!', 'phase');
+  const meuG = G;
+  await mostrarCenaConspiracao(quem);
+  if (G !== meuG) return;
   const dono = vivos().find(p => p.azuis.includes('gato'));
   if (dono){
     const oc = ocultas(dono);
@@ -984,6 +1025,246 @@ function mandarAcao(act){
   else if (G) receberAcao(local().id, act);
 }
 
+// ---------- sons (gerados pelo navegador, funcionam sem internet) ----------
+const Som = {
+  ctx:null, saida:null, mudo:false,
+  ok(){
+    if (this.mudo) return null;
+    try {
+      if (!this.ctx){
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.saida = this.ctx.createDynamicsCompressor();
+        this.saida.connect(this.ctx.destination);
+      }
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+    } catch (e) { return null; }
+    return this.ctx;
+  },
+  ruido(c, dur){
+    const b = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(); s.buffer = b; return s;
+  },
+  env(g, t, pico, ataque, dur){
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(pico, t + ataque);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  },
+  puxar(){ // carta deslizando do monte
+    const c = this.ok(); if (!c) return; const t = c.currentTime;
+    const n = this.ruido(c, .3), f = c.createBiquadFilter(), g = c.createGain();
+    f.type = 'bandpass'; f.Q.value = 1.1;
+    f.frequency.setValueAtTime(4000, t); f.frequency.exponentialRampToValueAtTime(700, t + .22);
+    this.env(g, t, .35, .02, .24);
+    n.connect(f).connect(g).connect(this.saida); n.start(t); n.stop(t + .3);
+  },
+  virar(){ // carta sendo virada (estalo de papel)
+    const c = this.ok(); if (!c) return; const t = c.currentTime;
+    const n = this.ruido(c, .12), f = c.createBiquadFilter(), g = c.createGain();
+    f.type = 'highpass'; f.frequency.value = 2500;
+    this.env(g, t, .4, .003, .09);
+    n.connect(f).connect(g).connect(this.saida); n.start(t);
+  },
+  susto(){ // acorde dramático "DUN!" + violino agudo de tensão
+    const c = this.ok(); if (!c) return; const t = c.currentTime;
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(300, t); lp.frequency.exponentialRampToValueAtTime(2600, t + .08); lp.frequency.exponentialRampToValueAtTime(500, t + 1.1);
+    const g = c.createGain(); this.env(g, t, .32, .015, 1.3);
+    lp.connect(g).connect(this.saida);
+    [73.4, 110, 138.6, 155.6, 207.7].forEach(fr => {
+      const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.detune.value = (Math.random() - .5) * 14;
+      o.connect(lp); o.start(t); o.stop(t + 1.35);
+    });
+    const v = c.createOscillator(), lfo = c.createOscillator(), lfoG = c.createGain(), vg = c.createGain();
+    v.type = 'triangle'; v.frequency.setValueAtTime(1244, t); v.frequency.linearRampToValueAtTime(1318, t + .9);
+    lfo.frequency.value = 7; lfoG.gain.value = 14; lfo.connect(lfoG).connect(v.frequency);
+    this.env(vg, t, .07, .06, 1.1);
+    v.connect(vg).connect(this.saida); v.start(t); lfo.start(t); v.stop(t + 1.2); lfo.stop(t + 1.2);
+  },
+  pancada(){ // carta batida com força na mesa de madeira
+    const c = this.ok(); if (!c) return; const t = c.currentTime;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(170, t); o.frequency.exponentialRampToValueAtTime(36, t + .35);
+    this.env(g, t, 1, .004, .55);
+    o.connect(g).connect(this.saida); o.start(t); o.stop(t + .6);
+    const n = this.ruido(c, .16), hp = c.createBiquadFilter(), g2 = c.createGain();
+    hp.type = 'bandpass'; hp.frequency.value = 1800; hp.Q.value = .7;
+    this.env(g2, t, .8, .002, .13);
+    n.connect(hp).connect(g2).connect(this.saida); n.start(t);
+    const r = this.ruido(c, 1.3), lp = c.createBiquadFilter(), g3 = c.createGain();
+    lp.type = 'lowpass'; lp.frequency.value = 160;
+    this.env(g3, t, .7, .01, 1.2);
+    r.connect(lp).connect(g3).connect(this.saida); r.start(t);
+  },
+  sinistro(){ // acorde diminuto com tremolo, bem de filme de suspense
+    const c = this.ok(); if (!c) return; const t = c.currentTime;
+    const g = c.createGain(), trem = c.createGain(), lfo = c.createOscillator(), lfoG = c.createGain();
+    this.env(g, t, .16, .35, 2.6);
+    trem.gain.value = .7; lfo.frequency.value = 6; lfoG.gain.value = .3; lfo.connect(lfoG).connect(trem.gain);
+    trem.connect(g).connect(this.saida);
+    [220, 261.6, 311.1, 370].forEach(fr => { const o = c.createOscillator(); o.type = 'triangle'; o.frequency.value = fr; o.connect(trem); o.start(t); o.stop(t + 2.7); });
+    const d = c.createOscillator(), dg = c.createGain(); d.type = 'sine'; d.frequency.value = 55;
+    this.env(dg, t, .35, .3, 2.6); d.connect(dg).connect(this.saida); d.start(t); d.stop(t + 2.7);
+    lfo.start(t); lfo.stop(t + 2.7);
+  },
+};
+try { Som.mudo = localStorage.getItem('ldc-mudo') === '1'; } catch (e) {}
+document.addEventListener('pointerdown', () => Som.ok()); // navegadores só liberam som depois de um toque
+
+// ---------- cena animada da Conspiração ----------
+const DUR_CENA = 6300;
+let cenaAtiva = null;
+function corManto(nome){
+  let h = 0; for (const ch of String(nome)) h = (h * 31 + ch.charCodeAt(0)) % 360;
+  return [`hsl(${h} 32% 32%)`, `hsl(${h} 38% 17%)`];
+}
+function svgPersonagem(nome){
+  const [m, me] = corManto(nome);
+  return `<svg class="pers" viewBox="0 0 300 330" aria-hidden="true">
+    <defs><radialGradient id="pele" cx=".45" cy=".38" r=".7"><stop offset="0" stop-color="#f6dcb6"/><stop offset="1" stop-color="#d4a171"/></radialGradient></defs>
+    <path d="M36 330 C46 238 92 204 150 204 C208 204 254 238 264 330 Z" fill="${m}"/>
+    <path d="M150 204 L136 330 M150 204 L164 330" stroke="${me}" stroke-width="3" opacity=".6"/>
+    <path d="M66 162 C64 70 108 30 150 30 C192 30 236 70 234 162 C234 206 206 230 150 230 C94 230 66 206 66 162 Z" fill="${me}"/>
+    <ellipse cx="150" cy="142" rx="56" ry="65" fill="url(#pele)"/>
+    <path d="M80 124 C86 70 118 50 150 50 C182 50 214 70 220 124 C202 94 180 84 150 84 C120 84 98 94 80 124 Z" fill="${m}"/>
+    <ellipse cx="114" cy="164" rx="11" ry="6" fill="#e3877a" opacity=".45"/>
+    <ellipse cx="186" cy="164" rx="11" ry="6" fill="#e3877a" opacity=".45"/>
+    <g class="sobr"><path d="M110 112 Q124 104 139 110" stroke="#4a2e1e" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M161 110 Q176 104 190 112" stroke="#4a2e1e" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+    <g class="olho"><ellipse cx="125" cy="131" rx="11" ry="8" fill="#fff" stroke="#3a2418" stroke-width="1.5"/></g>
+    <g class="olho"><ellipse cx="175" cy="131" rx="11" ry="8" fill="#fff" stroke="#3a2418" stroke-width="1.5"/></g>
+    <circle class="pupila" cx="125" cy="132" r="5" fill="#24160d"/>
+    <circle class="pupila" cx="175" cy="132" r="5" fill="#24160d"/>
+    <path d="M150 140 Q145 156 152 160" stroke="#b47f56" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path class="boca1" d="M135 180 Q150 186 165 180" stroke="#7a3b2e" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse class="boca2" cx="150" cy="184" rx="10" ry="13" fill="#4a1714" opacity="0"/>
+    <path class="suor" d="M205 104 q7 11 0 16 q-7 -5 0 -16z" fill="#a8dcff" opacity="0"/>
+  </svg>`;
+}
+const SVG_TEIA = `<svg viewBox="-30 -30 60 60"><g stroke="#ff5a4a" stroke-width="1.4" fill="none">
+  ${Array.from({length:8}, (_, i) => { const a = i * Math.PI / 4; return `<line x1="0" y1="0" x2="${(28 * Math.cos(a)).toFixed(1)}" y2="${(28 * Math.sin(a)).toFixed(1)}"/>`; }).join('')}
+  ${[8, 15, 22].map(r => `<polygon points="${Array.from({length:8}, (_, i) => { const a = i * Math.PI / 4; return (r * Math.cos(a)).toFixed(1) + ',' + (r * Math.sin(a)).toFixed(1); }).join(' ')}"/>`).join('')}
+  </g><circle cx="6" cy="-4" r="3.5" fill="#ff5a4a"/></svg>`;
+
+function cenaConspiracao(nome){
+  if (cenaAtiva) cenaAtiva.pular();
+  return new Promise(resolve => {
+    let pulou = false, acabou = false;
+    const el = document.createElement('div'); el.id = 'cena';
+    el.innerHTML = `<div class="palco"><div class="luz"></div><div class="mesa"></div><div class="vela"></div>
+      <div class="monte"><i></i><i></i><i></i></div>
+      ${svgPersonagem(nome)}
+      <div class="cartaC esq"><div class="giro"><div class="face verso">☾</div></div><div class="polegar"></div></div>
+      <div class="cartaC dir"><div class="giro"><div class="face verso">☾</div><div class="face frente">${SVG_TEIA}<span>CONSPIRAÇÃO</span></div></div><div class="polegar"></div></div>
+      <div class="exclama">!</div>
+      <div class="titulo">🕸️ CONSPIRAÇÃO!</div><div class="sub"><b>${esc(nome)}</b> revelou a Conspiração</div></div>
+      <div class="pular">toque para pular</div>`;
+    document.body.appendChild(el);
+    const fim = () => {
+      if (acabou) return; acabou = true; cenaAtiva = null;
+      el.animate([{opacity:1}, {opacity:0}], {duration:pulou ? 150 : 450, fill:'forwards'}).finished.then(() => { el.remove(); resolve(); });
+    };
+    const pular = () => { pulou = true; fim(); };
+    cenaAtiva = {pular};
+    el.onclick = pular;
+    const esperar = ms => new Promise(r => setTimeout(r, ms));
+    const q = s => el.querySelector(s), qa = s => [...el.querySelectorAll(s)];
+    const A = (alvo, kf, op) => { const e = typeof alvo === 'string' ? q(alvo) : alvo; return e ? e.animate(kf, {fill:'forwards', ...op}) : null; };
+
+    (async () => {
+      // 1) a cena aparece e o personagem sobe até a mesa
+      A(el, [{opacity:0}, {opacity:1}], {duration:350});
+      A('.pers', [{transform:'translateY(130%)'}, {transform:'translateY(0)'}], {duration:700, easing:'cubic-bezier(.2,1.25,.4,1)'});
+      const cartas = [q('.cartaC.esq'), q('.cartaC.dir')];
+      cartas.forEach(c => c.style.opacity = 0);
+      await esperar(750); if (pulou) return;
+      // 2) puxa duas cartas do monte
+      const monte = q('.monte').getBoundingClientRect();
+      for (const [i, c] of cartas.entries()){
+        const r = c.getBoundingClientRect(), rot = i ? 7 : -8;
+        c.style.opacity = 1;
+        Som.puxar();
+        A(c, [{transform:`translate(${monte.left - r.left}px,${monte.top - r.top}px) rotate(0deg)`}, {transform:`translate(0,0) rotate(${rot}deg)`}],
+          {duration:430, easing:'cubic-bezier(.3,.8,.3,1)'});
+        await esperar(400); if (pulou) return;
+      }
+      await esperar(250);
+      // 3) olha para a carta e vira
+      qa('.pupila').forEach(p => A(p, [{transform:'translate(0,0)'}, {transform:'translate(3px,4px)'}], {duration:250}));
+      await esperar(220); if (pulou) return;
+      Som.virar();
+      A('.cartaC.dir .giro', [{transform:'rotateY(0deg)'}, {transform:'rotateY(180deg)'}], {duration:520, easing:'ease-in-out'});
+      A('.cartaC.dir', [{transform:'rotate(7deg)'}, {transform:'rotate(7deg) translateY(-16px) scale(1.1)'}], {duration:520});
+      await esperar(900); if (pulou) return;
+      // 4) ARREGALA OS OLHOS
+      Som.susto();
+      qa('.olho').forEach(o => A(o, [{transform:'scale(1)'}, {transform:'scale(1.95)'}, {transform:'scale(1.75)'}], {duration:300, easing:'cubic-bezier(.2,1.6,.4,1)'}));
+      qa('.pupila').forEach(p => A(p, [{transform:'translate(3px,4px) scale(1)'}, {transform:'translate(1px,2px) scale(.45)'}], {duration:220}));
+      A('.sobr', [{transform:'translateY(0)'}, {transform:'translateY(-14px)'}], {duration:230, easing:'cubic-bezier(.2,1.6,.4,1)'});
+      A('.boca1', [{opacity:1}, {opacity:0}], {duration:120});
+      A('.boca2', [{opacity:0, transform:'scale(.3)'}, {opacity:1, transform:'scale(1)'}], {duration:240, easing:'cubic-bezier(.2,1.6,.4,1)'});
+      A('.suor', [{opacity:0, transform:'translateY(0)'}, {opacity:1, transform:'translateY(0)', offset:.25}, {opacity:.85, transform:'translateY(30px)'}], {duration:1300});
+      A('.pers', [{transform:'translate(0,0)'}, {transform:'translate(-6px,-10px)'}, {transform:'translate(6px,-12px)'}, {transform:'translate(-3px,-8px)'}, {transform:'translate(0,-8px)'}], {duration:340});
+      const ex = q('.exclama'); ex.style.left = 'calc(50% + 78px)'; ex.style.top = '12%';
+      A(ex, [{opacity:0, transform:'scale(.2) rotate(-25deg)'}, {opacity:1, transform:'scale(1.3) rotate(10deg)'}, {opacity:1, transform:'scale(1) rotate(0deg)'}], {duration:380, easing:'cubic-bezier(.2,1.6,.4,1)'});
+      A('.cartaC.dir .frente', [{boxShadow:'0 0 18px #ff303066'}, {boxShadow:'0 0 46px #ff3030'}, {boxShadow:'0 0 18px #ff303066'}], {duration:420, iterations:3});
+      await esperar(1150); if (pulou) return;
+      A(ex, [{opacity:1}, {opacity:0}], {duration:200});
+      // 5) ergue a carta...
+      const cd = q('.cartaC.dir');
+      await A(cd, [{transform:'rotate(7deg) translateY(-16px) scale(1.1)'}, {transform:'rotate(-16deg) translateY(-95px) scale(1.15)'}],
+        {duration:340, easing:'cubic-bezier(.3,0,.3,1)'}).finished; if (pulou) return;
+      // ...e BATE NA MESA
+      const palco = q('.palco'), pr = palco.getBoundingClientRect();
+      const baseX = pr.left + cd.offsetLeft + cd.offsetWidth / 2, baseY = pr.top + cd.offsetTop + cd.offsetHeight / 2;
+      const tx = pr.left + pr.width / 2, ty = pr.bottom - pr.height * .15;
+      const dx = tx - baseX, dy = ty - baseY;
+      await A(cd, [{transform:'rotate(-16deg) translateY(-95px) scale(1.15)'}, {transform:`translate(${dx}px,${dy}px) rotate(4deg) scale(1.35)`}],
+        {duration:170, easing:'cubic-bezier(.7,0,1,1)'}).finished; if (pulou) return;
+      Som.pancada();
+      A(cd.querySelector('.polegar'), [{opacity:1}, {opacity:0}], {duration:250});
+      A(cd, [{transform:`translate(${dx}px,${dy}px) rotate(4deg) scale(1.35)`}, {transform:`translate(${dx}px,${dy + 5}px) rotate(4deg) scale(1.42,1.22)`}, {transform:`translate(${dx}px,${dy}px) rotate(4deg) scale(1.32)`}], {duration:280});
+      A(palco, [{transform:'translate(0,0)'}, {transform:'translate(-10px,6px)'}, {transform:'translate(9px,-6px)'}, {transform:'translate(-6px,4px)'}, {transform:'translate(4px,-2px)'}, {transform:'translate(0,0)'}], {duration:460});
+      const ix = tx - pr.left, iy = ty - pr.top + 30;
+      const fl = document.createElement('div'); fl.className = 'flash'; fl.style.left = ix + 'px'; fl.style.top = iy + 'px'; palco.appendChild(fl);
+      A(fl, [{opacity:.95, transform:'scale(.4)'}, {opacity:0, transform:'scale(1.6)'}], {duration:550, easing:'ease-out'});
+      for (let i = 0; i < 18; i++){
+        const p = document.createElement('div'); p.className = 'poeira';
+        p.style.left = ix + 'px'; p.style.top = iy + 'px'; palco.appendChild(p);
+        const ang = Math.PI + Math.random() * Math.PI, dist = 40 + Math.random() * 110, s = .5 + Math.random();
+        A(p, [{transform:'translate(0,0) scale(1)', opacity:.9}, {transform:`translate(${Math.cos(ang) * dist}px,${Math.sin(ang) * dist * .6}px) scale(${s})`, opacity:0}],
+          {duration:600 + Math.random() * 500, easing:'cubic-bezier(.1,.8,.3,1)'});
+      }
+      const ra = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      ra.setAttribute('class', 'rachas'); ra.setAttribute('viewBox', '-150 -80 300 160');
+      ra.style.left = ix + 'px'; ra.style.top = iy + 'px';
+      let d = '';
+      for (let i = 0; i < 9; i++){
+        const a = Math.PI * (i / 8) + Math.PI, len = 70 + Math.random() * 70;
+        d += `M0 0 L${(Math.cos(a) * len * .5).toFixed(1)} ${(Math.sin(a) * len * .25).toFixed(1)} L${(Math.cos(a + .15) * len).toFixed(1)} ${(Math.sin(a + .15) * len * .5).toFixed(1)} `;
+      }
+      ra.innerHTML = `<path pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="${d}"/>`;
+      palco.appendChild(ra);
+      A(ra.querySelector('path'), [{strokeDashoffset:1, opacity:1}, {strokeDashoffset:0, opacity:1, offset:.4}, {strokeDashoffset:0, opacity:.35}], {duration:1600, easing:'ease-out'});
+      A('.pers', [{transform:'translate(0,-8px)'}, {transform:'translate(0,14px) scale(.97)'}], {duration:450});
+      A('.cartaC.esq', [{opacity:1}, {opacity:0}], {duration:300});
+      await esperar(260); if (pulou) return;
+      // 6) o título aparece
+      Som.sinistro();
+      A('.titulo', [{opacity:0, transform:'scale(2.3)', filter:'blur(8px)'}, {opacity:1, transform:'scale(1)', filter:'blur(0px)'}], {duration:480, easing:'cubic-bezier(.2,1.2,.4,1)'});
+      A('.sub', [{opacity:0, transform:'translateY(10px)'}, {opacity:1, transform:'translateY(0)'}], {duration:400, delay:260});
+      A('.cartaC.dir .frente', [{boxShadow:'0 0 18px #ff303066'}, {boxShadow:'0 0 50px #ff3030'}], {duration:700, iterations:Infinity, direction:'alternate'});
+      await esperar(1900);
+      fim();
+    })();
+  });
+}
+// No anfitrião: mostra a cena para todos (convidados recebem uma mensagem) e espera ela acabar
+async function mostrarCenaConspiracao(quem){
+  G.players.forEach(p => { if (p.ctl === 'remoto') enviar(p.conn, {t:'cena', tipo:'conspiracao', nome:quem.nome}); });
+  if (local()) await cenaConspiracao(quem.nome); else await sleep(DUR_CENA);
+}
+
 // ---------- janelas ----------
 let filaModal = Promise.resolve(), modalAtual = null;
 function modal(html, botoes, tempo = 0, padrao = null){
@@ -1157,6 +1438,8 @@ function clienteRecebe(d){
   if (!d || typeof d !== 'object') return;
   if (d.t === 'lobby'){
     $('listaLobby').innerHTML = d.nomes.map((n, i) => `<li>${AV_HUMANOS[i % AV_HUMANOS.length]} ${esc(n)}</li>`).join('');
+  } else if (d.t === 'cena'){
+    if (d.tipo === 'conspiracao') cenaConspiracao(String(d.nome || ''));
   } else if (d.t === 'logs'){
     if (d.reinicio) LOG_CLIENTE = [];
     LOG_CLIENTE.push(...(d.novos || []));
@@ -1243,6 +1526,9 @@ $('btnComprar').onclick = () => { if (CV && CV.minhaVez && !CV.jogou) mandarAcao
 $('btnFim').onclick = () => { if (CV && CV.minhaVez && CV.jogou) mandarAcao({tipo:'fim'}); };
 try { const n = localStorage.getItem('ldc-nome'); if (n) $('inNome').value = n; } catch (e) {}
 $('inNome').onchange = () => { try { localStorage.setItem('ldc-nome', $('inNome').value.trim()); } catch (e) {} };
+const mostrarSom = () => { $('btnSom').textContent = Som.mudo ? '🔇' : '🔊'; $('btnSom').title = Som.mudo ? 'Som desligado (clique para ligar)' : 'Som ligado (clique para desligar)'; };
+$('btnSom').onclick = () => { Som.mudo = !Som.mudo; try { localStorage.setItem('ldc-mudo', Som.mudo ? '1' : '0'); } catch (e) {} mostrarSom(); if (!Som.mudo) Som.virar(); };
+mostrarSom();
 $('btnCopiar').onclick = async () => {
   const link = $('linkConvite').value;
   try { await navigator.clipboard.writeText(link); } catch (e) { $('linkConvite').select(); document.execCommand('copy'); }
