@@ -1229,16 +1229,25 @@ async function madrugada(){
   log('🌘 MADRUGADA. As bruxas abrem os olhos e entregam o Gato da Lua a alguém...', 'phase', null, 'noite'); await delay(1);
   const bruxas = G.players.filter(p => p.team === 'bruxa');
   const decide = bruxas.find(p => p.isHuman);
+  // A escolha do gato dura SEMPRE 10 segundos (ninguém pula, e o tempo não entrega nada).
+  // Se a bruxa não escolher a tempo, o gato vai para alguém aleatório.
+  const TEMPO_GATO = 10;
+  const aleatorio = rnd(G.players.filter(p => p.team !== 'bruxa'));
+  const meuG = G;
+  G.secretos.add(-1); atualizar();
+  const espera = sleep(TEMPO_GATO * 1000);
   let dono;
   if (decide){
     const parc = bruxas.filter(p => p !== decide).map(p => esc(p.nome)).join(', ');
     dono = await perguntar(decide, `<h3>🐈‍⬛ Gato da Lua</h3>${parc ? `<p>Suas parceiras: <b>${parc}</b></p>` : ''}
-      <p>Escolha quem recebe o Gato da Lua. Toda vez que sair <b>Conspiração</b>, esse jogador terá uma carta de julgamento revelada.</p>`,
-      G.players.map(t => ({l:`${t.av} ${t.nome}${t === decide ? ' (você)' : ''}`, v:t})), 0, null, true);
-  } else {
-    await pausaSecreta();
-    dono = rnd(G.players.filter(p => p.team !== 'bruxa'));
+      <p>Escolha quem recebe o Gato da Lua. Toda vez que sair <b>Conspiração</b>, esse jogador terá uma carta de julgamento revelada.</p>
+      <p><i>Você tem ${TEMPO_GATO} segundos. Se não escolher, o gato vai para alguém aleatório.</i></p>`,
+      G.players.map(t => ({l:`${t.av} ${t.nome}${t === decide ? ' (você)' : ''}`, v:t})), TEMPO_GATO, aleatorio, true);
   }
+  if (!dono || !G.players.includes(dono)) dono = aleatorio;
+  await espera;
+  meuG.secretos.delete(-1);
+  if (G !== meuG) return;
   dono.azuis.push('gato');
   log(`🐈‍⬛ Ao amanhecer, um gato negro de olhos prateados está sentado na porta de ${nm(dono)}.`, '', null, 'gato');
   await delay(1.2);
