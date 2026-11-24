@@ -152,6 +152,37 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 #cena .poeira{position:absolute;width:8px;height:8px;border-radius:50%;background:#c9b48a;pointer-events:none}
 #cena .rachas{position:absolute;width:300px;height:160px;margin:-80px 0 0 -150px;pointer-events:none;overflow:visible}
 #cena .rachas path{fill:none;stroke:#ff4a3a;stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 4px #f00)}
+/* ---------- cena da Noite ---------- */
+#cenaNoite{position:fixed;inset:0;z-index:40;overflow:hidden;cursor:pointer;background:linear-gradient(#03040c,#0b1230 55%,#1a1838)}
+#cenaNoite .estrela{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:piscar 2s infinite alternate}
+@keyframes piscar{from{opacity:.2}to{opacity:1}}
+#cenaNoite .lua{position:absolute;left:50%;top:9%;width:min(180px,32vw);height:min(180px,32vw);margin-left:calc(min(180px,32vw) / -2);border-radius:50%;
+ background:radial-gradient(circle at 38% 35%,#fffbe8,#f3e2a8 45%,#d9bf72 75%,#b89a4e);
+ box-shadow:0 0 60px 20px #f6e6a855,0 0 160px 60px #f6e6a822;transform:translateY(160%)}
+#cenaNoite .lua i{position:absolute;border-radius:50%;background:#c8ad6455;box-shadow:inset 2px 2px 4px #0002}
+#cenaNoite .nuvem{position:absolute;height:34px;border-radius:30px;background:#2a2f55cc;filter:blur(3px)}
+#cenaNoite .nuvem::before,#cenaNoite .nuvem::after{content:'';position:absolute;border-radius:50%;background:inherit}
+#cenaNoite .nuvem::before{width:60px;height:50px;left:20%;top:-24px}#cenaNoite .nuvem::after{width:44px;height:38px;left:55%;top:-16px}
+#cenaNoite .casas{position:absolute;left:0;right:0;bottom:24%;height:30%;display:flex;align-items:flex-end;justify-content:space-around;padding:0 2%}
+#cenaNoite .casa{position:relative;background:#0a0b16;border-left:1px solid #161a30}
+#cenaNoite .casa::before{content:'';position:absolute;left:-12%;right:-12%;bottom:100%;height:60%;background:#0a0b16;clip-path:polygon(50% 0,100% 100%,0 100%)}
+#cenaNoite .janela{position:absolute;width:18%;height:16%;background:#ffc95c;box-shadow:0 0 12px #ffb02088;animation:janela 3s infinite alternate}
+@keyframes janela{0%{opacity:.85}50%{opacity:1}100%{opacity:.7}}
+#cenaNoite .chao{position:absolute;left:0;right:0;bottom:0;height:26%;background:linear-gradient(#1b1a2a,#0c0b14);box-shadow:0 -1px 0 #2c2a44}
+#cenaNoite .povo{position:absolute;left:0;right:0;bottom:4%;display:flex;flex-wrap:wrap-reverse;justify-content:center;align-items:flex-end;gap:2px 6px;padding:0 3%}
+#cenaNoite .morador{position:relative;display:flex;flex-direction:column;align-items:center;opacity:0}
+#cenaNoite .morador svg{width:100%;height:auto;overflow:visible}
+#cenaNoite .morador .nomeM{font-family:Cinzel,serif;font-size:var(--fonte,13px);color:#e8dcc0;text-shadow:0 1px 3px #000;white-space:nowrap;margin-top:-4px;
+ max-width:calc(100% + 4px);overflow:hidden;text-overflow:ellipsis;text-align:center}
+#cenaNoite .morador.eu .nomeM{color:var(--gold)}
+#cenaNoite .tremendo{animation:tremer .11s infinite}
+@keyframes tremer{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-1.6px,.6px) rotate(-1.2deg)}50%{transform:translate(1.4px,-.4px) rotate(1deg)}75%{transform:translate(-.8px,-.6px) rotate(-.6deg)}100%{transform:translate(0,0) rotate(0)}}
+#cenaNoite .morador .pupila,#cenaNoite .morador .sobr{transform-box:fill-box;transform-origin:center}
+#cenaNoite .bafo{position:absolute;width:10px;height:10px;border-radius:50%;background:#dfe8ff;filter:blur(2px);pointer-events:none}
+#cenaNoite .titulo{position:absolute;left:0;right:0;top:44%;text-align:center;font-family:Cinzel,serif;font-weight:700;font-size:clamp(26px,6vw,46px);
+ color:#dfe6ff;text-shadow:0 0 18px #6b84ff,0 0 40px #223a99;letter-spacing:3px;opacity:0}
+#cenaNoite .sub{position:absolute;left:0;right:0;top:calc(44% + clamp(36px,8vw,58px));text-align:center;color:#c9c3dc;font-size:18px;font-style:italic;opacity:0}
+#cenaNoite .pular{position:absolute;bottom:8px;right:14px;color:#ffffff55;font-size:13px}
 #cena .exclama{position:absolute;font-family:Cinzel,serif;font-weight:700;font-size:44px;color:#ffd04a;text-shadow:0 0 10px #f80;opacity:0}
 </style>
 </head>
@@ -663,8 +694,11 @@ function anunciar(p, t, tipo){
 
 // ---------- cartas pretas ----------
 async function noite(){
-  G.fase = 'Noite'; G.noite = true;
-  log('🌑 NOITE. Todos fecham os olhos...', 'phase', null, 'noite'); await delay(1);
+  G.fase = 'Noite'; G.noite = true; atualizar();
+  const meuGN = G;
+  await mostrarCenaNoite();
+  if (G !== meuGN) return;
+  log('🌑 NOITE. Todos fecham os olhos...', 'phase'); await delay(.6);
   const bruxas = vivos().filter(p => p.team === 'bruxa');
   const alvos = vivos().filter(p => p.team !== 'bruxa');
   let vitima = null;
@@ -1166,6 +1200,7 @@ const EFEITOS = {
   suaVez(t){ Som.sinoNota(784, t, .16, 1); Som.sinoNota(1046, t + .16, .16, 1.2); },
   comprar(t){ Som.puxar(); setTimeout(() => Som.puxar(), 140); },
   carta(t){ Som.puxar(); },
+  tremor(t){ for (let i = 0; i < 16; i++){ const tt = t + i * .055 + Math.random() * .015; Som.chiado(tt, .025, .35, 'bandpass', 2600 + Math.random() * 900, {q:6}); } },
   acusar1(t){ Som.batida(t, .55); },
   acusar3(t){ Som.batida(t, .75, 120); Som.batida(t + .12, .6, 110); Som.tom(98, 'sawtooth', t, .5, .1, {filtro:'lowpass', ff:600}); },
   acusar7(t){ Som.batida(t, 1, 95); [98, 116.5, 146.8].forEach(f => Som.tom(f, 'sawtooth', t, 1, .1, {filtro:'lowpass', ff:900})); Som.chiado(t, .6, .25, 'bandpass', 900, {para:2500, q:.6}); },
@@ -1404,6 +1439,104 @@ function cenaConspiracao(nome){
     })();
   });
 }
+// ---------- cena animada da Noite: o povo na rua olhando a lua, tremendo ----------
+const DUR_NOITE = 6000;
+function svgMorador(nome){
+  const [m, me] = corManto(nome);
+  return `<svg viewBox="0 0 100 150" aria-hidden="true">
+    <path d="M10 150 C14 108 30 92 50 92 C70 92 86 108 90 150 Z" fill="${m}"/>
+    <path d="M20 62 C19 26 34 12 50 12 C66 12 81 26 80 62 C80 82 70 96 50 96 C30 96 20 82 20 62 Z" fill="${me}"/>
+    <ellipse cx="50" cy="56" rx="22" ry="25" fill="url(#pele)"/>
+    <path d="M24 50 C27 28 38 20 50 20 C62 20 73 28 76 50 C68 38 60 34 50 34 C40 34 32 38 24 50 Z" fill="${m}"/>
+    <g class="sobr"><path d="M34 48 L45 43" stroke="#4a2e1e" stroke-width="2.6" stroke-linecap="round"/><path d="M55 43 L66 48" stroke="#4a2e1e" stroke-width="2.6" stroke-linecap="round"/></g>
+    <ellipse cx="41" cy="53" rx="5.2" ry="4.4" fill="#fff" stroke="#3a2418" stroke-width=".8"/>
+    <ellipse cx="59" cy="53" rx="5.2" ry="4.4" fill="#fff" stroke="#3a2418" stroke-width=".8"/>
+    <circle class="pupila" cx="41" cy="54" r="2.4" fill="#24160d"/>
+    <circle class="pupila" cx="59" cy="54" r="2.4" fill="#24160d"/>
+    <path d="M42 68 q2 -2.4 4 0 q2 2.4 4 0 q2 -2.4 4 0 q2 2.4 4 0" stroke="#7a3b2e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M22 118 Q50 134 78 118" stroke="${me}" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <ellipse cx="25" cy="117" rx="6" ry="5" fill="#d9a979"/><ellipse cx="75" cy="117" rx="6" ry="5" fill="#d9a979"/>
+  </svg>`;
+}
+function cenaNoite(pessoas){ // pessoas: [{nome, eu}]
+  if (cenaAtiva) cenaAtiva.pular();
+  return new Promise(resolve => {
+    let pulou = false, acabou = false, bafos = null;
+    // tamanho dos moradores conforme a tela e quantas pessoas há (mais de 7: duas fileiras)
+    const n = pessoas.length, disp = Math.min(innerWidth * .94, 1100);
+    const cabem = Math.max(1, Math.floor(disp / 66));                       // quantos cabem numa fileira
+    const fileiras = Math.ceil(n / Math.min(cabem, n <= 7 ? n : Math.ceil(n / 2)));
+    const porLinha = Math.ceil(n / fileiras);
+    const larg = Math.round(Math.max(48, Math.min(150, disp / porLinha - 10, innerHeight * .42 / fileiras / 1.75)));
+    const el = document.createElement('div'); el.id = 'cenaNoite';
+    const estrelas = Array.from({length:80}, () => `<i class="estrela" style="left:${Math.random() * 100}%;top:${Math.random() * 62}%;animation-delay:${(Math.random() * 2).toFixed(2)}s;opacity:${(.2 + Math.random() * .8).toFixed(2)}"></i>`).join('');
+    const casas = Array.from({length:7}, (_, i) => {
+      const w = 7 + Math.random() * 7, h = 40 + Math.random() * 55;
+      const jan = Math.random() < .8 ? `<i class="janela" style="left:${20 + Math.random() * 40}%;top:${25 + Math.random() * 30}%;animation-delay:${Math.random() * 3}s"></i>` : '';
+      return `<div class="casa" style="width:${w}%;height:${h}%">${jan}</div>`;
+    }).join('');
+    const crateras = [[30, 40, 16], [58, 30, 10], [52, 62, 20], [24, 66, 9]].map(([x, y, s]) => `<i style="left:${x}%;top:${y}%;width:${s}%;height:${s}%"></i>`).join('');
+    // svg escondido só com o gradiente da pele (usado pelos moradores)
+    el.innerHTML = `<svg width="0" height="0" style="position:absolute"><defs><radialGradient id="pele" cx=".45" cy=".38" r=".7"><stop offset="0" stop-color="#f6dcb6"/><stop offset="1" stop-color="#d4a171"/></radialGradient></defs></svg>
+      ${estrelas}<div class="lua">${crateras}</div>
+      <div class="nuvem" style="width:170px;top:16%;left:-200px"></div><div class="nuvem" style="width:120px;top:30%;left:-160px"></div><div class="nuvem" style="width:210px;top:8%;left:-260px"></div>
+      <div class="casas">${casas}</div><div class="chao"></div>
+      <div class="povo" style="max-width:${porLinha * (larg + 6) + 40}px;margin:0 auto">${pessoas.map(p => `<div class="morador${p.eu ? ' eu' : ''}" style="width:${larg}px;--fonte:${larg < 72 ? 10 : 13}px"><div class="corpo">${svgMorador(p.nome)}</div><div class="nomeM">${esc(p.nome)}${p.eu ? ' (você)' : ''}</div></div>`).join('')}</div>
+      <div class="titulo">🌑 A NOITE CHEGOU</div><div class="sub">As bruxas estão à solta... ninguém está seguro.</div>
+      <div class="pular">toque para pular</div>`;
+    document.body.appendChild(el);
+    const fim = () => {
+      if (acabou) return; acabou = true; cenaAtiva = null; clearInterval(bafos);
+      el.animate([{opacity:1}, {opacity:0}], {duration:pulou ? 150 : 600, fill:'forwards'}).finished.then(() => { el.remove(); resolve(); });
+    };
+    const pular = () => { pulou = true; fim(); };
+    cenaAtiva = {pular};
+    el.onclick = pular;
+    const esperar = ms => new Promise(r => setTimeout(r, ms));
+    const q = s => el.querySelector(s), qa = s => [...el.querySelectorAll(s)];
+    const A = (alvo, kf, op) => { const e = typeof alvo === 'string' ? q(alvo) : alvo; return e ? e.animate(kf, {fill:'forwards', ...op}) : null; };
+    (async () => {
+      A(el, [{opacity:0}, {opacity:1}], {duration:600});
+      Som.tocar('noite'); Musica.definirNoite(true);
+      // a lua nasce atrás das casas e sobe
+      A('.lua', [{transform:'translateY(160%)', filter:'brightness(.7)'}, {transform:'translateY(0)', filter:'brightness(1.05)'}], {duration:2400, easing:'cubic-bezier(.2,.7,.3,1)'});
+      qa('.nuvem').forEach((nv, i) => A(nv, [{transform:'translateX(0)'}, {transform:`translateX(${innerWidth + 500}px)`}], {duration:9000 + i * 2500, delay:i * 400, easing:'linear'}));
+      // o povo sai para a rua
+      qa('.morador').forEach((m, i) => A(m, [{opacity:0, transform:'translateY(40px)'}, {opacity:1, transform:'translateY(0)'}], {duration:550, delay:300 + i * 110, easing:'cubic-bezier(.2,1.1,.4,1)'}));
+      await esperar(1500 + n * 60); if (pulou) return;
+      // todos olham para a lua
+      qa('.morador .pupila').forEach(p => A(p, [{transform:'translate(0,0)'}, {transform:'translate(0,-2.4px)'}], {duration:450, easing:'ease-out'}));
+      qa('.morador .sobr').forEach(s => A(s, [{transform:'translateY(0)'}, {transform:'translateY(-2px)'}], {duration:450}));
+      await esperar(600); if (pulou) return;
+      // ...e começam a tremer, batendo os dentes e soltando fumacinha de frio
+      qa('.morador .corpo').forEach(c => { c.style.animationDelay = (Math.random() * .1).toFixed(3) + 's'; c.classList.add('tremendo'); });
+      Som.tocar('tremor');
+      bafos = setInterval(() => {
+        const ms = qa('.morador'); if (!ms.length) return;
+        const m = rnd(ms), b = document.createElement('div'); b.className = 'bafo';
+        b.style.left = (m.offsetWidth / 2 - 5) + 'px'; b.style.top = (m.offsetWidth * .62) + 'px';
+        m.appendChild(b);
+        b.animate([{opacity:.75, transform:'translate(0,0) scale(.6)'}, {opacity:0, transform:`translate(${8 + Math.random() * 10}px,-${18 + Math.random() * 14}px) scale(2.2)`}],
+          {duration:1100, easing:'ease-out'}).finished.then(() => b.remove());
+      }, 260);
+      await esperar(500); if (pulou) return;
+      A('.titulo', [{opacity:0, transform:'translateY(14px)', filter:'blur(6px)'}, {opacity:1, transform:'translateY(0)', filter:'blur(0px)'}], {duration:700, easing:'ease-out'});
+      A('.sub', [{opacity:0}, {opacity:1}], {duration:600, delay:400});
+      await esperar(1300); if (pulou) return;
+      Som.tocar('tremor');
+      await esperar(1700);
+      fim();
+    })();
+  });
+}
+async function mostrarCenaNoite(){
+  const vs = vivos();
+  G.players.forEach(p => { if (p.ctl === 'remoto') enviar(p.conn, {t:'cena', tipo:'noite', pessoas:vs.map(q => ({id:q.id, nome:q.nome}))}); });
+  const loc = local();
+  if (loc) await cenaNoite(vs.map(q => ({nome:q.nome, eu:q === loc})));
+  else await sleep(DUR_NOITE);
+}
+
 // No anfitrião: mostra a cena para todos (convidados recebem uma mensagem) e espera ela acabar
 async function mostrarCenaConspiracao(quem){
   G.players.forEach(p => { if (p.ctl === 'remoto') enviar(p.conn, {t:'cena', tipo:'conspiracao', nome:quem.nome}); });
@@ -1586,6 +1719,7 @@ function clienteRecebe(d){
     $('listaLobby').innerHTML = d.nomes.map((n, i) => `<li>${AV_HUMANOS[i % AV_HUMANOS.length]} ${esc(n)}</li>`).join('');
   } else if (d.t === 'cena'){
     if (d.tipo === 'conspiracao') cenaConspiracao(String(d.nome || ''));
+    else if (d.tipo === 'noite' && Array.isArray(d.pessoas)) cenaNoite(d.pessoas.map(p => ({nome:String(p.nome || ''), eu:CV && p.id === CV.meId})));
   } else if (d.t === 'logs'){
     if (d.reinicio) LOG_CLIENTE = [];
     LOG_CLIENTE.push(...(d.novos || []));
