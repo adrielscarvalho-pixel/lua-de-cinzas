@@ -609,6 +609,26 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
 #cenaDourada .subD{position:absolute;left:0;right:0;top:calc(9% + clamp(44px,8vw,80px));text-align:center;font-size:clamp(19px,3vw,27px);line-height:1.35;color:#f3e6c4;text-shadow:0 2px 6px #000;opacity:0;padding:0 16px;z-index:5}
 #cenaDourada .eraB{color:#ff9a8a;font-weight:700}#cenaDourada .eraV{color:#9ee0a8}
 #cenaDourada .pular{position:absolute;bottom:8px;right:14px;color:#ffffff55;font-size:13px;z-index:9}
+#cenaPega{position:fixed;inset:0;z-index:41;overflow:hidden;cursor:pointer;perspective:1000px;background:radial-gradient(ellipse at 50% 45%,#3a2606e8,#0a0602f2 65%,#000000f5)}
+#cenaPega .raios{position:absolute;left:50%;top:45%;width:200vmax;height:200vmax;margin:-100vmax 0 0 -100vmax;opacity:0;
+ background:repeating-conic-gradient(from 0deg,#ffd76a26 0deg 4deg,#0000 4deg 12deg);-webkit-mask-image:radial-gradient(circle,#000 0,#0000 42%);mask-image:radial-gradient(circle,#000 0,#0000 42%)}
+#cenaPega .halo{position:absolute;left:50%;top:45%;width:min(520px,105vw);height:min(520px,105vw);margin:calc(min(520px,105vw) / -2) 0 0 calc(min(520px,105vw) / -2);border-radius:50%;
+ background:radial-gradient(circle,#ffe9a070 0%,#ffcc3326 38%,#0000 66%);opacity:0}
+#cenaPega .topoP{position:absolute;left:0;right:0;top:9%;text-align:center;font-family:Cinzel,serif;font-weight:700;font-size:clamp(20px,4vw,34px);letter-spacing:.22em;color:#fff1c4;
+ text-shadow:0 0 24px #ffb800,0 3px 8px #000;opacity:0}
+#cenaPega .cartaP{position:absolute;left:50%;top:45%;width:min(200px,44vw);aspect-ratio:2/3;margin:calc(min(200px,44vw) * -.75) 0 0 calc(min(200px,44vw) / -2);transform-style:preserve-3d}
+#cenaPega .face{position:absolute;inset:0;border-radius:16px;overflow:hidden;background:linear-gradient(140deg,#fff6d0,#f2cf5c 35%,#fff1b0 50%,#d4a017 75%,#fbe39a);border:4px solid #fff6d0;
+ box-shadow:0 0 60px #ffcc33cc,0 0 120px #ffb80055,inset 0 0 0 3px #b8860b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;color:#4a2e00}
+#cenaPega .face::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,#0000 40%,#ffffffaa 50%,#0000 60%);background-size:260% 100%;animation:dourReflexo 2.4s ease-in-out infinite}
+#cenaPega .fTopo{font-family:Cinzel,serif;font-size:11px;letter-spacing:.2em;font-weight:700;color:#7a4e00}
+#cenaPega .fIc{font-size:min(66px,14vw);filter:drop-shadow(0 3px 6px #7a4e0088)}
+#cenaPega .fNome{font-family:Cinzel,serif;font-weight:700;font-size:min(23px,5.2vw);line-height:1.05;text-shadow:0 1px 0 #fff8}
+#cenaPega .fDesc{font-size:min(14px,3.4vw);line-height:1.15;margin-top:4px;font-weight:600}
+#cenaPega .textoP{position:absolute;left:0;right:0;bottom:11%;text-align:center;font-size:clamp(19px,3vw,26px);color:#f6ead0;text-shadow:0 2px 8px #000;opacity:0;padding:0 16px}
+#cenaPega .textoP b{color:#ffd76a}
+#cenaPega .textoP small{display:block;font-size:.72em;font-style:italic;color:#d8c9a8;margin-top:6px}
+#cenaPega .faisca{position:fixed;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0,#ffe08a 40%,#ffb80000 70%);box-shadow:0 0 8px #ffd24a}
+#cenaPega .pular{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#ffffff77;font-size:14px;font-family:Cinzel,serif;letter-spacing:.08em}
 /* ---------- celular ---------- */
 @media (max-width:759px){
  :root{--mesaH:auto}
@@ -1659,7 +1679,11 @@ async function comprar2(p){
       else { await conspiracao(p); G.discard.push(k); }
     } else {
       p.hand.push(k);
-      if (p.isHuman) log(k === 'sentenca' ? '⚜️ Você comprou a lendária <b>SENTENÇA DOURADA</b>! Ela elimina qualquer jogador.' : `Você comprou <i>${CARDS[k].nome}</i>.`, 'priv', p.id, k === 'sentenca' ? 'douradaPega' : 'carta');
+      if (p.isHuman) log(k === 'sentenca' ? '⚜️ Você comprou a lendária <b>SENTENÇA DOURADA</b>! Ela elimina qualquer jogador.' : `Você comprou <i>${CARDS[k].nome}</i>.`, 'priv', p.id, k === 'sentenca' ? null : 'carta');
+      if (k === 'sentenca' && p.isHuman){
+        if (p.ctl === 'local') cenaPegaDourada(); // sem esperar: ninguém pode perceber uma pausa
+        else enviar(p.conn, {t:'cena', tipo:'pegaDourada'});
+      }
     }
     atualizar();
   }
@@ -2653,6 +2677,73 @@ function cenaFeitico(d){ // d: {tipo:'morte'|'confissao'|'protegido', nome, cart
   });
 }
 // ---------- cena final: a bruxa se revela e mata o último morador ----------
+// Só para quem comprou a Sentença Dourada: a carta sobe brilhando da mão e volta para ela
+function cenaPegaDourada(){
+  if (cenaAtiva) return; // se outra cena estiver passando, fica só o aviso na crônica
+  const el = document.createElement('div'); el.id = 'cenaPega';
+  el.innerHTML = `<div class="raios"></div><div class="halo"></div>
+    <div class="topoP">✦ CARTA LENDÁRIA ✦</div>
+    <div class="cartaP"><div class="face"><div class="fTopo">✦ LENDÁRIA ✦</div><div class="fIc">⚜️</div><div class="fNome">Sentença<br>Dourada</div><div class="fDesc">Elimine qualquer jogador.<br>Nada pode impedir.</div></div></div>
+    <div class="textoP">Você encontrou a <b>Sentença Dourada</b>!<small>Só você sabe que ela existe... guarde segredo.</small></div>
+    <div class="pular">toque para guardar na mão</div>`;
+  document.body.appendChild(el);
+  let acabou = false;
+  const timers = [];
+  const q = s => el.querySelector(s);
+  const A = (alvo, kf, op) => { const e = typeof alvo === 'string' ? q(alvo) : alvo; return e ? e.animate(kf, {fill:'forwards', ...op}) : null; };
+  const carta = q('.cartaP');
+  const fim = (rapido) => {
+    if (acabou) return; acabou = true; timers.forEach(clearTimeout); timers.forEach(clearInterval);
+    if (cenaAtiva && cenaAtiva.pega) cenaAtiva = null;
+    // a carta voa para a mão
+    const mao = document.getElementById('mao'), rm = mao ? mao.getBoundingClientRect() : null, rc = carta.getBoundingClientRect();
+    if (!rapido && rm && rm.width){
+      const dx = rm.left + rm.width - 60 - (rc.left + rc.width / 2), dy = rm.top + 60 - (rc.top + rc.height / 2);
+      A(carta, [{transform:'translate(0,0) rotateY(0deg) scale(1)', opacity:1}, {transform:`translate(${dx}px,${dy}px) rotateY(360deg) scale(.25)`, opacity:.9}], {duration:700, easing:'cubic-bezier(.5,0,.7,1)'});
+      ['.textoP', '.topoP', '.raios', '.halo'].forEach(s => A(s, [{opacity:1}, {opacity:0}], {duration:400}));
+      Som.tocar('carta');
+    }
+    A(el, [{opacity:1}, {opacity:0}], {duration:rapido ? 150 : 900, delay:rapido ? 0 : 300});
+    setTimeout(() => el.remove(), rapido ? 170 : 1250);
+  };
+  cenaAtiva = {pular:() => fim(true), pega:true};
+  el.onclick = () => fim(false);
+  // brilho que sobe da mão
+  A(el, [{opacity:0}, {opacity:1}], {duration:400});
+  Som.tocar('douradaPega');
+  setTimeout(() => Som.tocar('douradaRevela'), 650);
+  const raios = q('.raios');
+  raios.animate([{transform:'rotate(0deg)'}, {transform:'rotate(360deg)'}], {duration:30000, iterations:Infinity});
+  A(raios, [{opacity:0}, {opacity:1}], {duration:1200});
+  A('.halo', [{opacity:0, transform:'scale(.3)'}, {opacity:1, transform:'scale(1)'}], {duration:1400, easing:'ease-out'});
+  A(carta, [{transform:'translateY(60vh) rotateY(-540deg) scale(.4)', opacity:0}, {transform:'translateY(-3vh) rotateY(-20deg) scale(1.08)', opacity:1, offset:.75}, {transform:'translateY(0) rotateY(0deg) scale(1)', opacity:1}],
+    {duration:1500, easing:'cubic-bezier(.2,.8,.3,1)'});
+  timers.push(setTimeout(() => {
+    if (acabou) return;
+    A(el, [{filter:'brightness(1.9)'}, {filter:'brightness(1)'}], {duration:600});
+    const r = carta.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (let i = 0; i < 40; i++){
+      const a = Math.random() * Math.PI * 2, d = 110 + Math.random() * 240, b = document.createElement('div'); b.className = 'faisca';
+      const t = 4 + Math.random() * 7; b.style.width = b.style.height = t + 'px'; b.style.left = cx + 'px'; b.style.top = cy + 'px'; el.appendChild(b);
+      b.animate([{opacity:1, transform:'translate(0,0) scale(.4)'}, {opacity:0, transform:`translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(1.1)`}], {duration:1000 + Math.random() * 700, easing:'ease-out'});
+      setTimeout(() => b.remove(), 1800);
+    }
+    // a carta flutua devagar
+    carta.animate([{transform:'translateY(0) rotateY(0deg)'}, {transform:'translateY(-10px) rotateY(10deg)'}, {transform:'translateY(0) rotateY(0deg)'}, {transform:'translateY(-10px) rotateY(-10deg)'}, {transform:'translateY(0) rotateY(0deg)'}], {duration:3600, iterations:Infinity, composite:'add'});
+    A('.topoP', [{opacity:0, letterSpacing:'.6em'}, {opacity:1, letterSpacing:'.22em'}], {duration:700});
+    A('.textoP', [{opacity:0, transform:'translateY(12px)'}, {opacity:1, transform:'translateY(0)'}], {duration:600, delay:250});
+  }, 1450));
+  // faíscas orbitando enquanto está aberta
+  timers.push(setInterval(() => {
+    if (acabou || !carta.isConnected) return;
+    const r = carta.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, a = Math.random() * Math.PI * 2, d = 140 + Math.random() * 160;
+    const b = document.createElement('div'); b.className = 'faisca'; const t = 3 + Math.random() * 5; b.style.width = b.style.height = t + 'px';
+    b.style.left = (cx + Math.cos(a) * d) + 'px'; b.style.top = (cy + Math.sin(a) * d) + 'px'; el.appendChild(b);
+    b.animate([{opacity:0, transform:'translate(0,0)'}, {opacity:1, offset:.3}, {opacity:0, transform:`translate(${-Math.cos(a) * d * .7}px,${-Math.sin(a) * d * .7}px)`}], {duration:1100, easing:'ease-in'});
+    setTimeout(() => b.remove(), 1150);
+  }, 70));
+  timers.push(setTimeout(() => fim(false), 6200));
+}
 const DUR_DOURADA = 10600;
 function cenaDourada(d){ // d: {quem, alvo, bruxa}
   if (cenaAtiva) cenaAtiva.pular();
@@ -3229,6 +3320,7 @@ function clienteRecebe(d){
     if (d.tipo === 'conspiracao') cenaConspiracao(String(d.nome || ''));
     else if (d.tipo === 'final' && d.d) cenaFinal({vitima:String(d.d.vitima || ''), bruxa:String(d.d.bruxa || ''), parceiras:Array.isArray(d.d.parceiras) ? d.d.parceiras.map(String) : []});
     else if (d.tipo === 'feitico' && d.d) cenaFeitico({tipo:['morte', 'confissao', 'protegido'].includes(d.d.tipo) ? d.d.tipo : 'protegido', nome:String(d.d.nome || ''), carta:String(d.d.carta || '')});
+    else if (d.tipo === 'pegaDourada') cenaPegaDourada();
     else if (d.tipo === 'dourada' && d.d) cenaDourada({quem:String(d.d.quem || ''), alvo:String(d.d.alvo || ''), bruxa:!!d.d.bruxa});
     else if (d.tipo === 'noite' && Array.isArray(d.pessoas)) cenaNoite(d.pessoas.map(p => ({nome:String(p.nome || ''), eu:CV && p.id === CV.meId})));
   } else if (d.t === 'logs'){
@@ -3294,7 +3386,7 @@ function painelHTML(){
     <h3>🎬 Cenas</h3>
     <div class="grade">${b('cena:conspiracao', '🕸️ Conspiração')}
       <span class="linha" style="gap:4px">${b('cena:noite', '🌑 Noite com')}<select id="admN">${Array.from({length:12}, (_, i) => `<option ${i + 1 === 6 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select> pessoas</span></div>
-    <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}${b('cena:final', '👑 Final: a bruxa se revela')}${b('cena:dourada', '⚜️ Sentença Dourada')}</div>
+    <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}${b('cena:final', '👑 Final: a bruxa se revela')}${b('cena:dourada', '⚜️ Sentença Dourada')}${b('cena:pegaDourada', '✨ Pegar a Sentença (só quem compra)')}</div>
     <h3>🔊 Sons</h3>
     <div class="grade">${Object.keys(NOMES_SONS).filter(k => EFEITOS[k]).map(k => b('som:' + k, NOMES_SONS[k])).join('')}
       ${b('som2:susto', 'Susto (Conspiração)')}${b('som2:pancada', 'Pancada na mesa')}${b('som2:sinistro', 'Acorde sinistro')}</div>
@@ -3339,6 +3431,7 @@ async function acaoPainel(a){
     else if (x === 'morte') await cenaFeitico({tipo:'morte', nome:nomes[0]});
     else if (x === 'protegido') await cenaFeitico({tipo:'protegido', nome:''});
     else if (x === 'final') await cenaFinal({vitima:nomes[0], bruxa:nomes[1], parceiras:[nomes[2]]});
+    else if (x === 'pegaDourada'){ cenaPegaDourada(); await sleep(7600); }
     else if (x === 'dourada') await cenaDourada({quem:meuNome(), alvo:nomes[0], bruxa:Math.random() < .5});
     else if (x.startsWith('conf-')) await cenaFeitico({tipo:'confissao', nome:nomes[1], carta:x.slice(5)});
     abrirPainel(); return;
