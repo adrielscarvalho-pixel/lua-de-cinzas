@@ -571,6 +571,44 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
 .escolhas select{font:inherit;font-family:'Crimson Text',Georgia,serif;font-size:15px;text-transform:none;letter-spacing:0;padding:8px 10px;border-radius:10px;background:#140f1c;border:1px solid #4a3a63;color:var(--txt);width:100%}
 #inNOnline{text-transform:none;letter-spacing:0;font-family:'Crimson Text',Georgia,serif;font-size:15px}
 .resumoMesa{margin:4px 0 0 !important;font-size:14.5px !important;color:#d8cde8 !important}
+/* ---------- carta dourada ---------- */
+.carta.dourada{background:linear-gradient(135deg,#fff1c0,#f3d270 35%,#fff0b8 55%,#e6bd4a 80%,#fbe39a);box-shadow:0 0 0 2px #ffe08a,0 0 26px #ffcc33aa,0 8px 18px #000b;animation:dourBrilha 2.2s ease-in-out infinite}
+.carta.dourada::before{background:radial-gradient(circle at 50% 130%,#fff6,#0000 60%),linear-gradient(120deg,#5a3800,#b8860b 35%,#ffe9a0 50%,#b8860b 65%,#5a3800);background-size:100%,220% 100%;animation:dourFaixa 2.6s linear infinite}
+.carta.dourada::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,#0000 43%,#ffffff66 50%,#0000 57%);background-size:250% 100%;animation:dourReflexo 2.6s ease-in-out infinite}
+.carta.dourada .ic{background:radial-gradient(circle at 35% 30%,#fffbe8,#ffd24a);box-shadow:0 3px 10px #0007,0 0 0 2px #b8860b,0 0 0 4px #fff1b0,0 0 18px #ffd24a}
+.carta.dourada .cn{color:#3e2600}.carta.dourada .cd{color:#3e2a06;font-weight:600}
+.carta.dourada .qtd{color:#6a4a00}
+@keyframes dourBrilha{50%{box-shadow:0 0 0 2px #fff3c0,0 0 40px #ffd24add,0 8px 18px #000b}}
+@keyframes dourFaixa{to{background-position:0 0,-220% 0}}
+@keyframes dourReflexo{0%{background-position:150% 0}60%,100%{background-position:-100% 0}}
+#cenaDourada{position:fixed;inset:0;z-index:40;overflow:hidden;cursor:pointer;background:radial-gradient(ellipse at 50% 38%,#3a2606f0,#0a0602fa 62%,#000 100%);perspective:1100px}
+#cenaDourada .raios{position:absolute;left:50%;top:34%;width:200vmax;height:200vmax;margin:-100vmax 0 0 -100vmax;opacity:0;
+ background:repeating-conic-gradient(from 0deg,#ffd76a30 0deg 5deg,#0000 5deg 15deg);-webkit-mask-image:radial-gradient(circle,#000 0,#0000 45%);mask-image:radial-gradient(circle,#000 0,#0000 45%)}
+#cenaDourada .halo{position:absolute;left:50%;top:34%;width:min(560px,110vw);height:min(560px,110vw);margin:calc(min(560px,110vw) / -2) 0 0 calc(min(560px,110vw) / -2);border-radius:50%;
+ background:radial-gradient(circle,#ffe9a066 0%,#ffcc3322 35%,#0000 65%);opacity:0}
+#cenaDourada .cartaD{position:absolute;left:50%;top:34%;width:min(190px,40vw);aspect-ratio:2/3;margin:calc(min(190px,40vw) * -.75) 0 0 calc(min(190px,40vw) / -2);transform-style:preserve-3d;z-index:3}
+#cenaDourada .verso,#cenaDourada .face{position:absolute;inset:0;border-radius:16px;-webkit-backface-visibility:hidden;backface-visibility:hidden;overflow:hidden}
+#cenaDourada .verso{background:repeating-linear-gradient(45deg,#b8860b 0 8px,#d4a017 8px 16px);border:4px solid #fff1b0;box-shadow:0 0 40px #ffcc33aa;display:grid;place-items:center}
+#cenaDourada .verso i{position:absolute;inset:10px;border:2px solid #fff6d088;border-radius:10px}
+#cenaDourada .verso span{font-size:min(70px,15vw);filter:drop-shadow(0 2px 4px #0008)}
+#cenaDourada .face{transform:rotateY(180deg);background:linear-gradient(140deg,#fff6d0,#f2cf5c 35%,#fff1b0 50%,#d4a017 75%,#fbe39a);border:4px solid #fff6d0;
+ box-shadow:0 0 50px #ffcc33cc,inset 0 0 0 3px #b8860b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;color:#4a2e00}
+#cenaDourada .fTopo{font-family:Cinzel,serif;font-size:11px;letter-spacing:.2em;font-weight:700;color:#7a4e00}
+#cenaDourada .fIc{font-size:min(64px,14vw);filter:drop-shadow(0 3px 6px #7a4e0088)}
+#cenaDourada .fNome{font-family:Cinzel,serif;font-weight:700;font-size:min(22px,5vw);line-height:1.05;text-shadow:0 1px 0 #fff8}
+#cenaDourada .fQuem{font-size:min(14px,3.4vw);margin-top:6px;line-height:1.1}
+#cenaDourada .feixe{position:absolute;left:50%;width:110px;margin-left:-55px;height:0;opacity:0;z-index:2;border-radius:0 0 50% 50%;
+ background:linear-gradient(#fffbe8,#ffe9a0 35%,#ffd24a);filter:blur(5px);box-shadow:0 0 60px 30px #ffcc3388}
+#cenaDourada .alvoD{position:absolute;left:50%;bottom:5%;width:min(170px,34vw);margin-left:calc(min(170px,34vw) / -2);opacity:0;z-index:3}
+#cenaDourada .alvoD svg{width:100%;height:auto;display:block;overflow:visible}
+#cenaDourada .nomeD{text-align:center;font-family:Cinzel,serif;font-weight:700;color:#ffe9a0;text-shadow:0 2px 6px #000;margin-top:4px}
+#cenaDourada .faisca{position:fixed;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0,#ffe08a 40%,#ffb80000 70%);box-shadow:0 0 8px #ffd24a;z-index:4}
+#cenaDourada .poD{position:fixed;width:5px;height:5px;border-radius:50%;pointer-events:none;box-shadow:0 0 6px #ffd24a;z-index:4}
+#cenaDourada .tituloD{position:absolute;left:0;right:0;top:9%;text-align:center;font-family:Cinzel,serif;font-weight:700;font-size:clamp(26px,5.6vw,54px);letter-spacing:.06em;
+ color:#fff1c4;text-shadow:0 0 30px #ffb800,0 0 60px #ff9a00aa,0 4px 10px #000;opacity:0;padding:0 12px;z-index:5}
+#cenaDourada .subD{position:absolute;left:0;right:0;top:calc(9% + clamp(44px,8vw,80px));text-align:center;font-size:clamp(19px,3vw,27px);line-height:1.35;color:#f3e6c4;text-shadow:0 2px 6px #000;opacity:0;padding:0 16px;z-index:5}
+#cenaDourada .eraB{color:#ff9a8a;font-weight:700}#cenaDourada .eraV{color:#9ee0a8}
+#cenaDourada .pular{position:absolute;bottom:8px;right:14px;color:#ffffff55;font-size:13px;z-index:9}
 /* ---------- celular ---------- */
 @media (max-width:759px){
  :root{--mesaH:auto}
@@ -783,6 +821,7 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
     <li>🚫 Você <b>não pode</b> usar cartas em você mesmo. <b>Exceção:</b> o <b>Furto</b> pode trazer a mão de alguém para você, mas aí você fica só com <b>metade</b>.</li>
     <li>🌫️ Cartas sem nenhum alvo possível aparecem apagadas na sua mão.</li>
     <li>⛓️ Quem está no <b>Pelourinho</b> perde a próxima vez.</li>
+    <li>⚜️ <b>Carta lendária:</b> cada baralho tem só <b>1% de chance</b> de esconder a <b>Sentença Dourada</b>. Quem a comprar pode <b>eliminar qualquer jogador</b> na hora, e nada impede: nem Devoção, nem Guardião, nem confissão. Depois de usada, ela se desfaz.</li>
     <li>🌐 No online, cada decisão do seu turno tem <b>75 segundos</b>. Se o tempo acabar, o jogo compra 2 cartas por você (ou encerra o turno, se você já tinha jogado).</li>
   </ul>
   <h3>As cores das cartas</h3>
@@ -901,11 +940,13 @@ const CARDS = {
   furto:     {nome:'Furto',      cor:'verde', qtd:2, alvo:2, ic:'🫳', desc:'Tire a mão inteira de um jogador e entregue a outro. Se ficar com você, pega só metade.'},
   espiar:    {nome:'Espiar',     cor:'verde', qtd:6, ic:'🔍', desc:'Escolha uma carta de julgamento fechada de um jogador e olhe em segredo.'},
   bode:      {nome:'Bode Expiatório', cor:'verde', qtd:2, alvo:2, ic:'🐐', desc:'Mova todas as acusações e cartas azuis de um jogador para outro.'},
+  sentenca:  {nome:'Sentença Dourada', cor:'dourada', qtd:0, ic:'⚜️', desc:'Carta lendária: elimine qualquer jogador na hora. Nada pode impedir.'},
   gato:      {nome:'Gato da Lua', cor:'azul', qtd:0, ic:'🐈‍⬛', desc:'Dado pelas bruxas na Madrugada. Quando sair Conspiração, quem a comprou escolhe uma carta de julgamento deste jogador para revelar.'},
   noite:     {nome:'Noite',      cor:'preta', ic:'🌑', desc:'Última carta do baralho. As bruxas escolhem uma vítima, o Guardião protege alguém e todos podem confessar.'},
   conspiracao:{nome:'Conspiração', cor:'preta', ic:'🕸️', desc:'O dono do Gato da Lua revela uma carta. Depois todos pegam uma carta de julgamento do vizinho da esquerda.'},
 };
-const COR = {vermelha:'#b23a3a', azul:'#3f6fb5', verde:'#4f8a55', preta:'#111'};
+const COR = {vermelha:'#b23a3a', azul:'#3f6fb5', verde:'#4f8a55', preta:'#111', dourada:'#d4a017'};
+const CHANCE_DOURADA = .01; // 1% de chance de a Sentença Dourada estar em cada baralho
 const TIPO = {bruxa:'☾ Bruxa', inocente:'✝ Não é Bruxa', guardiao:'🏮 Guardião'};
 const ICONE = {bruxa:'☾', inocente:'✝', guardiao:'🏮'};
 const removiveis = p => p.azuis.filter(a => a !== 'gato');
@@ -977,6 +1018,7 @@ function novoJogo(pessoas, n, bruxas = null){
   shuffle(G.deck);
   players.forEach(p => { for (let i = 0; i < 3; i++) p.hand.push(G.deck.pop()); });
   inserirFundo('conspiracao', .8);
+  if (Math.random() < CHANCE_DOURADA) inserirFundo('sentenca', 1);
   G.deck.unshift('noite'); // a Noite é sempre a última carta do baralho
   NET.asks.clear();
 }
@@ -985,7 +1027,8 @@ function inserirFundo(k, frac){ // o fim do array é o topo do baralho
   G.deck.splice(pos, 0, k);
 }
 function novoBaralho(){
-  G.deck = shuffle(G.discard); G.discard = [];
+  G.deck = shuffle(G.discard.filter(k => k !== 'sentenca')); G.discard = [];
+  if (Math.random() < CHANCE_DOURADA) inserirFundo('sentenca', 1);
   G.deck.unshift('noite');
   log(`🔄 O descarte foi embaralhado e virou um novo baralho (${G.deck.length} cartas). A Noite volta para o fundo.`);
 }
@@ -1136,6 +1179,7 @@ function alvoOk(k, pv, sel, meId){ // funciona com a visão (cliente) e é usada
   if (k === 'furto' && sel.length && pv.id === meId) return true; // o Furto pode ser para você mesmo (metade)
   if (!pv.alive || pv.id === meId) return false;
   const c = CARDS[k];
+  if (k === 'sentenca') return true; // qualquer vivo que não seja você
   if (c.cor === 'vermelha') return !pv.azuis.includes('devocao');
   if (k === 'devocao' && pv.semDevocao) return false;
   if (c.cor === 'azul') return !pv.azuis.includes(k);
@@ -1193,7 +1237,16 @@ async function vezHumana(p){
 // ---------- efeitos das cartas ----------
 async function jogar(p, i, ts){
   const k = p.hand.splice(i, 1)[0], c = CARDS[k], t = ts[0];
-  if (c.cor !== 'azul') G.discard.push(k);
+  if (c.cor !== 'azul' && k !== 'sentenca') G.discard.push(k); // a Sentença se desfaz depois de usada
+  if (k === 'sentenca'){
+    log(`⚜️ ${nm(p)} ergue a lendária <b>SENTENÇA DOURADA</b> contra ${nm(t)}!`, 'phase');
+    const meuG = G;
+    await mostrarCenaDourada({quem:p.nome, alvo:t.nome, bruxa:t.team === 'bruxa'});
+    if (G !== meuG || !t.alive) return;
+    G.history.push({by:p.id, t:t.id, n:7});
+    await morre(t, 'Sentença Dourada', true);
+    return;
+  }
   if (c.cor === 'vermelha'){
     t.acus.push({k, by:p.id});
     G.history.push({by:p.id, t:t.id, n:c.pts});
@@ -1530,6 +1583,10 @@ function opcoesBot(me){
   me.hand.forEach((k, i) => {
     const c = CARDS[k];
     const add = (targets, v) => opts.push({i, k, targets, v:v + Math.random() * .4});
+    if (k === 'sentenca'){
+      outros.forEach(t => { if (amigo(t)) return; add([t], isB ? 1.6 + ameaca(t) * .8 : B(t) * 1.1 - .4 + pressao); });
+      return;
+    }
     if (c.cor === 'vermelha'){
       outros.forEach(t => {
         if (t.azuis.includes('devocao') || amigo(t)) return;
@@ -1602,7 +1659,7 @@ async function comprar2(p){
       else { await conspiracao(p); G.discard.push(k); }
     } else {
       p.hand.push(k);
-      if (p.isHuman) log(`Você comprou <i>${CARDS[k].nome}</i>.`, 'priv', p.id, 'carta');
+      if (p.isHuman) log(k === 'sentenca' ? '⚜️ Você comprou a lendária <b>SENTENÇA DOURADA</b>! Ela elimina qualquer jogador.' : `Você comprou <i>${CARDS[k].nome}</i>.`, 'priv', p.id, k === 'sentenca' ? 'douradaPega' : 'carta');
     }
     atualizar();
   }
@@ -1795,7 +1852,7 @@ function desenhar(v){
   v.hand.forEach((k, i) => {
     const c = CARDS[k], el = document.createElement('div');
     const semAlvo = v.minhaVez && !v.players.some(pv => alvoOk(k, pv, [], v.meId));
-    el.className = 'carta' + (v.minhaVez && !semAlvo ? ' jogavel' : '') + (semAlvo ? ' semAlvo' : '') + (UI.sel === i ? ' sel' : '');
+    el.className = 'carta' + (c.cor === 'dourada' ? ' dourada' : '') + (v.minhaVez && !semAlvo ? ' jogavel' : '') + (semAlvo ? ' semAlvo' : '') + (UI.sel === i ? ' sel' : '');
     if (semAlvo) el.title = 'Nenhum jogador pode receber esta carta agora';
     el.style.setProperty('--cor', COR[c.cor]);
     el.innerHTML = `${c.pts ? `<span class="pts">${c.pts}</span>` : ''}<div class="ic">${c.ic}</div><div class="cn">${c.nome}</div><div class="cd">${c.desc}</div>`;
@@ -2047,6 +2104,22 @@ const EFEITOS = {
     Som.sinoNota(1046.5, t + .55, .12, 2);
     Som.chiado(t, 1.6, .12, 'bandpass', 2500, {para:7000, q:.7, ataque:.4});
   },
+  douradaPega(t){ [1318.5, 1568, 2093, 2637].forEach((f, i) => Som.sinoNota(f, t + i * .07, .09, 1.4)); Som.chiado(t, .9, .07, 'highpass', 6000, {ataque:.05}); },
+  douradaCoro(t){ // coro celestial subindo
+    Som.tom(65.4, 'sine', t, 3.2, .3, {ataque:.6});
+    [261.6, 329.6, 392, 523.3, 659.3, 784].forEach((f, i) => { Som.tom(f, 'sawtooth', t + i * .18, 3 - i * .2, .035, {ataque:.5, filtro:'lowpass', ff:1800, vib:5, vibAmt:f * .006});
+      Som.tom(f * 1.005, 'triangle', t + i * .18, 3 - i * .2, .05, {ataque:.5}); });
+    Som.chiado(t, 2.6, .08, 'bandpass', 3000, {para:9000, q:.6, ataque:1.2});
+  },
+  douradaRevela(t){ [523.3, 659.3, 784, 1046.5, 1318.5].forEach((f, i) => Som.sinoNota(f, t + i * .05, .14, 2.2)); Som.tom(130.8, 'sine', t, 1.8, .3, {ataque:.02}); Som.chiado(t, .5, .15, 'highpass', 5000); },
+  douradaRaio(t){
+    Som.chiado(t, 1.2, .5, 'lowpass', 9000, {para:200, ataque:.004});
+    Som.tom(90, 'sawtooth', t, 1, .25, {para:30, glide:.9, filtro:'lowpass', ff:600});
+    Som.tom(48, 'sine', t + .02, 1.6, .5, {para:28, glide:1.4, ataque:.005});
+    Som.sinoNota(1568, t + .05, .12, 1.8);
+  },
+  douradaPo(t){ for (let i = 0; i < 14; i++) Som.tom(1800 + Math.random() * 2600, 'sine', t + i * .07 + Math.random() * .05, .25, .035, {ataque:.004}); Som.chiado(t, 1.8, .1, 'highpass', 4000, {ataque:.2}); },
+  douradaFim(t){ [[261.6, 329.6, 392], [349.2, 440, 523.3], [392, 493.9, 587.3], [523.3, 659.3, 784, 1046.5]].forEach((ac, j) => ac.forEach(f => Som.tom(f, 'triangle', t + j * .32, j === 3 ? 2.2 : .45, .07, {ataque:.02}))); Som.sinoNota(1046.5, t + .96, .12, 2.4); },
   chat(t){ Som.tom(880, 'sine', t, .16, .12, {para:1175, glide:.06, ataque:.005}); Som.tom(1320, 'sine', t + .07, .18, .07, {ataque:.005}); },
   sombra(t){ Som.chiado(t, 1.2, .35, 'lowpass', 120, {para:600, ataque:.4}); Som.tom(55, 'sawtooth', t, 1.4, .12, {para:41, filtro:'lowpass', ff:300, ataque:.4}); },
   feiticoCarga(t){ Som.tom(180, 'sawtooth', t, 1, .14, {para:900, filtro:'bandpass', ff:900, q:3, ataque:.2, vib:9, vibAmt:30}); Som.chiado(t, 1, .18, 'bandpass', 600, {para:3000, q:4, ataque:.3}); },
@@ -2580,6 +2653,112 @@ function cenaFeitico(d){ // d: {tipo:'morte'|'confissao'|'protegido', nome, cart
   });
 }
 // ---------- cena final: a bruxa se revela e mata o último morador ----------
+const DUR_DOURADA = 10600;
+function cenaDourada(d){ // d: {quem, alvo, bruxa}
+  if (cenaAtiva) cenaAtiva.pular();
+  return new Promise(resolve => {
+    let pulou = false, acabou = false;
+    const el = document.createElement('div'); el.id = 'cenaDourada';
+    el.innerHTML = `<div class="raios"></div><div class="halo"></div>
+      <div class="cartaD"><div class="verso"><i></i><span>⚜️</span></div>
+        <div class="face"><div class="fTopo">✦ LENDÁRIA ✦</div><div class="fIc">⚜️</div><div class="fNome">Sentença<br>Dourada</div><div class="fQuem">erguida por<br><b>${esc(d.quem)}</b></div></div></div>
+      <div class="feixe"></div>
+      <div class="alvoD"><div class="corpoD">${svgVitima(d.alvo, false)}</div><div class="nomeD">${esc(d.alvo)}</div></div>
+      <div class="tituloD">⚜️ SENTENÇA CUMPRIDA ⚜️</div>
+      <div class="subD"><b>${esc(d.alvo)}</b> foi eliminado(a) pela luz dourada.<br>${d.bruxa ? '<span class="eraB">☾ Era da equipe das bruxas!</span>' : '<span class="eraV">✝ Nunca foi bruxa...</span>'}</div>
+      <div class="pular">toque para pular</div>`;
+    document.body.appendChild(el);
+    const timers = [];
+    const fim = () => {
+      if (acabou) return; acabou = true; cenaAtiva = null; timers.forEach(clearInterval);
+      el.animate([{opacity:1}, {opacity:0}], {duration:pulou ? 150 : 800, fill:'forwards'});
+      setTimeout(() => { el.remove(); resolve(); }, pulou ? 170 : 820);
+    };
+    const pular = () => { pulou = true; fim(); };
+    cenaAtiva = {pular};
+    setTimeout(pular, TRAVA_CENA + 4000);
+    el.onclick = pular;
+    const esperar = ms => new Promise(r => setTimeout(r, ms));
+    const q = s => el.querySelector(s);
+    const A = (alvo, kf, op) => { const e = typeof alvo === 'string' ? q(alvo) : alvo; return e ? e.animate(kf, {fill:'forwards', ...op}) : null; };
+    const centro = e => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+    const brilho = (x, y, dx, dy, dur, tam = 6) => {
+      const b = document.createElement('div'); b.className = 'faisca';
+      b.style.left = x + 'px'; b.style.top = y + 'px'; b.style.width = b.style.height = tam + 'px'; el.appendChild(b);
+      b.animate([{opacity:0, transform:'translate(0,0) scale(.4)'}, {opacity:1, offset:.2}, {opacity:0, transform:`translate(${dx}px,${dy}px) scale(1.2)`}], {duration:dur, easing:'ease-out'});
+      setTimeout(() => b.remove(), dur + 30);
+    };
+    (async () => {
+      A(el, [{opacity:0}, {opacity:1}], {duration:500});
+      Som.tocar('douradaCoro');
+      const raios = q('.raios');
+      raios.animate([{transform:'rotate(0deg)'}, {transform:'rotate(360deg)'}], {duration:24000, iterations:Infinity});
+      A(raios, [{opacity:0}, {opacity:1}], {duration:1600});
+      A('.halo', [{opacity:0, transform:'scale(.4)'}, {opacity:1, transform:'scale(1)'}], {duration:1800, easing:'ease-out'});
+      // 1) a carta desce do céu girando, com faíscas sendo puxadas para ela
+      const carta = q('.cartaD');
+      A(carta, [{transform:'translateY(-110vh) rotateY(0deg) rotateZ(-25deg) scale(.5)'},
+                {transform:'translateY(4vh) rotateY(650deg) rotateZ(4deg) scale(1.05)', offset:.8},
+                {transform:'translateY(0) rotateY(720deg) rotateZ(0deg) scale(1)'}], {duration:2000, easing:'cubic-bezier(.2,.8,.3,1)'});
+      timers.push(setInterval(() => {
+        if (!carta.isConnected) return;
+        const [cx, cy] = centro(carta), ang = Math.random() * Math.PI * 2, r = 160 + Math.random() * 220;
+        brilho(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, -Math.cos(ang) * r, -Math.sin(ang) * r, 900 + Math.random() * 500, 4 + Math.random() * 6);
+      }, 45));
+      await esperar(2050); if (pulou) return;
+      // 2) a carta vira e mostra a frente dourada
+      Som.tocar('douradaRevela');
+      A(carta, [{transform:'translateY(0) rotateY(720deg) scale(1)'}, {transform:'translateY(-2vh) rotateY(810deg) scale(1.15)', offset:.5}, {transform:'translateY(0) rotateY(900deg) scale(1.08)'}], {duration:800, easing:'ease-in-out'});
+      await esperar(500);
+      A(el, [{filter:'brightness(2.2)'}, {filter:'brightness(1)'}], {duration:600});
+      const [cx, cy] = centro(carta);
+      for (let i = 0; i < 46; i++){ const a = Math.random() * Math.PI * 2, r = 120 + Math.random() * 260; brilho(cx, cy, Math.cos(a) * r, Math.sin(a) * r, 1000 + Math.random() * 700, 5 + Math.random() * 7); }
+      A('.face', [{boxShadow:'0 0 50px #ffcc33cc, inset 0 0 0 3px #b8860b'}, {boxShadow:'0 0 110px 20px #ffe9a0, inset 0 0 0 3px #b8860b'}, {boxShadow:'0 0 50px #ffcc33cc, inset 0 0 0 3px #b8860b'}], {duration:900, iterations:2});
+      await esperar(1600); if (pulou) return;
+      // 3) a carta sobe e lança um raio de luz sobre o alvo
+      A(carta, [{transform:'translateY(0) rotateY(900deg) scale(1.08)'}, {transform:'translateY(-16vh) rotateY(900deg) scale(.78)'}], {duration:600, easing:'ease-out'});
+      A('.alvoD', [{opacity:0, transform:'translateY(30px)'}, {opacity:1, transform:'translateY(0)'}], {duration:500});
+      const corpo = q('.corpoD');
+      const tremor = A(corpo, Array.from({length:9}, (_, i) => ({transform:i === 8 ? 'translate(0,0)' : `translate(${(Math.random() - .5) * 6}px,${(Math.random() - .5) * 3}px)`})), {duration:110, iterations:Infinity});
+      Som.tocar('tremor');
+      await esperar(900); if (pulou) return;
+      const rc = carta.getBoundingClientRect(), ra = corpo.getBoundingClientRect(), feixe = q('.feixe');
+      feixe.style.top = (rc.top + rc.height * .7) + 'px';
+      Som.tocar('douradaRaio');
+      await terminar(A(feixe, [{height:'0px', opacity:0}, {height:(ra.top + ra.height * .85 - rc.top - rc.height * .7) + 'px', opacity:1}], {duration:260, easing:'ease-in'}));
+      if (pulou) return;
+      A(el, [{filter:'brightness(3.4) saturate(1.4)'}, {filter:'brightness(1)'}], {duration:700});
+      A(el, Array.from({length:7}, (_, i) => ({transform:i === 6 ? 'translate(0,0)' : `translate(${(Math.random() - .5) * 18}px,${(Math.random() - .5) * 12}px)`})), {duration:420});
+      A(feixe, [{width:'60px', marginLeft:'-30px'}, {width:'150px', marginLeft:'-75px'}, {width:'110px', marginLeft:'-55px'}], {duration:500, iterations:2, direction:'alternate'});
+      // o alvo vira uma estátua de ouro
+      if (tremor) tremor.cancel();
+      A(corpo, [{filter:'sepia(0) brightness(1)'}, {filter:'sepia(1) saturate(4) hue-rotate(-8deg) brightness(1.45) drop-shadow(0 0 18px #ffd24a)'}], {duration:700});
+      await esperar(1100); if (pulou) return;
+      // 4) e se desfaz em pó de ouro
+      Som.tocar('douradaPo');
+      const r = corpo.getBoundingClientRect();
+      for (let i = 0; i < 130; i++){
+        const p = document.createElement('div'); p.className = 'poD';
+        p.style.left = (r.left + Math.random() * r.width) + 'px'; p.style.top = (r.top + Math.random() * r.height) + 'px';
+        p.style.background = rnd(['#ffe9a0', '#ffd24a', '#e0a81e', '#fff6d0', '#b8860b']);
+        el.appendChild(p);
+        A(p, [{opacity:1, transform:'translate(0,0)'}, {opacity:0, transform:`translate(${(Math.random() - .5) * 220}px,${-80 - Math.random() * 260}px) scale(${.3 + Math.random()})`}],
+          {duration:1400 + Math.random() * 1000, delay:Math.random() * 600, easing:'ease-out'});
+      }
+      A(corpo, [{opacity:1}, {opacity:0, transform:'translateY(-10px) scale(.96)'}], {duration:1300, delay:200});
+      A('.nomeD', [{opacity:1}, {opacity:.25}], {duration:1000});
+      A(feixe, [{opacity:1}, {opacity:0}], {duration:900, delay:400});
+      A(carta, [{opacity:1}, {opacity:0, transform:'translateY(-30vh) rotateY(900deg) scale(.5)'}], {duration:1200, delay:300, easing:'ease-in'});
+      await esperar(1300); if (pulou) return;
+      // 5) o título
+      Som.tocar('douradaFim');
+      A('.tituloD', [{opacity:0, transform:'scale(1.8)', filter:'blur(8px)'}, {opacity:1, transform:'scale(1)', filter:'blur(0px)'}], {duration:700, easing:'cubic-bezier(.2,1.2,.4,1)'});
+      A('.subD', [{opacity:0, transform:'translateY(10px)'}, {opacity:1, transform:'translateY(0)'}], {duration:600, delay:350});
+      await esperar(2900);
+      fim();
+    })();
+  });
+}
 const DUR_FINAL = 10500;
 function svgBruxaRevelada(nome){
   const [m, me] = corManto(nome);
@@ -2714,6 +2893,10 @@ function cenaFinal(d){ // d: {vitima, bruxa, parceiras:[]}
       fim();
     })();
   });
+}
+async function mostrarCenaDourada(d){
+  G.players.forEach(p => { if (p.ctl === 'remoto') enviar(p.conn, {t:'cena', tipo:'dourada', d}); });
+  if (local()) await cenaDourada(d); else await sleep(DUR_DOURADA);
 }
 async function mostrarCenaFinal(d){
   G.players.forEach(p => { if (p.ctl === 'remoto') enviar(p.conn, {t:'cena', tipo:'final', d}); });
@@ -3046,6 +3229,7 @@ function clienteRecebe(d){
     if (d.tipo === 'conspiracao') cenaConspiracao(String(d.nome || ''));
     else if (d.tipo === 'final' && d.d) cenaFinal({vitima:String(d.d.vitima || ''), bruxa:String(d.d.bruxa || ''), parceiras:Array.isArray(d.d.parceiras) ? d.d.parceiras.map(String) : []});
     else if (d.tipo === 'feitico' && d.d) cenaFeitico({tipo:['morte', 'confissao', 'protegido'].includes(d.d.tipo) ? d.d.tipo : 'protegido', nome:String(d.d.nome || ''), carta:String(d.d.carta || '')});
+    else if (d.tipo === 'dourada' && d.d) cenaDourada({quem:String(d.d.quem || ''), alvo:String(d.d.alvo || ''), bruxa:!!d.d.bruxa});
     else if (d.tipo === 'noite' && Array.isArray(d.pessoas)) cenaNoite(d.pessoas.map(p => ({nome:String(p.nome || ''), eu:CV && p.id === CV.meId})));
   } else if (d.t === 'logs'){
     if (d.reinicio) LOG_CLIENTE = [];
@@ -3081,7 +3265,7 @@ const NOMES_SONS = {clique:'Clique', aviso:'Janela', suaVez:'Sua vez', comprar:'
   defesa:'Defesa', azul:'Carta azul', exorcismo:'Exorcismo', fogo:'Confisco', furto:'Furto', bode:'Bode 🐐', espiar:'Espiar', corrente:'Pelourinho', anuncio:'Anúncio de bruxa',
   confissao:'Confissão', martelo:'Julgamento', sino:'Carta inocente', bruxa:'Carta Bruxa', morte:'Morte', noite:'Noite (uivo)', dia:'Amanhecer', alivio:'Alívio', gato:'Gato 🐈‍⬛',
   saiu:'Alguém saiu', vitoria:'Vitória', derrota:'Derrota', tremor:'Dentes batendo', sombra:'Sombra da bruxa', feiticoCarga:'Feitiço carregando', feiticoRaio:'Feitiço lançado',
-  feiticoAcerta:'Feitiço acerta', cinzas:'Cinzas', escudo:'Escudo', risada:'Risada da bruxa', revelacao:'Revelação da bruxa'};
+  feiticoAcerta:'Feitiço acerta', douradaPega:'Dourada: comprou', douradaCoro:'Dourada: coro', douradaRevela:'Dourada: revela', douradaRaio:'Dourada: raio', douradaPo:'Dourada: pó de ouro', douradaFim:'Dourada: fanfarra', cinzas:'Cinzas', escudo:'Escudo', risada:'Risada da bruxa', revelacao:'Revelação da bruxa'};
 const adminAtivo = () => { try { return sessionStorage.getItem('ldc-admin') === '1'; } catch (e) { return false; } };
 const emTeste = () => !!(G && G.teste && !G.over);
 const minhaVezAgora = () => !!(G && G.turno && G.turno.res && local() && G.turno.pid === local().id);
@@ -3110,7 +3294,7 @@ function painelHTML(){
     <h3>🎬 Cenas</h3>
     <div class="grade">${b('cena:conspiracao', '🕸️ Conspiração')}
       <span class="linha" style="gap:4px">${b('cena:noite', '🌑 Noite com')}<select id="admN">${Array.from({length:12}, (_, i) => `<option ${i + 1 === 6 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select> pessoas</span></div>
-    <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}${b('cena:final', '👑 Final: a bruxa se revela')}</div>
+    <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}${b('cena:final', '👑 Final: a bruxa se revela')}${b('cena:dourada', '⚜️ Sentença Dourada')}</div>
     <h3>🔊 Sons</h3>
     <div class="grade">${Object.keys(NOMES_SONS).filter(k => EFEITOS[k]).map(k => b('som:' + k, NOMES_SONS[k])).join('')}
       ${b('som2:susto', 'Susto (Conspiração)')}${b('som2:pancada', 'Pancada na mesa')}${b('som2:sinistro', 'Acorde sinistro')}</div>
@@ -3129,7 +3313,7 @@ function painelHTML(){
     h += `<h3>🃏 Trapaças (partida de teste)</h3>
       <div class="grade">${b('ver', G.verTudo ? '🙈 Esconder as cartas dos outros' : '👁️ Ver as cartas de todos')}${b('mao3', '➕ 3 cartas aleatórias')}</div>
       <p class="nota" style="margin-top:10px">Receber uma carta na mão:</p>
-      <div class="grade">${Object.keys(CARDS).filter(k => ['vermelha', 'azul', 'verde'].includes(CARDS[k].cor) && k !== 'gato').map(k => b('carta:' + k, `${CARDS[k].ic} ${CARDS[k].nome}`)).join('')}</div>
+      <div class="grade">${Object.keys(CARDS).filter(k => ['vermelha', 'azul', 'verde', 'dourada'].includes(CARDS[k].cor) && k !== 'gato').map(k => b('carta:' + k, `${CARDS[k].ic} ${CARDS[k].nome}`)).join('')}</div>
       <p class="nota" style="margin-top:10px">Eventos: a carta vai para o topo do baralho e sai na próxima compra${vez ? ' (é sua vez: já compra na hora)' : ''}.</p>
       <div class="grade">${b('evento:noite', '🌑 Noite na próxima compra')}${b('evento:conspiracao', '🕸️ Conspiração na próxima compra')}</div>
       <p class="nota" style="margin-top:10px">Jogadores ${vez ? '' : '— <i>julgar e matar só na sua vez</i>'}:</p>
@@ -3155,6 +3339,7 @@ async function acaoPainel(a){
     else if (x === 'morte') await cenaFeitico({tipo:'morte', nome:nomes[0]});
     else if (x === 'protegido') await cenaFeitico({tipo:'protegido', nome:''});
     else if (x === 'final') await cenaFinal({vitima:nomes[0], bruxa:nomes[1], parceiras:[nomes[2]]});
+    else if (x === 'dourada') await cenaDourada({quem:meuNome(), alvo:nomes[0], bruxa:Math.random() < .5});
     else if (x.startsWith('conf-')) await cenaFeitico({tipo:'confissao', nome:nomes[1], carta:x.slice(5)});
     abrirPainel(); return;
   }
@@ -3248,7 +3433,7 @@ function catalogoHTML(){
   const grupo = (cor, titulo, sub) => {
     const ks = Object.keys(CARDS).filter(k => CARDS[k].cor === cor);
     return `<h4 style="color:${cor === 'preta' ? 'var(--parch)' : COR[cor]}">${titulo}</h4><p class="sub">${sub}</p><div class="cat-grid">` +
-      ks.map(k => carta(CARDS[k], COR[cor], k === 'gato' ? 'não está no baralho' : k === 'noite' ? 'sempre a última' : `×${CARDS[k].qtd || 1} no baralho`, cor === 'preta' ? 'preta' : '')).join('') + '</div>';
+      ks.map(k => carta(CARDS[k], COR[cor], k === 'gato' ? 'não está no baralho' : k === 'noite' ? 'sempre a última' : k === 'sentenca' ? '1% de chance por baralho' : `×${CARDS[k].qtd || 1} no baralho`, cor === 'preta' ? 'preta' : cor === 'dourada' ? 'dourada' : '')).join('') + '</div>';
   };
   return `<div class="cat"><h2 style="color:var(--gold)">Todas as cartas</h2>
     <h4 style="color:var(--parch)">Cartas de julgamento</h4><p class="sub">5 para cada jogador, fechadas na frente dele. Definem de que lado você está.</p>
@@ -3256,7 +3441,8 @@ function catalogoHTML(){
     ${grupo('vermelha', 'Vermelhas: acusações', 'Somam pontos no alvo. Com 7 pontos há julgamento e uma carta de julgamento é revelada.')}
     ${grupo('azul', 'Azuis: permanentes', 'Ficam na frente do jogador e o efeito continua. Devoção e Refúgio duram só até a próxima Noite acabar.')}
     ${grupo('verde', 'Verdes: ação imediata', 'O efeito acontece na hora e a carta é descartada.')}
-    ${grupo('preta', 'Pretas: eventos', 'São reveladas e resolvidas na hora em que alguém as compra.')}</div>`;
+    ${grupo('preta', 'Pretas: eventos', 'São reveladas e resolvidas na hora em que alguém as compra.')}
+    ${grupo('dourada', '⚜️ Dourada: lendária', 'Só 1% de chance de existir em cada baralho. Quem tiver a sorte de comprá-la pode eliminar qualquer jogador.')}</div>`;
 }
 function abrirInfo(html){
   $('info').querySelector('.conteudo').innerHTML = html;
