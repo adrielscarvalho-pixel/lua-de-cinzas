@@ -123,7 +123,8 @@ main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 16px}
 #listaLobby li{padding:6px 10px;border-bottom:1px solid #3a2f46}
 .msg{color:#ffb35a;min-height:22px;margin:8px 0 0}
 .regras{font-size:15.5px;color:#d8cfe3}.regras li{margin:3px 0}
-.fim-lista div{padding:3px 0}
+.fim-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px;margin-top:10px}
+.fim-lista div{padding:7px 11px;background:#ffffff0a;border:1px solid #ffffff14;border-radius:10px}
 .cat h4{font-family:Cinzel,serif;margin:16px 0 4px;font-size:15px}
 .cat .sub{font-size:14px;color:var(--muted);margin:0 0 8px}
 .cat-grid{display:flex;gap:10px;flex-wrap:wrap}
@@ -330,6 +331,277 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
 #cenaFeitico .orbe.vermelho{background:radial-gradient(circle,#fff,#ffb3a0 28%,#ff2a1a 58%,#ff2a1a00 72%);box-shadow:0 0 50px 20px #ff3a1a99}
 #cenaFeitico .pular{position:absolute;bottom:8px;right:14px;color:#ffffff55;font-size:13px;z-index:9}
 #cena .exclama{position:absolute;font-family:Cinzel,serif;font-weight:700;font-size:44px;color:#ffd04a;text-shadow:0 0 10px #f80;opacity:0}
+/* =====================================================================
+   REFORMA VISUAL
+   ===================================================================== */
+:root{--gold:#d8b25a;--gold2:#f3d98b;--linha:#ffffff16;--vidro:#1d1629f0;--vidro2:#261d35f2;--mesaH:clamp(420px,calc(100vh - 356px),820px)}
+html{scrollbar-color:#5a4775 transparent;scrollbar-width:thin}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#4a3a63;border-radius:9px}::-webkit-scrollbar-track{background:transparent}
+body{background:radial-gradient(1100px 620px at 50% -8%,#3b2856 0%,#0000 62%),radial-gradient(900px 600px at 105% 105%,#3a1230 0%,#0000 60%),
+ radial-gradient(700px 500px at -5% 80%,#1a2346 0%,#0000 60%),linear-gradient(#130d1d,#09060f);background-attachment:fixed}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.55;
+ background-image:radial-gradient(1.3px 1.3px at 23px 41px,#fff 50%,#0000 51%),radial-gradient(1px 1px at 141px 97px,#fffc 50%,#0000 51%),
+  radial-gradient(1.6px 1.6px at 210px 170px,#ffe9b0 50%,#0000 51%),radial-gradient(1px 1px at 77px 211px,#fff9 50%,#0000 51%),
+  radial-gradient(1.2px 1.2px at 180px 20px,#cfd8ff 50%,#0000 51%),radial-gradient(1px 1px at 260px 260px,#fff8 50%,#0000 51%);
+ background-size:290px 290px;animation:ceuPisca 6s ease-in-out infinite alternate}
+@keyframes ceuPisca{from{opacity:.35}to{opacity:.6}}
+body.noite{background:radial-gradient(1000px 600px at 70% -10%,#1b2c5e 0%,#0000 60%),linear-gradient(#060914,#020309);background-attachment:fixed}
+body.noite::before{opacity:.9;animation:none}
+
+/* ---------- topo ---------- */
+header{position:sticky;top:0;z-index:6;padding:8px 18px;background:linear-gradient(#1c1528f5,#140f1ef0);backdrop-filter:blur(10px);
+ border-bottom:1px solid #d8b25a33;box-shadow:0 8px 26px #0009}
+header h1{font-size:23px;letter-spacing:.06em;background:linear-gradient(#fff1c4,#d8b25a 55%,#a77a2a);-webkit-background-clip:text;background-clip:text;color:transparent;
+ filter:drop-shadow(0 0 10px #d8b25a44)}
+#fase{font-family:Cinzel,serif;font-style:normal;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:#d9c8f0;background:#ffffff0b;
+ border:1px solid var(--linha);padding:4px 14px;border-radius:99px}
+#fase:empty,#fase:is(:empty){display:none}
+#placar{font-size:14px;color:#e6dbc6;background:#ffffff08;border:1px solid var(--linha);border-radius:99px;padding:3px 12px}
+#placar:empty{display:none}
+#lblRapido{font-size:14px;color:#cbbfdc;display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+#lblRapido input{accent-color:var(--gold)}
+
+/* ---------- botões ---------- */
+button{border-radius:10px;border:1px solid #d8b25a40;background:linear-gradient(#30243f,#1f182b);color:#f1e6cc;padding:8px 14px;letter-spacing:.03em;
+ transition:transform .12s,box-shadow .18s,border-color .18s,filter .18s;box-shadow:0 2px 0 #0007,inset 0 1px 0 #ffffff12}
+button:hover:not(:disabled){border-color:var(--gold);box-shadow:0 0 0 1px #d8b25a55,0 6px 16px #d8b25a22,inset 0 1px 0 #ffffff1c;transform:translateY(-1px)}
+button:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 0 #0007}
+button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+button.prim{background:linear-gradient(#ebc76e,#b4862c 60%,#9a6f1f);color:#25170a;border-color:#f6dc92;font-weight:700;text-shadow:0 1px 0 #fff5}
+button.prim:hover:not(:disabled){box-shadow:0 0 0 1px #f6dc92,0 0 22px #d8b25a88;filter:brightness(1.06)}
+button:disabled{opacity:.35;filter:grayscale(.6)}
+input,select{transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{outline:none;border-color:var(--gold) !important;box-shadow:0 0 0 3px #d8b25a33}
+
+/* ---------- fichas dos jogadores ---------- */
+.pl{background:linear-gradient(160deg,#2b213bf5,#191322f5);border:1px solid #ffffff1c;border-radius:14px;box-shadow:0 10px 24px #000a,inset 0 1px 0 #ffffff12;cursor:default}
+.assento .pl{background:linear-gradient(160deg,#2b213bf2,#18121ff2);backdrop-filter:blur(4px)}
+.pl.eu,.assento .pl.eu{background:linear-gradient(160deg,#3a2c52f5,#221a32f5);border-color:#d8b25a55}
+.pl .av{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:50%;font-size:21px !important;
+ background:radial-gradient(circle at 35% 30%,#544270,#231b33);border:1px solid #d8b25a66;box-shadow:0 2px 6px #0008}
+.assento .pl .av{width:32px;height:32px;flex-basis:32px;font-size:18px !important}
+.pl .nome{color:#f3e8cf;letter-spacing:.02em}
+.pl.atual{border-color:var(--gold);animation:vezPulsa 1.8s ease-in-out infinite}
+@keyframes vezPulsa{0%,100%{box-shadow:0 0 0 2px #d8b25a99,0 0 18px #d8b25a55,0 10px 24px #000a}50%{box-shadow:0 0 0 2px #f3d98b,0 0 36px #d8b25aaa,0 10px 24px #000a}}
+.pl.atual::before{content:'🕯️ VEZ';position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-size:10px;font-weight:700;letter-spacing:.12em;
+ background:linear-gradient(#ebc76e,#a87b25);color:#25170a;padding:2px 8px;border-radius:99px;box-shadow:0 2px 6px #0009;white-space:nowrap}
+.pl.alvo{cursor:pointer;border-color:#c49bff;box-shadow:0 0 0 2px #c49bff,0 0 26px #a070ffaa;animation:alvoPulsa 1.1s ease-in-out infinite}
+@keyframes alvoPulsa{50%{box-shadow:0 0 0 2px #e0c8ff,0 0 34px #b78cffdd}}
+.pl.alvo:hover{transform:translateY(-4px) scale(1.03)}
+.pl.escolhido{border-color:#ff6a5a;box-shadow:0 0 0 2px #ff6a5a,0 0 26px #ff5a4a99;animation:none}
+.pl.morto{opacity:.42;filter:grayscale(.85)}
+.tag{font-size:12px}
+.pip{width:11px;height:11px;background:#120d18;border-color:#4d3d5e;box-shadow:inset 0 1px 2px #000}
+.pip.on{background:radial-gradient(circle at 35% 30%,#ffb08a,#d23a24 55%,#7a140c);border-color:#ff7a5a;box-shadow:0 0 6px #ff4a2a88}
+.acus span{font-variant-numeric:tabular-nums}
+.pista{border-radius:6px;background:linear-gradient(135deg,#3d2f56,#281e3b);border:1px solid #6a5690;color:#9e8cbd;box-shadow:inset 0 1px 0 #ffffff12}
+.pista.rev-inocente{background:linear-gradient(#f6ecd4,#e2d3ae);color:#2d6a3a;border-color:#a8946a}
+.pista.rev-guardiao{background:linear-gradient(#e4ecf8,#c8d6ec);color:#24497a;border-color:#7d97bd}
+.pista.rev-bruxa{background:linear-gradient(#5a1010,#2a0606);color:#ff9a8a;border-color:#e0443a;box-shadow:0 0 10px #ff3a2a66}
+.badge{background:linear-gradient(#27477a,#1b3157);border-color:#5b8ad4;font-size:11.5px;cursor:help}
+.badge.gato{background:linear-gradient(#5a4214,#33240a);border-color:var(--gold)}
+.status{color:#a99cbc}
+
+/* ---------- mesa ---------- */
+#jogadores.mesaModo{height:var(--mesaH)}
+main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
+.mesaTampo{background:radial-gradient(ellipse at 50% 40%,#7a2a32 0%,#521a21 45%,#2e0d12 80%) padding-box,
+  linear-gradient(160deg,#9a6230 0%,#5c3317 28%,#8a5528 50%,#4a2810 74%,#7a4a22 100%) border-box}
+.faseM{font-size:22px;letter-spacing:.06em;background:linear-gradient(#fff1c4,#d8b25a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 4px #000)}
+.vezM{font-size:15.5px;background:#0006;border:1px solid #ffffff14;border-radius:99px;padding:4px 14px}
+.vezM:empty{display:none}
+.relogioM{font-family:Cinzel,serif;font-weight:700;font-size:15px;color:#ffd27a;text-shadow:0 1px 4px #000}
+.relogioM.urgente{color:#ff7a6a;animation:urg .5s ease-in-out infinite alternate}
+@keyframes urg{to{transform:scale(1.12)}}
+.bruxasM{background:#0006;border-radius:99px;padding:3px 12px}
+#jogadores.mesaModo .mesaCentro{transform:translate(-50%,-60%)}
+
+/* ---------- crônica e chat ---------- */
+#log{background:linear-gradient(170deg,#211933f2,#150f20f2);border:1px solid #ffffff16;border-radius:16px;box-shadow:0 12px 30px #0009,inset 0 1px 0 #ffffff10;padding:0 12px 10px}
+#log h3{position:sticky;top:0;z-index:1;margin:0 -12px 6px;padding:11px 14px 9px;font-size:14px;letter-spacing:.12em;text-transform:uppercase;
+ background:linear-gradient(#251c37,#211933f0);border-bottom:1px solid #d8b25a33;border-radius:16px 16px 0 0}
+.ln{border-bottom:1px solid #ffffff0a;padding:5px 2px;line-height:1.3}
+.ln:last-child{animation:lnEntra .4s ease}
+@keyframes lnEntra{from{opacity:0;transform:translateX(8px)}}
+.ln.phase{color:var(--gold2);text-align:center;border:none;margin-top:8px;padding:6px 4px;background:linear-gradient(90deg,#0000,#d8b25a1c,#0000)}
+#chat input{border-radius:99px;padding:9px 14px;background:#140f1c;border-color:#4a3a63}
+#chat button{border-radius:99px;width:44px;padding:0}
+
+/* ---------- mão ---------- */
+#maoBox{padding:4px 16px 18px}
+.maoTopo{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+#instr{margin:0;display:inline-block;background:linear-gradient(#251c37,#1a1426);border:1px solid #d8b25a44;border-radius:99px;
+ padding:8px 18px;color:#f3e8cf;box-shadow:0 6px 18px #0009;font-size:16px;min-height:0}
+#instr:empty{display:none}
+#instr.suaVez{border-color:var(--gold);box-shadow:0 0 0 1px #d8b25a88,0 0 24px #d8b25a55;animation:instrBrilha 1.6s ease-in-out infinite alternate}
+@keyframes instrBrilha{to{box-shadow:0 0 0 1px #f3d98b,0 0 34px #d8b25a88}}
+.acoes{margin:0}
+#mao{gap:12px;flex-wrap:nowrap;overflow-x:auto;overflow-y:visible;padding:16px 4px 8px;min-height:40px}
+#mao:empty::before{content:'Sua mão está vazia.';color:#8f82a3;font-style:italic;padding:8px}
+.carta{width:116px;min-height:160px;flex:0 0 auto;border:none;border-radius:13px;padding:0 0 9px;overflow:hidden;gap:2px;
+ background:linear-gradient(#f7eed8,#dfcda3);box-shadow:0 8px 18px #000b,inset 0 0 0 1px #8a7a5588,inset 0 0 0 4px #f7eed8,inset 0 0 0 5px #b39a6a55;
+ transition:transform .18s cubic-bezier(.2,.9,.3,1.3),box-shadow .18s,filter .2s}
+.carta::before{content:'';display:block;height:50px;flex:0 0 50px;background:radial-gradient(circle at 50% 130%,#ffffff40,#0000 60%),linear-gradient(#ffffff22,#00000055),var(--cor,#777)}
+.carta .ic{position:absolute;top:21px;left:50%;transform:translateX(-50%);width:50px;height:50px;border-radius:50%;display:grid;place-items:center;font-size:25px;
+ background:radial-gradient(circle at 35% 30%,#fffaf0,#e7d8b8);box-shadow:0 3px 8px #0007,0 0 0 2px var(--cor,#777),0 0 0 4px #f7eed8}
+.carta .cn{margin-top:24px;padding:0 6px;font-size:12.5px;color:#2a1c10;letter-spacing:.02em}
+.carta .cd{padding:2px 9px 0;font-size:12.3px;line-height:1.2;color:#4b3b29;text-align:center}
+.carta .pts{top:6px;right:6px;width:27px;height:27px;border-radius:50%;display:grid;place-items:center;font-size:14px;color:#fff3d6;z-index:1;
+ background:radial-gradient(circle at 35% 30%,#ef5a48,#8a1414);box-shadow:0 2px 5px #0009,inset 0 0 0 2px #ffffff33}
+.carta.jogavel:hover{transform:translateY(-9px) rotate(-1.2deg);box-shadow:0 16px 28px #000c,0 0 0 2px #d8b25a99}
+.carta.sel{transform:translateY(-14px) scale(1.04);box-shadow:0 0 0 3px var(--gold2),0 0 30px #d8b25aaa,0 16px 28px #000c}
+.carta.semAlvo{filter:grayscale(.85) brightness(.62);cursor:not-allowed}
+.carta.semAlvo:hover{transform:none;box-shadow:0 8px 18px #000b}
+.carta.preta{background:linear-gradient(#2c2534,#16121c);box-shadow:0 8px 18px #000b,inset 0 0 0 1px #6a5a7a88}
+.carta.preta .cn{color:#f1e6cc}.carta.preta .cd{color:#c1b5d1}
+.carta.preta .ic{background:radial-gradient(circle at 35% 30%,#4a3d5a,#1a1422);box-shadow:0 3px 8px #0007,0 0 0 2px #8a7a9a,0 0 0 4px #2c2534}
+.cat .carta{width:156px;min-height:0}
+.cat .qtd{color:#7a6a4a;padding:4px 9px 0}
+.cat-grid{gap:14px}
+
+/* ---------- janelas ---------- */
+.modal{background:radial-gradient(ellipse at center,#0b0614c4,#000000e6);backdrop-filter:blur(4px)}
+.mbox{position:relative;background:linear-gradient(170deg,#2d2242,#1a1327 70%);border:1px solid #d8b25a66;border-radius:18px;padding:24px;
+ box-shadow:0 30px 90px #000,inset 0 1px 0 #ffffff16,0 0 70px #d8b25a1c;animation:mboxEntra .3s cubic-bezier(.2,.9,.3,1.15)}
+.mbox::before,.mbox::after{content:'✦';position:absolute;top:8px;color:#d8b25a88;font-size:13px}
+.mbox::before{left:12px}.mbox::after{right:12px}
+@keyframes mboxEntra{from{opacity:0;transform:translateY(16px) scale(.96)}}
+.mbox h2{letter-spacing:.04em}
+.mbox h3{color:var(--gold2);font-size:19px}
+.mbox p{line-height:1.4}
+.mbox .botoes{gap:10px}
+.mbox .botoes button{flex:1 1 auto;min-width:110px;padding:10px 14px}
+.mbox input,.mbox select{border-radius:10px;padding:9px 12px;background:#140f1c;border-color:#4a3a63}
+.big{border-radius:12px;box-shadow:0 6px 16px #0008}
+#timer{display:inline-block;padding:4px 12px;border-radius:99px;background:#0006;border:1px solid #ffb35a55}
+
+/* ---------- tela inicial ---------- */
+#setup{background:radial-gradient(ellipse at 50% 30%,#1a1030cc,#05030aee)}
+#setup .mbox{max-width:680px;padding:0;overflow:auto;border-color:#d8b25a55}
+#setup .mbox::before,#setup .mbox::after{display:none}
+#telaInicio,#telaLobby{padding:0 26px 22px}
+.heroi{position:relative;margin:0 -26px 14px;padding:30px 26px 22px;text-align:center;overflow:hidden;
+ background:radial-gradient(circle at 50% 0%,#5a3f86 0%,#2a1d40 45%,#0000 75%),linear-gradient(#22183a,#1a1327);border-bottom:1px solid #d8b25a33}
+.heroi::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:46px;pointer-events:none;background:#120c1c;clip-path:polygon(0% 100%,0% 62%,5% 62%,5% 38%,9% 18%,13% 38%,13% 62%,19% 62%,19% 48%,23% 30%,27% 48%,27% 72%,34% 72%,34% 44%,36% 44%,37.5% 4%,39% 44%,41% 44%,41% 70%,49% 70%,49% 52%,53% 34%,57% 52%,57% 76%,64% 76%,64% 46%,69% 26%,74% 46%,74% 66%,80% 66%,80% 54%,84% 38%,88% 54%,88% 64%,94% 64%,94% 42%,97% 28%,100% 42%,100% 100%)}
+.heroi-lua{width:76px;height:76px;margin:0 auto 10px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#fffbe8,#f0dc9c 50%,#c9a656);
+ box-shadow:0 0 40px 10px #f3d98b44,0 0 90px 30px #f3d98b1c;animation:luaFlutua 5s ease-in-out infinite alternate}
+@keyframes luaFlutua{to{transform:translateY(-5px);box-shadow:0 0 50px 14px #f3d98b55,0 0 110px 40px #f3d98b22}}
+.heroi h2{font-size:clamp(30px,6vw,42px);margin:0;letter-spacing:.08em;background:linear-gradient(#fff4cf,#d8b25a 60%,#9a6f22);-webkit-background-clip:text;background-clip:text;color:transparent;
+ filter:drop-shadow(0 2px 8px #000)}
+.heroi p{margin:6px auto 0;max-width:430px;color:#d4c7e6;font-style:italic}
+.rotulo{display:block;font-family:Cinzel,serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#bfb0d6;margin:4px 0 6px}
+#inNome{font-size:18px;padding:11px 14px;border-radius:12px;background:#140f1c;border:1px solid #4a3a63;color:var(--txt);width:100%;text-align:center}
+.opcoes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media (max-width:560px){.opcoes{grid-template-columns:1fr}}
+.opcao{position:relative;background:linear-gradient(165deg,#2c2142,#1c1529);border:1px solid #ffffff1c;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;
+ box-shadow:0 10px 24px #0008,inset 0 1px 0 #ffffff10;transition:border-color .2s,transform .2s}
+.opcao:hover{border-color:#d8b25a77;transform:translateY(-2px)}
+.opcao .op-ic{font-size:30px;line-height:1;width:54px;height:54px;display:grid;place-items:center;border-radius:14px;background:radial-gradient(circle at 35% 30%,#4a3a68,#241b36);border:1px solid #d8b25a55}
+.opcao h3{margin:2px 0 0;color:var(--gold2);font-size:18px}
+.opcao p{margin:0;font-size:15px;color:#bfb2d2;flex:1}
+.opcao .linha{gap:6px}
+.opcao input,.opcao select{flex:1;min-width:0;font:inherit;font-size:15px;padding:8px 10px;border-radius:10px;background:#140f1c;border:1px solid #4a3a63;color:var(--txt)}
+.opcao button{white-space:nowrap}
+.opcao .grande{width:100%;padding:11px;font-size:15px}
+.ou{display:flex;align-items:center;gap:8px;color:#8f82a3;font-size:13px}.ou::before,.ou::after{content:'';flex:1;height:1px;background:#ffffff1a}
+.rodapeInicio{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+#secaoAdmin{margin-top:16px;padding-top:12px;border-top:1px dashed #ffffff1a;opacity:.75}
+#secaoAdmin:focus-within{opacity:1}
+#secaoAdmin label{font-size:13px !important}
+#secaoAdmin input{font:inherit;font-size:14px;padding:6px 10px;border-radius:8px;background:#140f1c;border:1px solid #4a3a63;color:var(--txt)}
+#avisoOffline{margin-top:12px;padding:10px 12px;border:1px solid #ffb35a55;border-radius:12px;background:#ffb35a12}
+#convidado{border-radius:12px;background:linear-gradient(#3a2b10,#2a1f0c);text-align:center}
+.msg:empty{min-height:0;margin:0}
+#codigoSala{font-size:44px;letter-spacing:12px;padding:14px;border:1px dashed #d8b25a77;background:radial-gradient(circle at 50% 0%,#3a2b55,#140f1c);
+ text-shadow:0 0 18px #d8b25a88;border-radius:16px}
+#telaLobby > h2{text-align:center;margin-top:20px}
+#listaLobby{display:flex;flex-wrap:wrap;gap:8px}
+#listaLobby li{border:1px solid #ffffff1c;border-radius:99px;padding:6px 14px;background:#ffffff0a}
+#linkConvite{font:inherit;font-size:14px;padding:9px 12px;border-radius:10px;background:#140f1c;border:1px solid #4a3a63;color:var(--txt)}
+#inNOnline{font:inherit;padding:8px 10px;border-radius:10px;background:#140f1c;border:1px solid #4a3a63;color:var(--txt);width:100%}
+
+/* ---------- regras ---------- */
+.rg-titulo{color:var(--gold2);text-align:center;margin-bottom:12px}
+.rg-abas{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid #ffffff14}
+.rg-abas button{font-size:12.5px;padding:6px 11px;border-radius:99px}
+.rg-abas button.on{background:linear-gradient(#ebc76e,#a87b25);color:#25170a;border-color:#f6dc92;font-weight:700}
+.rg section{display:none;animation:abaEntra .3s ease}
+.rg section.on{display:block}
+@keyframes abaEntra{from{opacity:0;transform:translateY(6px)}}
+.rg h3{font-size:17px;margin:16px 0 8px;color:var(--gold2)}
+.rg p,.rg li{font-size:16px;line-height:1.45;color:#ddd3ea}
+.rg-lead{font-size:18px !important;text-align:center;font-style:italic;color:#efe6d4 !important;margin:0 0 14px}
+.rg-passos{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.rg-passos > div{display:flex;gap:12px;align-items:flex-start;background:#ffffff08;border:1px solid #ffffff12;border-radius:12px;padding:10px 12px}
+.rg-passos span{flex:0 0 28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:Cinzel,serif;font-weight:700;color:#25170a;background:linear-gradient(#ebc76e,#a87b25)}
+.rg-passos p{margin:2px 0 0}
+.rg-dois{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+@media (max-width:560px){.rg-dois{grid-template-columns:1fr}}
+.rg-caixa{border:1px solid #ffffff1a;border-radius:14px;padding:12px 14px;background:#ffffff08}
+.rg-caixa h4{font-family:Cinzel,serif;margin:0 0 4px;font-size:15px;color:var(--gold2)}
+.rg-caixa p{margin:0}
+.rg-caixa.vila{border-color:#5fb06f66;background:linear-gradient(#1f3a2655,#0000)}.rg-caixa.vila h4{color:#9ee0a8}
+.rg-caixa.bru{border-color:#e0443a66;background:linear-gradient(#4a141455,#0000)}.rg-caixa.bru h4{color:#ff9a8a}
+.rg-lista{padding-left:4px;list-style:none;margin:6px 0}
+.rg-lista li{margin:6px 0;padding-left:4px}
+.rg-cores{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:560px){.rg-cores{grid-template-columns:1fr}}
+.rg-cores > div{display:flex;gap:10px;align-items:center;background:#ffffff08;border-radius:12px;padding:8px 10px}
+.rg-cores i{flex:0 0 22px;height:30px;border-radius:5px;box-shadow:0 2px 6px #0008}
+.rg-cores p{margin:0;font-size:15px}
+.rg-dica{background:#d8b25a14;border:1px solid #d8b25a44;border-radius:12px;padding:10px 12px;font-size:15px !important}
+.c-bru{color:#ff8a7a}.c-vil{color:#8fd39a}.c-gua{color:#9cc0f0}
+.cat h2{display:none}
+
+/* ---------- faixa de anúncio e efeitos na mesa ---------- */
+#faixa{position:fixed;left:0;right:0;top:34%;z-index:35;pointer-events:none;display:flex;justify-content:center}
+#faixa span{font-family:Cinzel,serif;font-weight:700;font-size:clamp(26px,5vw,48px);letter-spacing:.08em;color:#fff1c4;padding:14px 60px;text-align:center;
+ background:linear-gradient(90deg,#0000,#120b1ee8 18%,#120b1ee8 82%,#0000);text-shadow:0 0 22px #d8b25a,0 3px 8px #000;
+ border-top:1px solid #d8b25a66;border-bottom:1px solid #d8b25a66;animation:faixa 2.3s ease both}
+#faixa.leve span{font-size:clamp(20px,3.2vw,30px);padding:8px 44px;animation-duration:1.6s}
+#faixa.ruim span{color:#ffd0c8;text-shadow:0 0 22px #ff3a2a,0 3px 8px #000;border-color:#ff5a4a77}
+@keyframes faixa{0%{opacity:0;transform:scaleX(.6)}14%{opacity:1;transform:scaleX(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-12px)}}
+.flutua{position:fixed;z-index:34;pointer-events:none;font-family:Cinzel,serif;font-weight:700;font-size:22px;transform:translate(-50%,-50%);
+ text-shadow:0 2px 6px #000,0 0 12px currentColor;animation:flutua 1.7s ease-out both;white-space:nowrap}
+@keyframes flutua{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+.flutua.acus{color:#ff7a5a}.flutua.def{color:#8fe39a}.flutua.azul{color:#9cc8ff}.flutua.morte{color:#fff;font-size:34px}
+
+/* ---------- celular ---------- */
+@media (max-width:759px){
+ :root{--mesaH:auto}
+ header{padding:6px 10px;gap:6px}header h1{font-size:18px}
+ #fase{font-size:11px;padding:3px 10px}
+ .hdr-dir{gap:5px}.hdr-dir button{padding:5px 8px;font-size:12px}
+ #placar{font-size:12px;padding:2px 9px}#lblRapido{font-size:12px}
+ main{padding:10px;gap:10px}
+ #jogadores{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;background:radial-gradient(ellipse at 50% 30%,#6a2329,#3a1015 80%);border:6px solid #6b3f1c;
+  border-radius:18px;box-shadow:inset 0 0 40px #000c,0 10px 30px #000a;padding:16px 8px 10px}
+ .pl{padding:8px}
+ .pl .av{width:30px;height:30px;flex-basis:30px;font-size:16px !important}
+ .pl .nome{font-size:13px}.tag{font-size:11px}
+ .pip{width:8px;height:8px}.acus{margin:6px 0 4px;font-size:11px;gap:2px}
+ .pista{height:27px;font-size:13px}
+ .azuis{min-height:0;margin-top:4px}.status{font-size:11.5px}
+ .pl.atual::before{font-size:9px;top:-10px}
+ #log{height:240px}
+ #maoBox{position:sticky;bottom:0;z-index:5;padding:8px 10px 10px;background:linear-gradient(#0d0a14ee,#0b0811fb);border-top:1px solid #d8b25a44;
+  box-shadow:0 -12px 30px #000d;backdrop-filter:blur(8px)}
+ .maoTopo{gap:6px;margin-bottom:0}
+ #instr{font-size:13px;padding:5px 10px;width:100%;border-radius:12px;text-align:center;line-height:1.25}
+ .acoes{display:flex;gap:6px;width:100%}.acoes button{flex:1;padding:8px 4px;font-size:12px;white-space:nowrap}.lg{display:none}
+ #mao{padding:12px 2px 2px;gap:8px}
+ #mao .carta{width:90px;min-height:122px}
+ #mao .carta::before{height:34px;flex-basis:34px}
+ #mao .carta .ic{top:12px;width:38px;height:38px;font-size:19px}
+ #mao .carta .cn{margin-top:16px;font-size:11px}
+ #mao .carta .cd{font-size:10.5px;padding:1px 6px 0;line-height:1.15}
+ #mao .carta .pts{width:21px;height:21px;font-size:11.5px}
+ .mbox{padding:18px 16px}
+ #telaInicio,#telaLobby{padding:0 16px 16px}.heroi{margin:0 -16px 12px}
+ .heroi-lua{width:60px;height:60px}
+ #codigoSala{font-size:34px;letter-spacing:8px}
+ #faixa{top:28%}#faixa span{padding:10px 26px}
+}
 </style>
 </head>
 <body>
@@ -363,8 +635,8 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
     <button id="btnVoz" hidden title="Entrar na conversa de voz">🎙️ Voz</button>
     <button id="btnMicro" hidden>🎤</button>
     <button id="btnSairVoz" hidden title="Sair da conversa de voz">📴</button>
-    <button id="btnRegras">Regras</button>
-    <button id="btnCartas">Cartas</button>
+    <button id="btnRegras">📜 Regras</button>
+    <button id="btnCartas">🃏 Cartas</button>
     <button id="btnNovo">Novo jogo</button>
   </div>
 </header>
@@ -380,37 +652,52 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
   </aside>
 </main>
 <section id="maoBox">
-  <p id="instr"></p>
-  <div id="mao"></div>
-  <div class="acoes">
-    <button id="btnComprar" class="prim" disabled>Comprar 2 cartas</button>
-    <button id="btnFim" disabled>Encerrar turno</button>
-    <button id="btnCancelar" disabled>Cancelar seleção</button>
+  <div class="maoTopo">
+    <p id="instr"></p>
+    <div class="acoes">
+      <button id="btnComprar" class="prim" disabled>🂠 Comprar 2<span class="lg"> cartas</span></button>
+      <button id="btnFim" disabled>✔ Encerrar<span class="lg"> turno</span></button>
+      <button id="btnCancelar" disabled>✕ Cancelar</button>
+    </div>
   </div>
+  <div id="mao"></div>
 </section>
+<div id="faixa"></div>
 
 <div class="modal" id="setup">
   <div class="mbox">
     <div id="telaInicio">
-      <h2 style="color:var(--gold)">☾ Lua de Cinzas</h2>
-      <p><i>Uma vila assustada. Bruxas se escondem entre os vizinhos. Ninguém é confiável.</i></p>
-      <div id="convidado"></div>
-      <label>Seu nome</label><input id="inNome" value="" maxlength="14" placeholder="Seu nome">
-      <div id="avisoOffline" class="secao" hidden style="color:#ffb35a">📴 <b>Sem internet.</b> O modo online com amigos precisa de conexão, mas você pode jogar contra os bots normalmente.</div>
-      <div class="secao" id="secaoOnline">
-        <h3>🌐 Jogar online com amigos</h3>
-        <div class="linha"><button class="prim" id="btnCriar">Criar sala</button><span style="color:var(--muted)">ou</span>
-          <input id="inCodigo" maxlength="5" placeholder="CÓDIGO" style="text-transform:uppercase"><button id="btnEntrar">Entrar na sala</button></div>
+      <div class="heroi">
+        <div class="heroi-lua"></div>
+        <h2>Lua de Cinzas</h2>
+        <p>Uma vila assustada. Bruxas se escondem entre os vizinhos. Ninguém é confiável.</p>
       </div>
-      <div class="secao">
-        <h3>🤖 Jogar sozinho contra bots</h3>
-        <div class="linha"><select id="inN" style="flex:1"></select><button id="btnSolo">Começar</button></div>
+      <div id="convidado"></div>
+      <label class="rotulo" for="inNome">Como você quer ser chamado?</label>
+      <input id="inNome" value="" maxlength="14" placeholder="Seu nome">
+      <div id="avisoOffline" hidden style="color:#ffb35a">📴 <b>Sem internet.</b> O modo com amigos precisa de conexão, mas dá para jogar contra os bots normalmente.</div>
+      <div class="opcoes">
+        <div class="opcao" id="secaoOnline">
+          <div class="op-ic">🌐</div>
+          <h3>Com amigos</h3>
+          <p>Crie uma sala e mande o link, ou entre com o código de um amigo.</p>
+          <button class="prim grande" id="btnCriar">Criar sala</button>
+          <div class="ou">ou entre numa sala</div>
+          <div class="linha"><input id="inCodigo" maxlength="5" placeholder="CÓDIGO" style="text-transform:uppercase;letter-spacing:.2em;text-align:center"><button id="btnEntrar">Entrar</button></div>
+        </div>
+        <div class="opcao">
+          <div class="op-ic">🤖</div>
+          <h3>Contra bots</h3>
+          <p>Treine sozinho contra a vila. Funciona até sem internet.</p>
+          <select id="inN"></select>
+          <button class="prim grande" id="btnSolo">Começar partida</button>
+        </div>
       </div>
       <p class="msg" id="msgRede"></p>
-      <div class="linha" style="margin-top:10px"><button id="btnRegras2">Regras</button><button id="btnCartas2">Cartas</button><button id="btnInstalar" class="prim" hidden>📲 Instalar app</button></div>
-      <p id="dicaInstalar" hidden style="font-size:14px;color:var(--muted);margin:8px 0 0"></p>
-      <div class="secao" id="secaoAdmin">
-        <div class="linha"><label for="inAdmin" style="margin:0;font-size:15px;color:var(--muted)">🔑 Código de Administrador:</label>
+      <div class="rodapeInicio"><button id="btnRegras2">📜 Como jogar</button><button id="btnCartas2">🃏 Cartas</button><button id="btnInstalar" class="prim" hidden>📲 Instalar app</button></div>
+      <p id="dicaInstalar" hidden style="font-size:14px;color:var(--muted);margin:8px 0 0;text-align:center"></p>
+      <div id="secaoAdmin">
+        <div class="linha"><label for="inAdmin" style="margin:0;color:var(--muted)">🔑 Código de Administrador:</label>
           <input id="inAdmin" type="password" autocomplete="off" maxlength="20" style="flex:1;min-width:110px"><button id="btnAdmin">Entrar</button></div>
       </div>
     </div>
@@ -444,25 +731,139 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
 <div class="modal" id="info" hidden style="z-index:20"><div class="mbox largo"><div class="conteudo"></div><div class="botoes"><button id="btnFecharInfo" class="prim">Fechar</button></div></div></div>
 
 <template id="tplRegras">
-<h2 style="color:var(--gold)">Regras</h2>
-<div class="regras">
-<p><b>Objetivo.</b> Há duas equipes: <b>Moradores</b> e <b>Bruxas</b>. Moradores vencem quando <b>todas as cartas Bruxa</b> forem reveladas. Bruxas vencem quando <b>todos os vivos</b> forem da equipe das bruxas.</p>
-<p><b>Cartas de julgamento</b> (fechadas, na sua frente): <span style="color:#ff7a7a">Bruxa</span>, <span style="color:#8fd39a">Não é Bruxa</span> e <span style="color:#9cc0f0">Guardião</span>. Quem já teve uma carta Bruxa é da equipe das bruxas para sempre. O Guardião pode ser bruxa também.</p>
-<p><b>Seu turno, escolha UMA opção:</b></p>
-<ul><li><b>Comprar 2 cartas.</b> Carta preta é revelada e resolvida na hora.</li>
-<li><b>Jogar cartas:</b> uma ou várias, depois encerre o turno.</li></ul>
-<p>Você <b>nunca</b> pode usar cartas em si mesmo. <b>Exceção:</b> o Furto pode ser entregue a você, mas aí você pega só metade da mão do alvo.</p>
-<p><b>Cores:</b></p>
-<ul><li><span style="color:#ff8a8a">Vermelhas</span>: acusações de 1, 3 ou 7 pontos. Com <b>7 pontos</b> há julgamento: quem colocou a última acusação escolhe uma carta fechada do acusado para revelar. <b>Se o acusado for uma pessoa (não um bot), ela mesma escolhe qual carta mostrar.</b> Se for Bruxa, ele morre. Depois as acusações são descartadas.</li>
-<li><span style="color:#9cc0f0">Azuis</span>: ficam na frente do jogador e o efeito continua. A <b>Devoção</b> não pode ser colocada em quem é da equipe das bruxas (se alguém com Devoção virar bruxa na Conspiração, ela se desfaz). A <b>Devoção</b> e o <b>Refúgio</b> duram só uma rodada: somem quando a próxima Noite termina.</li>
-<li><span style="color:#8fd39a">Verdes</span>: efeito imediato, depois são descartadas.</li>
-<li><b>Pretas</b>: <b>Noite</b> e <b>Conspiração</b>, reveladas ao serem compradas. A <b>Noite é sempre a última carta do baralho</b>: quando ela sai, o descarte é embaralhado e vira um novo baralho, com a Noite de novo no fundo. A Conspiração fica embaralhada no meio.</li></ul>
-<p><b>Noite:</b> as bruxas escolhem uma vítima e o Guardião protege alguém (não a si mesmo). Qualquer um pode <b>confessar</b>, revelando uma carta própria, para ter imunidade naquela noite. O Refúgio também protege.</p>
-<p><b>Madrugada e Gato da Lua 🐈‍⬛:</b> antes do primeiro dia, as bruxas escolhem quem recebe o Gato da Lua. Toda vez que sair Conspiração, quem a comprou escolhe uma carta de julgamento do dono do gato para revelar. O gato não pode ser exorcizado, mas o Bode Expiatório o leva junto com as outras cartas azuis.</p>
-<p><b>Cartas de julgamento:</b> todos recebem 5. Ícones: ☾ Bruxa, ✝ Não é Bruxa, 🏮 Guardião.</p>
-<p><b>Conspiração:</b> primeiro resolve-se o Gato da Lua; depois cada jogador vivo pega uma carta fechada do jogador à sua esquerda (o próximo da mesa). Quem receber uma Bruxa entra na equipe das bruxas.</p>
-<p><b>Morte:</b> quem revela uma Bruxa, revela todas as cartas ou é morto à noite está fora. A mão e as cartas azuis são descartadas, as cartas restantes são reveladas e diz-se se já foi bruxa. Ainda dá para dizer 3 últimas palavras.</p>
-<p><b>Online:</b> quem cria a sala é o anfitrião: o jogo roda no navegador dele, então ele precisa ficar com a página aberta até o fim. Se alguém cair, um bot assume o lugar.</p>
+<div class="rg">
+<h2 class="rg-titulo">📜 Como jogar</h2>
+<nav class="rg-abas">
+  <button data-aba="resumo" class="on">⏱️ Em 1 minuto</button>
+  <button data-aba="turno">🕯️ Seu turno</button>
+  <button data-aba="acusar">⚖️ Acusações</button>
+  <button data-aba="noite">🌑 Noite</button>
+  <button data-aba="consp">🕸️ Conspiração</button>
+  <button data-aba="fim">🏆 Morte e vitória</button>
+  <button data-aba="online">🌐 Online</button>
+  <button data-aba="cartas">🃏 Cartas</button>
+</nav>
+
+<section data-aba="resumo" class="on">
+  <p class="rg-lead">Uma vila assustada. Algumas pessoas são <b class="c-bru">bruxas</b> disfarçadas de vizinhos. Ninguém sabe quem é quem... e todo mundo mente.</p>
+  <div class="rg-passos">
+    <div><span>1</span><p><b>Você recebe 5 cartas de julgamento</b> viradas para baixo. Só você vê as suas. Se uma delas for <b class="c-bru">☾ Bruxa</b>, você é da equipe das bruxas.</p></div>
+    <div><span>2</span><p><b>De dia</b>, cada um na sua vez acusa quem acha suspeito, protege aliados e atrapalha os outros com cartas.</p></div>
+    <div><span>3</span><p>Quem soma <b>7 pontos de acusação</b> vai a <b>julgamento</b>: uma das cartas dele é revelada para todos.</p></div>
+    <div><span>4</span><p><b>À noite</b>, as bruxas escolhem alguém para matar. O Guardião pode salvar.</p></div>
+  </div>
+  <div class="rg-dois">
+    <div class="rg-caixa vila"><h4>✝ Moradores vencem</h4><p>quando <b>todas as cartas Bruxa</b> do jogo forem reveladas.</p></div>
+    <div class="rg-caixa bru"><h4>☾ Bruxas vencem</h4><p>quando <b>todos os vivos</b> forem da equipe das bruxas.</p></div>
+  </div>
+  <p class="rg-dica">💡 Não precisa decorar: durante a partida, a frase em destaque embaixo da mesa sempre diz o que você pode fazer agora.</p>
+</section>
+
+<section data-aba="turno">
+  <h3>Na sua vez, escolha <u>uma</u> das opções:</h3>
+  <div class="rg-dois">
+    <div class="rg-caixa"><h4>🂠 A) Comprar 2 cartas</h4><p>Você pega 2 cartas do monte e <b>seu turno acaba</b>. Se vier uma carta <b>preta</b> (Noite ou Conspiração), ela acontece na hora.</p></div>
+    <div class="rg-caixa"><h4>🃏 B) Jogar cartas</h4><p>Jogue <b>quantas cartas quiser</b> da mão, uma de cada vez: toque na carta e depois no jogador. No fim, toque em <b>Encerrar turno</b>.</p></div>
+  </div>
+  <h3>Regrinhas importantes</h3>
+  <ul class="rg-lista">
+    <li>🚫 Você <b>não pode</b> usar cartas em você mesmo. <b>Exceção:</b> o <b>Furto</b> pode trazer a mão de alguém para você, mas aí você fica só com <b>metade</b>.</li>
+    <li>🌫️ Cartas sem nenhum alvo possível aparecem apagadas na sua mão.</li>
+    <li>⛓️ Quem está no <b>Pelourinho</b> perde a próxima vez.</li>
+    <li>🌐 No online, cada decisão do seu turno tem <b>75 segundos</b>. Se o tempo acabar, o jogo compra 2 cartas por você (ou encerra o turno, se você já tinha jogado).</li>
+  </ul>
+  <h3>As cores das cartas</h3>
+  <div class="rg-cores">
+    <div><i style="background:#b23a3a"></i><p><b>Vermelhas: acusações.</b> Põem pontos no alvo.</p></div>
+    <div><i style="background:#3f6fb5"></i><p><b>Azuis: ficam na mesa.</b> Ficam na frente do jogador e o efeito continua.</p></div>
+    <div><i style="background:#4f8a55"></i><p><b>Verdes: na hora.</b> Fazem efeito e vão para o descarte.</p></div>
+    <div><i style="background:#111;border:1px solid #666"></i><p><b>Pretas: eventos.</b> Ninguém joga: acontecem quando são compradas.</p></div>
+  </div>
+</section>
+
+<section data-aba="acusar">
+  <h3>Acusar</h3>
+  <p>As cartas vermelhas valem pontos: <b>👉 Suspeita = 1</b>, <b>📌 Prova = 3</b>, <b>⚡ Flagrante = 7</b>. Os pontos ficam acumulados no jogador (as bolinhas vermelhas na ficha dele).</p>
+  <ul class="rg-lista">
+    <li>🐍 Com <b>Má Fama</b>, cada acusação nele vale <b>+1</b>.</li>
+    <li>🛡️ A <b>Defesa</b> tira até 3 pontos de alguém.</li>
+    <li>🙏 Com <b>Devoção</b>, ninguém pode acusá-lo até a próxima Noite acabar.</li>
+  </ul>
+  <h3>Julgamento (7 pontos)</h3>
+  <div class="rg-passos">
+    <div><span>1</span><p>Quem chega a <b>7 pontos</b> vai a julgamento na hora.</p></div>
+    <div><span>2</span><p>Uma carta de julgamento fechada dele é revelada. Se o acusado é uma <b>pessoa</b>, ela mesma escolhe qual mostrar. Se é um <b>bot</b>, quem fez a última acusação escolhe.</p></div>
+    <div><span>3</span><p>Saiu <b class="c-bru">☾ Bruxa</b>? <b>Ele morre.</b> Saiu <b class="c-vil">✝ Não é Bruxa</b> ou <b class="c-gua">🏮 Guardião</b>? Ele sobrevive. Mas se era a <b>última carta fechada</b> dele, morre do mesmo jeito.</p></div>
+    <div><span>4</span><p>As acusações dele vão para o descarte e os pontos voltam a zero.</p></div>
+  </div>
+</section>
+
+<section data-aba="noite">
+  <h3>🌘 Madrugada (só no começo)</h3>
+  <p>Antes do primeiro dia, as bruxas têm <b>10 segundos</b> para dar o <b>🐈‍⬛ Gato da Lua</b> a alguém. Se não escolherem, ele vai para um morador aleatório.</p>
+  <h3>🌑 A Noite</h3>
+  <p>A carta <b>Noite</b> é sempre a <b>última do monte</b>. Quando alguém a compra:</p>
+  <div class="rg-passos">
+    <div><span>1</span><p>As <b class="c-bru">bruxas</b> escolhem uma vítima em segredo.</p></div>
+    <div><span>2</span><p>O dono do <b class="c-gua">🏮 Guardião</b> (se ainda estiver fechado) escolhe alguém para proteger. Não pode ser ele mesmo.</p></div>
+    <div><span>3</span><p>Todos podem <b>🙊 confessar</b>: revelar uma carta própria para ficar imune naquela noite. Cuidado: se revelar uma Bruxa, morre!</p></div>
+    <div><span>4</span><p>A vítima morre, a menos que esteja protegida pelo Guardião, tenha <b>⛪ Refúgio</b> ou tenha confessado.</p></div>
+    <div><span>5</span><p>Ao amanhecer, <b>🙏 Devoção</b> e <b>⛪ Refúgio</b> somem (duram só uma rodada). O descarte é embaralhado e vira um monte novo, com a Noite de novo no fundo.</p></div>
+  </div>
+</section>
+
+<section data-aba="consp">
+  <h3>🕸️ Conspiração</h3>
+  <p>Fica escondida no meio do monte. Quando alguém a compra:</p>
+  <div class="rg-passos">
+    <div><span>1</span><p><b>Gato da Lua:</b> quem comprou a Conspiração escolhe uma carta fechada do dono do gato, e ela é revelada.</p></div>
+    <div><span>2</span><p><b>Troca:</b> cada jogador vivo pega <b>uma carta fechada</b> do vizinho da esquerda (o próximo da mesa).</p></div>
+    <div><span>3</span><p>Quem recebe uma <b class="c-bru">☾ Bruxa</b> <b>vira bruxa</b> e passa a jogar com elas, para sempre.</p></div>
+  </div>
+  <p class="rg-dica">💡 É por isso que ninguém está seguro: um morador fiel pode virar bruxa no meio do jogo!</p>
+  <ul class="rg-lista">
+    <li>✨ O <b>Exorcismo</b> não tira o Gato da Lua, mas o <b>🐐 Bode Expiatório</b> o leva junto com as outras cartas azuis.</li>
+    <li>🙏 Se alguém com Devoção vira bruxa, a Devoção se desfaz.</li>
+  </ul>
+</section>
+
+<section data-aba="fim">
+  <h3>💀 Quando alguém morre</h3>
+  <ul class="rg-lista">
+    <li>Morre quem tem uma <b class="c-bru">☾ Bruxa</b> revelada, quem fica sem nenhuma carta fechada, ou quem é morto à Noite.</li>
+    <li>Todas as cartas dele são reveladas, e a mão e as cartas azuis vão para o descarte.</li>
+    <li>Ele ainda pode deixar <b>3 últimas palavras</b>... e depois fica em silêncio até o fim.</li>
+  </ul>
+  <h3>🏆 Vitória</h3>
+  <div class="rg-dois">
+    <div class="rg-caixa vila"><h4>✝ Moradores</h4><p>Vencem quando <b>todas as cartas Bruxa</b> forem reveladas, seja em julgamentos, confissões, mortes ou pelo gato.</p></div>
+    <div class="rg-caixa bru"><h4>☾ Bruxas</h4><p>Vencem quando <b>só sobrarem vivos</b> da equipe das bruxas.</p></div>
+  </div>
+  <h3>🧠 Dicas</h3>
+  <ul class="rg-lista">
+    <li><b>Moradores:</b> observem quem defende quem. Bruxas costumam proteger as parceiras.</li>
+    <li><b>Bruxas:</b> acusem também, para parecer inocentes. E usem o chat secreto ☾ para combinar.</li>
+    <li>🔍 <b>Espiar</b> vale ouro: você descobre uma carta, mas os outros precisam confiar no que você diz.</li>
+  </ul>
+</section>
+
+<section data-aba="online">
+  <h3>🌐 Jogando com amigos</h3>
+  <div class="rg-passos">
+    <div><span>1</span><p>Uma pessoa toca em <b>Criar sala</b> e vira o <b>anfitrião</b>.</p></div>
+    <div><span>2</span><p>Ela manda o <b>link de convite</b> (ou o código de 5 letras) para os amigos.</p></div>
+    <div><span>3</span><p>Os amigos abrem o link, digitam o nome e entram. As vagas que sobrarem viram bots.</p></div>
+  </div>
+  <ul class="rg-lista">
+    <li>⚠️ O jogo roda no aparelho do anfitrião: ele precisa deixar a página aberta até o fim.</li>
+    <li>🤖 Se alguém cair, um bot assume o lugar dele.</li>
+    <li>⏳ Cada decisão do turno tem 75 segundos, para ninguém travar a partida.</li>
+    <li>💬 Tem chat de texto e 🎙️ conversa de voz. Os mortos ficam mudos.</li>
+    <li>📲 Dá para instalar como app e jogar contra bots mesmo sem internet.</li>
+  </ul>
+</section>
+
+<section data-aba="cartas"><div id="rgCartas"></div></section>
 </div>
 </template>
 
@@ -626,6 +1027,7 @@ function visao(vid, comLog = true){
     placar:`☾ Bruxas reveladas: <b>${rev}/${G.totalBruxas}</b> · 🂠 ${G.deck.length}`,
     monte:G.deck.length, descarte:G.discard.length, bruxasRev:rev, totalBruxas:G.totalBruxas,
     minhaVez: !!(G.turno && G.turno.pid === vid && G.turno.res), jogou: !!(G.turno && G.turno.pid === vid && G.turno.jogou),
+    prazo: G.turno && G.turno.prazo && G.turno.res ? Math.max(0, Math.round((G.turno.prazo - Date.now()) / 1000)) : 0,
     esperando:[...G.esperando].filter(id => id !== vid).map(id => G.players[id].nome),
     segredo:[...G.secretos].some(id => id !== vid),
     alive:me.alive, hand:me.hand.slice(),
@@ -730,11 +1132,27 @@ function receberAcao(pid, act){
   } else if (act.tipo !== 'comprar' && act.tipo !== 'fim') return;
   const res = G.turno.res; G.turno.res = null; res(act);
 }
+const PRAZO_TURNO = 75; // segundos por decisão no online
 async function vezHumana(p){
   const meuG = G;
   G.turno = {pid:p.id, jogou:false, res:null};
   while (!G.over && p.alive && G === meuG){
-    const act = await new Promise(res => { G.turno.res = res; atualizar(); });
+    // online: cada decisão do turno tem um prazo, para ninguém travar a partida
+    const online = G.players.some(q => q.ctl === 'remoto');
+    let relogio = null;
+    const act = await new Promise(res => {
+      G.turno.res = res;
+      G.turno.prazo = online ? Date.now() + PRAZO_TURNO * 1000 : 0;
+      if (online) relogio = setTimeout(() => {
+        if (G !== meuG || !G.turno || G.turno.res !== res) return;
+        G.turno.res = null;
+        log(`⏳ O tempo de ${nm(p)} acabou${G.turno.jogou ? '' : ': ele compra 2 cartas'}.`);
+        res({tipo:G.turno.jogou ? 'fim' : 'comprar'});
+      }, PRAZO_TURNO * 1000);
+      atualizar();
+    });
+    clearTimeout(relogio);
+    if (G === meuG && G.turno) G.turno.prazo = 0;
     if (G !== meuG) return;
     if (act.tipo === 'bot'){ G.turno = null; await vezBot(p); return; }
     if (act.tipo === 'comprar'){ G.turno.jogou = true; await comprar2(p); break; }
@@ -1287,7 +1705,7 @@ function desenhar(v){
     const camadas = Math.max(1, Math.min(5, Math.ceil(v.monte / 12)));
     const vez = v.over ? 'Fim de jogo' : v.minhaVez ? '🕯️ <b>Sua vez!</b>' : v.esperando.length ? `⏳ Aguardando ${v.esperando.map(esc).join(', ')}` : v.segredo ? '🌑 Decisões secretas nas sombras...' : v.atualNome ? `Vez de <b>${esc(v.atualNome)}</b>` : '';
     grid.innerHTML = `<div class="mesaTampo"></div><div class="mesaBrilho"></div><i class="velaM" style="left:6.5%"></i><i class="velaM" style="right:6.5%"></i>
-      <div class="mesaCentro"><div class="faseM">${esc(v.fase || '')}</div><div class="vezM">${vez}</div>
+      <div class="mesaCentro"><div class="faseM">${esc(v.fase || '')}</div><div class="vezM">${vez}</div><div class="relogioM"></div>
         <div class="monteM"><div class="pilha">${'<i></i>'.repeat(camadas)}<span>🂠 ${v.monte} no monte</span></div>
           <div class="pilha descarte">${v.descarte ? '<i></i><i></i>' : ''}<span>${v.descarte} no descarte</span></div></div>
         <div class="bruxasM">☾ Bruxas reveladas: <b>${v.bruxasRev ?? 0}/${v.totalBruxas ?? '?'}</b></div></div>`;
@@ -1349,10 +1767,12 @@ function desenhar(v){
   $('mao').innerHTML = '';
   v.hand.forEach((k, i) => {
     const c = CARDS[k], el = document.createElement('div');
-    el.className = 'carta' + (v.minhaVez ? ' jogavel' : '') + (UI.sel === i ? ' sel' : '');
+    const semAlvo = v.minhaVez && !v.players.some(pv => alvoOk(k, pv, [], v.meId));
+    el.className = 'carta' + (v.minhaVez && !semAlvo ? ' jogavel' : '') + (semAlvo ? ' semAlvo' : '') + (UI.sel === i ? ' sel' : '');
+    if (semAlvo) el.title = 'Nenhum jogador pode receber esta carta agora';
     el.style.setProperty('--cor', COR[c.cor]);
     el.innerHTML = `${c.pts ? `<span class="pts">${c.pts}</span>` : ''}<div class="ic">${c.ic}</div><div class="cn">${c.nome}</div><div class="cd">${c.desc}</div>`;
-    el.onclick = () => { if (!CV.minhaVez) return; Som.tocar('clique'); UI.sel = UI.sel === i ? null : i; UI.alvos = []; desenhar(CV); };
+    el.onclick = () => { if (!CV.minhaVez || semAlvo) return; Som.tocar('clique'); UI.sel = UI.sel === i ? null : i; UI.alvos = []; desenhar(CV); };
     $('mao').appendChild(el);
   });
   // chat: mortos ficam em silêncio; bruxas podem sussurrar só entre elas
@@ -1371,14 +1791,78 @@ function desenhar(v){
   else if (!v.alive) ins = '💀 Você está morto e em silêncio. Assista ao desfecho...';
   else if (v.minhaVez){
     if (selK == null) ins = v.jogou ? 'Jogue mais cartas ou <b>encerre o turno</b>.' : '🕯️ Sua vez! <b>Compre 2 cartas</b> OU jogue uma ou mais cartas da mão.';
-    else if (CARDS[selK].alvo === 2) ins = UI.alvos.length ? `Agora escolha <b>para quem</b> vai (${CARDS[selK].nome}).` : `Escolha <b>de quem</b> sai (${CARDS[selK].nome}).`;
-    else ins = `Escolha o alvo de <b>${CARDS[selK].nome}</b> (destacados em roxo).`;
+    else if (CARDS[selK].alvo === 2) ins = `${CARDS[selK].ic} <b>${CARDS[selK].nome}</b>: ` + (UI.alvos.length ? 'agora toque em <b>para quem</b> vai.' : 'toque em <b>de quem</b> sai (brilhando em roxo).');
+    else ins = `${CARDS[selK].ic} <b>${CARDS[selK].nome}</b>: ${CARDS[selK].desc.split('. ')[0].replace(/\.$/, '')}. Toque no alvo (brilhando em roxo).`;
   }
   else if (v.esperando.length) ins = `⏳ Aguardando ${v.esperando.map(esc).join(', ')} decidir...`;
   else if (v.segredo) ins = '🌑 Decisões secretas acontecendo nas sombras... aguarde.';
   else if (v.atualNome) ins = `Vez de <b>${esc(v.atualNome)}</b>...`;
   else ins = 'Aguarde...';
+  if (v.prazo && !v.over) ins += ' <span class="relogioM"></span>';
   $('instr').innerHTML = ins;
+  $('instr').classList.toggle('suaVez', !!(v.minhaVez && !v.over));
+  PRAZO_FIM = v.prazo && !v.over ? Date.now() + v.prazo * 1000 : 0;
+  PRAZO_MEU = !!v.minhaVez;
+  tiqueRelogio();
+  efeitosMesa(v);
+}
+// ---------- relógio do turno (online) ----------
+let PRAZO_FIM = 0, PRAZO_MEU = false, ultimoTique = -1;
+function tiqueRelogio(){
+  const resta = PRAZO_FIM ? Math.max(0, Math.ceil((PRAZO_FIM - Date.now()) / 1000)) : 0;
+  document.querySelectorAll('.relogioM').forEach(el => {
+    el.textContent = PRAZO_FIM ? `⏳ ${resta}s` : '';
+    el.classList.toggle('urgente', !!PRAZO_FIM && resta <= 15);
+  });
+  if (PRAZO_FIM && PRAZO_MEU && resta <= 10 && resta > 0 && resta !== ultimoTique){ ultimoTique = resta; Som.tocar('clique'); }
+}
+setInterval(tiqueRelogio, 500);
+// ---------- faixas de anúncio e números que sobem das fichas ----------
+const LINHAS_VISTAS = new WeakSet();
+let primeiraVista = true, antesMesa = null;
+function mostrarFaixa(txt, ruim, leve){
+  const f = $('faixa'); f.className = (ruim ? 'ruim' : '') + (leve ? ' leve' : ''); f.innerHTML = '';
+  const sp = document.createElement('span'); sp.textContent = txt; f.appendChild(sp);
+  clearTimeout(mostrarFaixa.t); mostrarFaixa.t = setTimeout(() => { f.innerHTML = ''; }, 2400);
+}
+function flutuar(pid, txt, cls){
+  const el = document.querySelector(`.pl[data-pid="${pid}"]`); if (!el) return;
+  const r = el.getBoundingClientRect(); if (!r.width) return;
+  const f = document.createElement('div'); f.className = 'flutua ' + cls; f.textContent = txt;
+  f.style.left = (r.left + r.width / 2) + 'px'; f.style.top = (r.top + r.height * .4) + 'px';
+  document.body.appendChild(f); setTimeout(() => f.remove(), 1800);
+}
+function efeitosMesa(v){
+  // faixas: só para os momentos grandes (Noite e Conspiração já têm cena própria)
+  const novos = v.log.filter(l => !LINHAS_VISTAS.has(l)); novos.forEach(l => LINHAS_VISTAS.add(l));
+  if (!primeiraVista){
+    let faixa = null, ruim = false, leve = false;
+    for (const l of novos){
+      const t = String(l.h || '').replace(/<[^>]+>/g, '');
+      let m;
+      if ((m = t.match(/^☀️ Dia (\d+)/))) { faixa = `☀️ Dia ${m[1]}`; leve = true; }
+      else if (/MADRUGADA/.test(t)) faixa = '🌘 Madrugada';
+      else if ((m = t.match(/⚖️ (.+?) chegou a/))) { faixa = `⚖️ Julgamento de ${m[1]}`; ruim = true; leve = false; }
+      else if (/vila está salva/.test(t)) { faixa = '🌅 A vila está salva!'; ruim = false; }
+      else if (/A vila caiu/.test(t)) { faixa = '🔥 A vila caiu...'; ruim = true; }
+    }
+    if (faixa && !document.getElementById('cena')) mostrarFaixa(faixa, ruim, leve);
+  }
+  primeiraVista = false;
+  // números flutuando quando os pontos ou as cartas azuis de alguém mudam
+  const agora = {};
+  v.players.forEach(p => { agora[p.id] = {pts:p.pts, azuis:p.azuis.slice(), alive:p.alive}; });
+  if (antesMesa && Object.keys(antesMesa).length === v.players.length){
+    v.players.forEach(p => {
+      const a = antesMesa[p.id]; if (!a) return;
+      if (a.alive && !p.alive) flutuar(p.id, '💀', 'morte');
+      else if (p.pts > a.pts) flutuar(p.id, `+${p.pts - a.pts} ⚖️`, 'acus');
+      else if (p.pts < a.pts && p.pts > 0) flutuar(p.id, `−${a.pts - p.pts} 🛡️`, 'def');
+      const novas = p.azuis.filter(k => !a.azuis.includes(k));
+      if (novas.length && p.alive) flutuar(p.id, novas.map(k => CARDS[k].ic).join(' '), 'azul');
+    });
+  }
+  antesMesa = agora;
 }
 $('btnVoz').onclick = entrarVoz;
 $('btnSairVoz').onclick = () => sairVoz();
@@ -2712,9 +3196,9 @@ function voltarAoInicio(){
 for (let n = 4; n <= 12; n++) $('inN').insertAdjacentHTML('beforeend', `<option value="${n}" ${n === 6 ? 'selected' : ''}>${n} jogadores (${TABELA[n][1]} bruxa${TABELA[n][1] > 1 ? 's' : ''})</option>`);
 function catalogoHTML(){
   const julg = [
-    {ic:'☾', nome:'Bruxa', desc:'Quem tem (ou já teve) esta carta é da equipe das bruxas para sempre. Se for revelada, o dono morre.'},
-    {ic:'✝', nome:'Não é Bruxa', desc:'Carta inocente. Revelá-la não mata, a menos que seja a última carta fechada do jogador.'},
-    {ic:'🏮', nome:'Guardião', desc:'Enquanto estiver fechada, à Noite o dono protege alguém (não a si mesmo). Também não é bruxa. O Guardião pode ser da equipe das bruxas!'},
+    {ic:'☾', cor:'#7a1a1a', nome:'Bruxa', desc:'Quem tem (ou já teve) esta carta é da equipe das bruxas para sempre. Se for revelada, o dono morre.'},
+    {ic:'✝', cor:'#4f8a55', nome:'Não é Bruxa', desc:'Carta inocente. Revelá-la não mata, a menos que seja a última carta fechada do jogador.'},
+    {ic:'🏮', cor:'#3f6fb5', nome:'Guardião', desc:'Enquanto estiver fechada, à Noite o dono protege alguém (não a si mesmo). Também não é bruxa. O Guardião pode ser da equipe das bruxas!'},
   ];
   const carta = (c, cor, extra = '', cls = '') => `<div class="carta ${cls}" style="--cor:${cor}">${c.pts ? `<span class="pts">${c.pts}</span>` : ''}
     <div class="ic">${c.ic}</div><div class="cn">${c.nome}</div><div class="cd">${c.desc}</div>${extra ? `<div class="qtd">${extra}</div>` : ''}</div>`;
@@ -2725,9 +3209,9 @@ function catalogoHTML(){
   };
   return `<div class="cat"><h2 style="color:var(--gold)">Todas as cartas</h2>
     <h4 style="color:var(--parch)">Cartas de julgamento</h4><p class="sub">5 para cada jogador, fechadas na frente dele. Definem de que lado você está.</p>
-    <div class="cat-grid">${julg.map(c => carta(c, '#777', '', 'julg')).join('')}</div>
+    <div class="cat-grid">${julg.map(c => carta(c, c.cor, '', 'julg')).join('')}</div>
     ${grupo('vermelha', 'Vermelhas: acusações', 'Somam pontos no alvo. Com 7 pontos há julgamento e uma carta de julgamento é revelada.')}
-    ${grupo('azul', 'Azuis: permanentes', 'Ficam na frente do jogador e o efeito continua até serem removidas ou ele morrer.')}
+    ${grupo('azul', 'Azuis: permanentes', 'Ficam na frente do jogador e o efeito continua. Devoção e Refúgio duram só até a próxima Noite acabar.')}
     ${grupo('verde', 'Verdes: ação imediata', 'O efeito acontece na hora e a carta é descartada.')}
     ${grupo('preta', 'Pretas: eventos', 'São reveladas e resolvidas na hora em que alguém as compra.')}</div>`;
 }
@@ -2738,9 +3222,18 @@ function abrirInfo(html){
 }
 $('btnFecharInfo').onclick = () => { $('info').hidden = true; };
 $('info').onclick = e => { if (e.target === $('info')) $('info').hidden = true; };
-const mostrarRegras = () => abrirInfo($('tplRegras').innerHTML + '<hr style="border-color:#3a2f46;margin:18px 0">' + catalogoHTML());
-const mostrarCartas = () => abrirInfo(catalogoHTML());
-$('btnRegras').onclick = mostrarRegras; $('btnRegras2').onclick = mostrarRegras;
+function mostrarRegras(aba = 'resumo'){
+  abrirInfo($('tplRegras').innerHTML);
+  $('rgCartas').innerHTML = catalogoHTML();
+  abaRegras(aba);
+}
+function abaRegras(aba){
+  document.querySelectorAll('#info .rg [data-aba]').forEach(el => el.classList.toggle('on', el.dataset.aba === aba));
+  const box = $('info').querySelector('.mbox'); if (box) box.scrollTop = 0;
+}
+$('info').addEventListener('click', e => { const b = e.target.closest('.rg-abas button'); if (b){ Som.tocar('clique'); abaRegras(b.dataset.aba); } });
+const mostrarCartas = () => mostrarRegras('cartas');
+$('btnRegras').onclick = () => mostrarRegras(); $('btnRegras2').onclick = () => mostrarRegras();
 $('btnCartas').onclick = mostrarCartas; $('btnCartas2').onclick = mostrarCartas;
 $('btnSolo').onclick = () => { fecharRede(); comecarJogo([{nome:meuNome(), ctl:'local'}], +$('inN').value); };
 $('btnCriar').onclick = () => criarSala();
