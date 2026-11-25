@@ -566,6 +566,11 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
 @keyframes flutua{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
 .flutua.acus{color:#ff7a5a}.flutua.def{color:#8fe39a}.flutua.azul{color:#9cc8ff}.flutua.morte{color:#fff;font-size:34px}
 
+.escolhas{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.escolhas label{display:flex;flex-direction:column;gap:4px;font-family:Cinzel,serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#bfb0d6;margin:0}
+.escolhas select{font:inherit;font-family:'Crimson Text',Georgia,serif;font-size:15px;text-transform:none;letter-spacing:0;padding:8px 10px;border-radius:10px;background:#140f1c;border:1px solid #4a3a63;color:var(--txt);width:100%}
+#inNOnline{text-transform:none;letter-spacing:0;font-family:'Crimson Text',Georgia,serif;font-size:15px}
+.resumoMesa{margin:4px 0 0 !important;font-size:14.5px !important;color:#d8cde8 !important}
 /* ---------- celular ---------- */
 @media (max-width:759px){
  :root{--mesaH:auto}
@@ -689,7 +694,11 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
           <div class="op-ic">🤖</div>
           <h3>Contra bots</h3>
           <p>Treine sozinho contra a vila. Funciona até sem internet.</p>
-          <select id="inN"></select>
+          <div class="escolhas">
+            <label>🤖 Bots<select id="inN"></select></label>
+            <label>☾ Bruxas<select id="inB"></select></label>
+          </div>
+          <p class="resumoMesa" id="resumoSolo"></p>
           <button class="prim grande" id="btnSolo">Começar partida</button>
         </div>
       </div>
@@ -714,8 +723,12 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
       <h3>Jogadores na sala</h3>
       <ul id="listaLobby"></ul>
       <div id="lobbyHost">
-        <label>Total de jogadores na mesa (as vagas que sobrarem viram bots)</label>
-        <select id="inNOnline"></select>
+        <div class="escolhas">
+          <label>👥 Jogadores na mesa<select id="inNOnline"></select></label>
+          <label>☾ Bruxas<select id="inBOnline"></select></label>
+        </div>
+        <p class="resumoMesa" id="resumoOnline"></p>
+        <p style="font-size:14px;color:var(--muted);margin:2px 0 0">As vagas que sobrarem viram bots.</p>
         <div class="linha" style="margin-top:12px"><button class="prim" id="btnComecarOnline">Começar partida</button><button id="btnSairSala">Sair</button></div>
       </div>
       <div id="lobbyCliente" hidden><p>⏳ Aguardando o anfitrião começar a partida...</p><button id="btnSairSala2">Sair</button></div>
@@ -925,8 +938,9 @@ const local = () => G.players.find(p => p.ctl === 'local');
 // =====================================================================
 //  MOTOR DO JOGO (roda no anfitrião)
 // =====================================================================
-function novoJogo(pessoas, n){
-  const [ni, nb, ng] = TABELA[n];
+const maxBruxas = n => Math.max(1, Math.ceil(n / 2) - 1); // sempre menos bruxas que moradores
+function novoJogo(pessoas, n, bruxas = null){
+  const nb = Math.min(maxBruxas(n), Math.max(1, Math.round(bruxas || BRUXAS[n]))), ng = 1, ni = n * CARTAS_POR_JOGADOR - nb - ng;
   const cartas = shuffle([...Array(ni).fill('inocente'), ...Array(nb).fill('bruxa'), ...Array(ng).fill('guardiao')]);
   const usados = new Set(pessoas.map(p => p.nome.toLowerCase()));
   const bots = shuffle(NOMES.filter(b => !usados.has(b[0].toLowerCase()))).slice(0, n - pessoas.length);
@@ -939,6 +953,19 @@ function novoJogo(pessoas, n){
     p.id = i;
     p.isHuman = p.ctl !== 'bot';
     p.pistas = cartas.slice(i * CARTAS_POR_JOGADOR, (i + 1) * CARTAS_POR_JOGADOR).map(t => ({id:cid++, t, rev:false}));
+  });
+  // cada carta Bruxa fica com uma pessoa diferente: o número de bruxas escolhido é o número de jogadores bruxos
+  for (const p of players){
+    let extras = p.pistas.filter(x => x.t === 'bruxa').slice(1);
+    for (const x of extras){
+      const livres = players.filter(q => !q.pistas.some(y => y.t === 'bruxa'));
+      if (!livres.length) break;
+      const q = livres[Math.floor(Math.random() * livres.length)];
+      const y = q.pistas[Math.floor(Math.random() * q.pistas.length)];
+      [x.t, y.t] = [y.t, x.t];
+    }
+  }
+  players.forEach(p => {
     p.team = p.pistas.some(x => x.t === 'bruxa') ? 'bruxa' : 'vila';
     p.bruxaOriginal = p.team === 'bruxa'; // começou com a carta Bruxa (não virou na Conspiração)
     Object.assign(p, {alive:true, hand:[], acus:[], azuis:[], b:{}, peek:new Set()});
@@ -1628,11 +1655,11 @@ function introHTML(p){
     ${p.team === 'bruxa' ? (parc.length ? `<p>Sua parceira: <b>${parc.join(', ')}</b>.</p>` : '<p>Você é a única bruxa... por enquanto.</p>') + '<p>Vença quando todos os vivos forem da equipe das bruxas.</p>'
       : `<p>Há <b>${G.totalBruxas}</b> carta(s) Bruxa escondida(s). Revele todas para vencer.</p>`}`;
 }
-async function comecarJogo(pessoas, n, teste = null){
+async function comecarJogo(pessoas, n, teste = null, bruxas = null){
   resetModal();
   $('setup').hidden = true;
   UI.sel = null; UI.alvos = []; CV = null;
-  novoJogo(pessoas, n);
+  novoJogo(pessoas, n, bruxas);
   if (teste){ // partida de teste do administrador
     G.teste = true; G.verTudo = !!teste.verTudo;
     ajustarPapel(local(), teste.papel);
@@ -2806,6 +2833,7 @@ function atualizarLobby(){
   sel.innerHTML = '';
   for (let n = min; n <= 12; n++) sel.insertAdjacentHTML('beforeend', `<option value="${n}">${n} jogadores${n > nomes.length ? ` (${n - nomes.length} bot${n - nomes.length > 1 ? 's' : ''})` : ' (só pessoas)'}</option>`);
   sel.value = Math.max(min, atual);
+  opcoesBruxas($('inBOnline'), +sel.value, $('resumoOnline'), nomes.length);
   $('btnComecarOnline').disabled = nomes.length > 12;
   NET.lobby.forEach(l => enviar(l.conn, {t:'lobby', code:NET.code, nomes}));
 }
@@ -2845,7 +2873,7 @@ function hostDesconectou(conn){
 function comecarOnline(){
   const pessoas = [{nome:meuNome(), ctl:'local'}, ...NET.lobby.filter(l => l.conn.open).map(l => ({nome:l.nome, ctl:'remoto', conn:l.conn}))];
   const n = Math.max(4, pessoas.length, +$('inNOnline').value || 4);
-  comecarJogo(pessoas, n);
+  comecarJogo(pessoas, n, null, +$('inBOnline').value || null);
 }
 
 // =====================================================================
@@ -3193,7 +3221,22 @@ function voltarAoInicio(){
     $('telaInicio').hidden = false; $('telaLobby').hidden = true;
   }
 }
-for (let n = 4; n <= 12; n++) $('inN').insertAdjacentHTML('beforeend', `<option value="${n}" ${n === 6 ? 'selected' : ''}>${n} jogadores (${TABELA[n][1]} bruxa${TABELA[n][1] > 1 ? 's' : ''})</option>`);
+for (let n = 4; n <= 12; n++) $('inN').insertAdjacentHTML('beforeend', `<option value="${n}" ${n === 6 ? 'selected' : ''}>${n - 1} bot${n > 2 ? 's' : ''}</option>`);
+// preenche a lista de bruxas conforme o tamanho da mesa (mantém a escolha se ainda couber)
+function opcoesBruxas(sel, n, resumo, humanos = 1){
+  const atual = +sel.dataset.escolha || 0, max = maxBruxas(n);
+  sel.innerHTML = '';
+  for (let b = 1; b <= max; b++) sel.insertAdjacentHTML('beforeend', `<option value="${b}">${b} bruxa${b > 1 ? 's' : ''}${b === BRUXAS[n] ? ' ★' : ''}</option>`);
+  sel.value = atual && atual <= max ? atual : BRUXAS[n];
+  if (resumo){
+    const b = +sel.value, bots = n - humanos;
+    resumo.innerHTML = `Mesa com <b>${n} jogadores</b>${bots > 0 ? ` (${bots} bot${bots > 1 ? 's' : ''})` : ''}: <b class="c-bru">${b} bruxa${b > 1 ? 's' : ''}</b> e <b class="c-vil">${n - b} morador${n - b > 1 ? 'es' : ''}</b>.`;
+  }
+}
+const atualizarSolo = () => opcoesBruxas($('inB'), +$('inN').value, $('resumoSolo'));
+$('inN').onchange = atualizarSolo;
+$('inB').onchange = () => { $('inB').dataset.escolha = $('inB').value; atualizarSolo(); };
+atualizarSolo();
 function catalogoHTML(){
   const julg = [
     {ic:'☾', cor:'#7a1a1a', nome:'Bruxa', desc:'Quem tem (ou já teve) esta carta é da equipe das bruxas para sempre. Se for revelada, o dono morre.'},
@@ -3235,7 +3278,9 @@ $('info').addEventListener('click', e => { const b = e.target.closest('.rg-abas 
 const mostrarCartas = () => mostrarRegras('cartas');
 $('btnRegras').onclick = () => mostrarRegras(); $('btnRegras2').onclick = () => mostrarRegras();
 $('btnCartas').onclick = mostrarCartas; $('btnCartas2').onclick = mostrarCartas;
-$('btnSolo').onclick = () => { fecharRede(); comecarJogo([{nome:meuNome(), ctl:'local'}], +$('inN').value); };
+$('inNOnline').onchange = () => atualizarLobby();
+$('inBOnline').onchange = () => { $('inBOnline').dataset.escolha = $('inBOnline').value; atualizarLobby(); };
+$('btnSolo').onclick = () => { fecharRede(); comecarJogo([{nome:meuNome(), ctl:'local'}], +$('inN').value, null, +$('inB').value); };
 $('btnCriar').onclick = () => criarSala();
 $('btnEntrar').onclick = entrarSala;
 $('inCodigo').onkeydown = e => { if (e.key === 'Enter') entrarSala(); };
