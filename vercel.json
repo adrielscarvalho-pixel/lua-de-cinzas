@@ -1,9 +1,24 @@
 {
   "redirects": [
-    { "source": "/", "destination": "/lua-de-cinzas/", "permanent": false },
-    { "source": "/lua-de-cinzas", "destination": "/lua-de-cinzas/", "permanent": true }
+    {
+      "source": "/",
+      "destination": "/lua-de-cinzas/",
+      "permanent": false
+    },
+    {
+      "source": "/lua-de-cinzas",
+      "destination": "/lua-de-cinzas/",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/lua-de-cinzas/:path*", "destination": "/:path*" }
+    {
+      "source": "/lua-de-cinzas/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/lua-de-cinzas/:path*",
+      "destination": "/:path*"
+    }
   ]
 }
