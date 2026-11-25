@@ -454,7 +454,7 @@ body.noite .mesaBrilho{background:radial-gradient(ellipse at 70% 20%,#9fb6ff2a,#
 <p>Você <b>nunca</b> pode usar cartas em si mesmo. <b>Exceção:</b> o Furto pode ser entregue a você, mas aí você pega só metade da mão do alvo.</p>
 <p><b>Cores:</b></p>
 <ul><li><span style="color:#ff8a8a">Vermelhas</span>: acusações de 1, 3 ou 7 pontos. Com <b>7 pontos</b> há julgamento: quem colocou a última acusação escolhe uma carta fechada do acusado para revelar. <b>Se o acusado for uma pessoa (não um bot), ela mesma escolhe qual carta mostrar.</b> Se for Bruxa, ele morre. Depois as acusações são descartadas.</li>
-<li><span style="color:#9cc0f0">Azuis</span>: ficam na frente do jogador e o efeito continua. A <b>Devoção</b> não pode ser colocada em quem é da equipe das bruxas (se alguém com Devoção virar bruxa na Conspiração, ela se desfaz).</li>
+<li><span style="color:#9cc0f0">Azuis</span>: ficam na frente do jogador e o efeito continua. A <b>Devoção</b> não pode ser colocada em quem é da equipe das bruxas (se alguém com Devoção virar bruxa na Conspiração, ela se desfaz). A <b>Devoção</b> e o <b>Refúgio</b> duram só uma rodada: somem quando a próxima Noite termina.</li>
 <li><span style="color:#8fd39a">Verdes</span>: efeito imediato, depois são descartadas.</li>
 <li><b>Pretas</b>: <b>Noite</b> e <b>Conspiração</b>, reveladas ao serem compradas. A <b>Noite é sempre a última carta do baralho</b>: quando ela sai, o descarte é embaralhado e vira um novo baralho, com a Noite de novo no fundo. A Conspiração fica embaralhada no meio.</li></ul>
 <p><b>Noite:</b> as bruxas escolhem uma vítima e o Guardião protege alguém (não a si mesmo). Qualquer um pode <b>confessar</b>, revelando uma carta própria, para ter imunidade naquela noite. O Refúgio também protege.</p>
@@ -477,8 +477,8 @@ const CARDS = {
   suspeita:  {nome:'Suspeita',   cor:'vermelha', pts:1, qtd:20, ic:'👉', desc:'Acusação de 1 ponto.'},
   prova:     {nome:'Prova',      cor:'vermelha', pts:3, qtd:8,  ic:'📌', desc:'Acusação de 3 pontos.'},
   flagrante: {nome:'Flagrante',  cor:'vermelha', pts:7, qtd:2,  ic:'⚡', desc:'Acusação de 7 pontos.'},
-  devocao:   {nome:'Devoção',    cor:'azul', qtd:1, ic:'🙏', desc:'Ninguém pode jogar acusações neste jogador. Não pode ser colocada em quem é da equipe das bruxas.'},
-  refugio:   {nome:'Refúgio',    cor:'azul', qtd:1, ic:'⛪', desc:'Este jogador não pode ser morto à Noite.'},
+  devocao:   {nome:'Devoção',    cor:'azul', qtd:1, ic:'🙏', desc:'Ninguém pode jogar acusações neste jogador. Dura só uma rodada: some depois da próxima Noite. Não pode ser colocada em quem é da equipe das bruxas.'},
+  refugio:   {nome:'Refúgio',    cor:'azul', qtd:1, ic:'⛪', desc:'Este jogador não pode ser morto na próxima Noite. Dura só uma rodada: some depois dessa Noite.'},
   mafama:    {nome:'Má Fama',    cor:'azul', qtd:3, ic:'🐍', desc:'Cada acusação neste jogador vale +1 ponto.'},
   pelourinho:{nome:'Pelourinho', cor:'azul', qtd:3, ic:'⛓️', desc:'O jogador perde o próximo turno.'},
   defesa:    {nome:'Defesa',     cor:'verde', qtd:7, ic:'🛡️', desc:'Remova até 3 pontos de acusação de um jogador.'},
@@ -1013,6 +1013,12 @@ async function noite(){
       await morre(vitima, 'morto pelas bruxas à noite', true);
     }
   }
+  // Devoção e Refúgio duram só uma rodada: depois da Noite, voltam para o descarte
+  if (!G.over) G.players.forEach(p => ['devocao', 'refugio'].forEach(k => {
+    const i = p.azuis.indexOf(k); if (i < 0) return;
+    p.azuis.splice(i, 1); G.discard.push(k);
+    if (p.alive) log(k === 'devocao' ? `🙏 A Devoção de ${nm(p)} se apaga com o fim da noite.` : `⛪ O Refúgio de ${nm(p)} se fecha com o fim da noite.`);
+  }));
   await delay(.8);
   if (!G.over) log('🌅 Amanhece na vila.', 'phase', null, 'dia');
   G.noite = false; G.fase = `Dia ${G.round}`; atualizar();
