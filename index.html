@@ -902,8 +902,8 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
     <li>🚫 Você <b>não pode</b> usar cartas em você mesmo. <b>Exceção:</b> o <b>Furto</b> pode trazer a mão de alguém para você, mas aí você fica só com <b>metade</b>.</li>
     <li>🌫️ Cartas sem nenhum alvo possível aparecem apagadas na sua mão.</li>
     <li>⛓️ Quem está no <b>Pelourinho</b> perde a próxima vez.</li>
-    <li>⚜️ <b>Carta lendária:</b> cada baralho tem só <b>1% de chance</b> de esconder a <b>Sentença Dourada</b>. Quem a comprar pode <b>eliminar qualquer jogador</b> na hora, e nada impede: nem Devoção, nem Guardião, nem confissão. Depois de usada, ela se desfaz.</li>
-    <li>🌒 <b>Outra lendária, só para bruxas:</b> o <b>Pacto Dourado</b> (também 1% por baralho) transforma um morador em bruxa, <b>em completo segredo</b>. Depois dele, ninguém mais pode virar bruxa, nem na Conspiração. A bruxa que o compra ganha uma carta de brinde, e o Pacto não aparece na contagem da mão nem do monte.</li>
+    <li>⚜️ <b>Carta lendária:</b> cada baralho tem <b>5% de chance</b> de esconder a <b>Sentença Dourada</b>, mas ela só pode aparecer <b>uma vez por partida</b>. Quem a comprar pode <b>eliminar qualquer jogador</b> na hora, e nada impede: nem Devoção, nem Guardião, nem confissão. Depois de usada, ela se desfaz.</li>
+    <li>🌒 <b>Outra lendária, só para bruxas:</b> o <b>Pacto Dourado</b> (também 5% por baralho e só uma vez por partida) transforma um morador em bruxa, <b>em completo segredo</b>. Depois dele, ninguém mais pode virar bruxa, nem na Conspiração. A bruxa que o compra ganha uma carta de brinde, e o Pacto não aparece na contagem da mão nem do monte.</li>
     <li>🌐 No online, cada decisão do seu turno tem <b>75 segundos</b>. Se o tempo acabar, o jogo compra 2 cartas por você (ou encerra o turno, se você já tinha jogado).</li>
   </ul>
   <h3>As cores das cartas</h3>
@@ -1029,8 +1029,13 @@ const CARDS = {
   conspiracao:{nome:'Conspiração', cor:'preta', ic:'🕸️', desc:'O dono do Gato da Lua revela uma carta. Depois todos pegam uma carta de julgamento do vizinho da esquerda.'},
 };
 const COR = {vermelha:'#b23a3a', azul:'#3f6fb5', verde:'#4f8a55', preta:'#111', dourada:'#d4a017'};
-const CHANCE_DOURADA = .01; // 1% de chance de a Sentença Dourada estar em cada baralho
-const CHANCE_PACTO = .01;   // 1% de chance de o Pacto Dourado (só bruxas) estar em cada baralho
+const CHANCE_DOURADA = .05; // 5% de chance de a Sentença Dourada estar em cada baralho (no máximo uma vez por partida)
+const CHANCE_PACTO = .05;   // 5% de chance de o Pacto Dourado (só bruxas) estar em cada baralho (no máximo uma vez por partida)
+// sorteia as lendárias num baralho novo: cada uma só pode aparecer uma vez na partida
+function sortearLendarias(){
+  if (!G.saiuSentenca && Math.random() < CHANCE_DOURADA){ G.saiuSentenca = true; inserirFundo('sentenca', 1); }
+  if (!G.saiuPacto && !G.semConversao && Math.random() < CHANCE_PACTO){ G.saiuPacto = true; inserirFundo('pacto', 1); }
+}
 // uma carta comum qualquer (respeitando as quantidades do baralho), usada para substituir cartas em segredo
 const semPacto = arr => arr.filter(k => k !== 'pacto'); // o Pacto nunca aparece nas contagens (monte e mão)
 function cartaComum(){ const pool = []; for (const k in CARDS) if (CARDS[k].qtd > 0 && CARDS[k].cor !== 'preta') for (let i = 0; i < CARDS[k].qtd; i++) pool.push(k); return rnd(pool); }
@@ -1105,8 +1110,7 @@ function novoJogo(pessoas, n, bruxas = null){
   shuffle(G.deck);
   players.forEach(p => { for (let i = 0; i < 3; i++) p.hand.push(G.deck.pop()); });
   inserirFundo('conspiracao', .8);
-  if (Math.random() < CHANCE_DOURADA) inserirFundo('sentenca', 1);
-  if (Math.random() < CHANCE_PACTO) inserirFundo('pacto', 1);
+  sortearLendarias();
   G.deck.unshift('noite'); // a Noite é sempre a última carta do baralho
   NET.asks.clear();
 }
@@ -1116,8 +1120,7 @@ function inserirFundo(k, frac){ // o fim do array é o topo do baralho
 }
 function novoBaralho(){
   G.deck = shuffle(G.discard.filter(k => k !== 'sentenca' && k !== 'pacto')); G.discard = [];
-  if (Math.random() < CHANCE_DOURADA) inserirFundo('sentenca', 1);
-  if (!G.semConversao && Math.random() < CHANCE_PACTO) inserirFundo('pacto', 1);
+  sortearLendarias();
   G.deck.unshift('noite');
   log(`🔄 O descarte foi embaralhado e virou um novo baralho (${semPacto(G.deck).length} cartas). A Noite volta para o fundo.`);
 }
@@ -3560,7 +3563,7 @@ function painelHTML(){
       <span class="linha" style="gap:4px">${b('cena:noite', '🌑 Noite com')}<select id="admN">${Array.from({length:12}, (_, i) => `<option ${i + 1 === 6 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select> pessoas</span></div>
     <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}${b('cena:final', '👑 Final: a bruxa se revela')}${b('cena:dourada', '⚜️ Sentença Dourada')}${b('cena:pegaDourada', '✨ Pegar a Sentença (só quem compra)')}${b('cena:pegaPacto', '🌒 Pegar o Pacto (só a bruxa)')}${b('cena:virouBruxa', '🌒 Virou bruxa (Pacto)')}</div>
     <h3>🎰 Caça à carta dourada</h3>
-    <p class="nota">Só você na mesa, comprando de baralhos novos até a carta lendária aparecer (1% de chance em cada tentativa).</p>
+    <p class="nota">Só você na mesa, comprando de baralhos novos até a carta lendária aparecer (5% de chance em cada tentativa).</p>
     <div class="grade">${b('sorte:sentenca', '⚜️ Tentar pegar a Sentença Dourada')}${b('sorte:pacto', '🌒 Tentar pegar o Pacto Dourado')}</div>
     <h3>🔊 Sons</h3>
     <div class="grade">${Object.keys(NOMES_SONS).filter(k => EFEITOS[k]).map(k => b('som:' + k, NOMES_SONS[k])).join('')}
@@ -3605,7 +3608,7 @@ function abrirSorte(tipo){
   el.innerHTML = `<div class="mbox sorteBox ${SORTE.tipo}">
     <h2>🎰 Caça à carta dourada</h2>
     <div class="sorteEscolha"><button data-s="sentenca" class="${SORTE.tipo === 'sentenca' ? 'on' : ''}">⚜️ Sentença Dourada</button><button data-s="pacto" class="${SORTE.tipo === 'pacto' ? 'on' : ''}">🌒 Pacto Dourado</button></div>
-    <p class="sorteNota">Só você na mesa. Cada tentativa é um <b>baralho novo</b>: ${c.ic} <b>${c.nome}</b> tem <b>1%</b> de chance de estar nele.</p>
+    <p class="sorteNota">Só você na mesa. Cada tentativa é um <b>baralho novo</b>: ${c.ic} <b>${c.nome}</b> tem <b>5%</b> de chance de estar nele.</p>
     <div class="sorteMesa">
       <div class="sorteEu"><span class="av">🕯️</span><b>${esc(nome)}</b></div>
       <div class="sortePilha"><i></i><i></i><i></i><span>baralho</span></div>
@@ -3777,7 +3780,7 @@ function catalogoHTML(){
   const grupo = (cor, titulo, sub) => {
     const ks = Object.keys(CARDS).filter(k => CARDS[k].cor === cor);
     return `<h4 style="color:${cor === 'preta' ? 'var(--parch)' : COR[cor]}">${titulo}</h4><p class="sub">${sub}</p><div class="cat-grid">` +
-      ks.map(k => carta(CARDS[k], COR[cor], k === 'gato' ? 'não está no baralho' : k === 'noite' ? 'sempre a última' : k === 'sentenca' ? '1% de chance por baralho' : k === 'pacto' ? '1% por baralho · só bruxas' : `×${CARDS[k].qtd || 1} no baralho`, cor === 'preta' ? 'preta' : cor === 'dourada' ? 'dourada' + (k === 'pacto' ? ' pacto' : '') : '')).join('') + '</div>';
+      ks.map(k => carta(CARDS[k], COR[cor], k === 'gato' ? 'não está no baralho' : k === 'noite' ? 'sempre a última' : k === 'sentenca' ? '5% por baralho · 1 vez por partida' : k === 'pacto' ? '5% por baralho · só bruxas' : `×${CARDS[k].qtd || 1} no baralho`, cor === 'preta' ? 'preta' : cor === 'dourada' ? 'dourada' + (k === 'pacto' ? ' pacto' : '') : '')).join('') + '</div>';
   };
   return `<div class="cat"><h2 style="color:var(--gold)">Todas as cartas</h2>
     <h4 style="color:var(--parch)">Cartas de julgamento</h4><p class="sub">5 para cada jogador, fechadas na frente dele. Definem de que lado você está.</p>
@@ -3786,7 +3789,7 @@ function catalogoHTML(){
     ${grupo('azul', 'Azuis: permanentes', 'Ficam na frente do jogador e o efeito continua. Devoção e Refúgio duram só até a próxima Noite acabar.')}
     ${grupo('verde', 'Verdes: ação imediata', 'O efeito acontece na hora e a carta é descartada.')}
     ${grupo('preta', 'Pretas: eventos', 'São reveladas e resolvidas na hora em que alguém as compra.')}
-    ${grupo('dourada', '⚜️ Dourada: lendária', 'Raríssimas: cada uma tem só 1% de chance de existir em cada baralho. O Pacto Dourado só aparece para bruxas: se um morador o comprar, ele vira uma carta comum sem ninguém perceber.')}</div>`;
+    ${grupo('dourada', '⚜️ Dourada: lendária', 'Raras: cada uma tem 5% de chance de existir em cada baralho, e só pode aparecer uma vez por partida. O Pacto Dourado só aparece para bruxas: se um morador o comprar, ele vira uma carta comum sem ninguém perceber.')}</div>`;
 }
 function abrirInfo(html){
   $('info').querySelector('.conteudo').innerHTML = html;
