@@ -628,6 +628,16 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
 #cenaPega .textoP b{color:#ffd76a}
 #cenaPega .textoP small{display:block;font-size:.72em;font-style:italic;color:#d8c9a8;margin-top:6px}
 #cenaPega .faisca{position:fixed;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff 0,#ffe08a 40%,#ffb80000 70%);box-shadow:0 0 8px #ffd24a}
+#cenaPega.pacto{background:radial-gradient(ellipse at 50% 45%,#3a1352ee,#0d0416f5 65%,#000000f8)}
+#cenaPega.pacto .raios{background:repeating-conic-gradient(from 0deg,#b77cff2a 0deg 4deg,#0000 4deg 12deg)}
+#cenaPega.pacto .halo{background:radial-gradient(circle,#b77cff66 0%,#7a2cc026 38%,#0000 66%)}
+#cenaPega.pacto .topoP{color:#f0d8ff;text-shadow:0 0 24px #b77cff,0 3px 8px #000}
+#cenaPega.pacto .face{background:linear-gradient(140deg,#3a1a52,#1c0d2a 45%,#4a2266 70%,#22102e);border-color:#d4a017;color:#ffe08a;
+ box-shadow:0 0 60px #9a4dffcc,0 0 120px #7a2cc055,inset 0 0 0 3px #2a1040,inset 0 0 30px #b77cff44}
+#cenaPega.pacto .fTopo{color:#d4a017}#cenaPega.pacto .fDesc{color:#eadcf7}
+#cenaPega.pacto .fIc{filter:drop-shadow(0 0 12px #b77cff)}
+#cenaPega.pacto .textoP b{color:#d9a8ff}
+#cenaPega.pacto .faisca{background:radial-gradient(circle,#fff 0,#d9a8ff 40%,#9a4dff00 70%);box-shadow:0 0 8px #b77cff}
 #cenaPega .pular{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#ffffff77;font-size:14px;font-family:Cinzel,serif;letter-spacing:.08em}
 /* ---------- Pacto Dourado (só bruxas) ---------- */
 .carta.dourada.pacto{background:linear-gradient(140deg,#3a1a52,#1c0d2a 45%,#4a2266 70%,#22102e);box-shadow:0 0 0 2px #d4a017,0 0 26px #9a4dffaa,0 8px 18px #000b}
@@ -864,7 +874,7 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
     <li>🌫️ Cartas sem nenhum alvo possível aparecem apagadas na sua mão.</li>
     <li>⛓️ Quem está no <b>Pelourinho</b> perde a próxima vez.</li>
     <li>⚜️ <b>Carta lendária:</b> cada baralho tem só <b>1% de chance</b> de esconder a <b>Sentença Dourada</b>. Quem a comprar pode <b>eliminar qualquer jogador</b> na hora, e nada impede: nem Devoção, nem Guardião, nem confissão. Depois de usada, ela se desfaz.</li>
-    <li>🌒 <b>Outra lendária, só para bruxas:</b> o <b>Pacto Dourado</b> (também 1% por baralho) transforma um morador em bruxa, <b>em completo segredo</b>. Depois dele, ninguém mais pode virar bruxa, nem na Conspiração.</li>
+    <li>🌒 <b>Outra lendária, só para bruxas:</b> o <b>Pacto Dourado</b> (também 1% por baralho) transforma um morador em bruxa, <b>em completo segredo</b>. Depois dele, ninguém mais pode virar bruxa, nem na Conspiração. A bruxa que o compra ganha uma carta de brinde, e o Pacto não aparece na contagem da mão nem do monte.</li>
     <li>🌐 No online, cada decisão do seu turno tem <b>75 segundos</b>. Se o tempo acabar, o jogo compra 2 cartas por você (ou encerra o turno, se você já tinha jogado).</li>
   </ul>
   <h3>As cores das cartas</h3>
@@ -993,6 +1003,7 @@ const COR = {vermelha:'#b23a3a', azul:'#3f6fb5', verde:'#4f8a55', preta:'#111', 
 const CHANCE_DOURADA = .01; // 1% de chance de a Sentença Dourada estar em cada baralho
 const CHANCE_PACTO = .01;   // 1% de chance de o Pacto Dourado (só bruxas) estar em cada baralho
 // uma carta comum qualquer (respeitando as quantidades do baralho), usada para substituir cartas em segredo
+const semPacto = arr => arr.filter(k => k !== 'pacto'); // o Pacto nunca aparece nas contagens (monte e mão)
 function cartaComum(){ const pool = []; for (const k in CARDS) if (CARDS[k].qtd > 0 && CARDS[k].cor !== 'preta') for (let i = 0; i < CARDS[k].qtd; i++) pool.push(k); return rnd(pool); }
 const TIPO = {bruxa:'☾ Bruxa', inocente:'✝ Não é Bruxa', guardiao:'🏮 Guardião'};
 const ICONE = {bruxa:'☾', inocente:'✝', guardiao:'🏮'};
@@ -1079,7 +1090,7 @@ function novoBaralho(){
   if (Math.random() < CHANCE_DOURADA) inserirFundo('sentenca', 1);
   if (!G.semConversao && Math.random() < CHANCE_PACTO) inserirFundo('pacto', 1);
   G.deck.unshift('noite');
-  log(`🔄 O descarte foi embaralhado e virou um novo baralho (${G.deck.length} cartas). A Noite volta para o fundo.`);
+  log(`🔄 O descarte foi embaralhado e virou um novo baralho (${semPacto(G.deck).length} cartas). A Noite volta para o fundo.`);
 }
 function tirar(){
   if (!G.deck.length) novoBaralho();
@@ -1143,8 +1154,8 @@ function visao(vid, comLog = true){
   const atual = G.current != null ? G.players[G.current] : null;
   return {
     meId:vid, fase:G.fase, noite:G.noite, over:G.over, current:G.current, atualNome:atual ? atual.nome : '',
-    placar:`☾ Bruxas reveladas: <b>${rev}/${G.totalBruxas}</b> · 🂠 ${G.deck.length}`,
-    monte:G.deck.length, descarte:G.discard.length, bruxasRev:rev, totalBruxas:G.totalBruxas,
+    placar:`☾ Bruxas reveladas: <b>${rev}/${G.totalBruxas}</b> · 🂠 ${semPacto(G.deck).length}`,
+    monte:semPacto(G.deck).length, descarte:G.discard.length, bruxasRev:rev, totalBruxas:G.totalBruxas,
     minhaVez: !!(G.turno && G.turno.pid === vid && G.turno.res), jogou: !!(G.turno && G.turno.pid === vid && G.turno.jogou),
     prazo: G.turno && G.turno.prazo && G.turno.res ? Math.max(0, Math.round((G.turno.prazo - Date.now()) / 1000)) : 0,
     esperando:[...G.esperando].filter(id => id !== vid).map(id => G.players[id].nome),
@@ -1152,7 +1163,7 @@ function visao(vid, comLog = true){
     alive:me.alive, hand:me.hand.slice(),
     players:G.players.map(p => ({
       id:p.id, nome:p.nome, av:p.av, alive:p.alive, humano:p.isHuman, pts:pontos(p), azuis:p.azuis.slice(),
-      mao:p.hand.length, oc:ocultas(p).length, acus:p.acus.length, time:(verTudo || conheceTime(me, p)) ? p.team : null,
+      mao:semPacto(p.hand).length, oc:ocultas(p).length, acus:p.acus.length, time:(verTudo || conheceTime(me, p)) ? p.team : null,
       semDevocao:p.team === 'bruxa' && !p.pacto, // regra da casa: Devoção não pode ir para a equipe das bruxas (o Pacto é segredo)
       slots:p.pistas.map(x => x.rev ? {c:'rev-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
         : (p === me || verTudo) ? {c:'own own-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
@@ -1291,7 +1302,6 @@ async function jogar(p, i, ts){
   if (k === 'pacto'){
     // nada aparece para a vila: sem crônica pública, sem cena, e a mão de quem usou não diminui
     t.team = 'bruxa'; t.pacto = true; G.semConversao = true;
-    p.hand.push(cartaComum());
     const parc = G.players.filter(q => q !== t && q.team === 'bruxa' && q.alive).map(q => q.nome);
     log(`🌒 Você selou o <b>Pacto Dourado</b> com ${nm(t)}: agora ele(a) é da equipe das bruxas. Ninguém mais poderá virar bruxa. (Só você sabe. Isso não conta como jogada: continue seu turno normalmente.)`, 'priv', p.id);
     log(`🌒 Um pacto foi selado nas sombras... <b>Agora você é da equipe das bruxas!</b> Parceiras: ${parc.map(esc).join(', ')}.`, 'priv', t.id);
@@ -1342,21 +1352,23 @@ async function jogar(p, i, ts){
     t.azuis.splice(t.azuis.indexOf(alvoK), 1); G.discard.push(alvoK);
     log(`✨ ${nm(p)} exorciza <i>${CARDS[alvoK].nome}</i> de ${nm(t)}.`, '', null, 'exorcismo');
   } else if (k === 'confisco'){
-    log(`🔥 ${nm(p)} confisca a mão de ${nm(t)} (${t.hand.length} cartas descartadas).`, '', null, 'fogo');
-    G.discard.push(...t.hand); t.hand = [];
+    log(`🔥 ${nm(p)} confisca a mão de ${nm(t)} (${semPacto(t.hand).length} cartas descartadas).`, '', null, 'fogo');
+    G.discard.push(...semPacto(t.hand)); t.hand = t.hand.filter(k => k === 'pacto');
   } else if (k === 'furto'){
     const d = ts[1];
     if (d === p){
+      const guardado = t.hand.filter(k => k === 'pacto'); t.hand = semPacto(t.hand);
       const qtd = Math.max(1, Math.floor(t.hand.length / 2));
       shuffle(t.hand);
       const pegas = t.hand.splice(0, qtd);
+      t.hand.push(...guardado);
       p.hand.push(...pegas);
       log(`🫳 ${nm(p)} furta ${qtd} carta(s) da mão de ${nm(t)} para si (metade).`, '', null, 'furto');
       log(`Você pegou: ${pegas.map(k => '<i>' + CARDS[k].nome + '</i>').join(', ')}.`, 'priv', p.id);
       log(`${nm(p)} pegou de você: ${pegas.map(k => '<i>' + CARDS[k].nome + '</i>').join(', ')}.`, 'priv', t.id);
     } else {
-      log(`🫳 ${nm(p)} tira as ${t.hand.length} cartas de ${nm(t)} e entrega a ${nm(d)}.`, '', null, 'furto');
-      d.hand.push(...t.hand); t.hand = [];
+      log(`🫳 ${nm(p)} tira as ${semPacto(t.hand).length} cartas de ${nm(t)} e entrega a ${nm(d)}.`, '', null, 'furto');
+      d.hand.push(...semPacto(t.hand)); t.hand = t.hand.filter(k => k === 'pacto');
     }
   } else if (k === 'bode'){
     const d = ts[1];
@@ -1723,7 +1735,17 @@ async function comprar2(p){
   for (let j = 0; j < 2; j++){
     if (G.over || !p.alive) return;
     let k = tirar(); if (!k) return;
-    if (k === 'pacto' && (p.team !== 'bruxa' || G.semConversao)) k = cartaComum(); // o Pacto só existe para bruxas
+    // o Pacto só existe para bruxas: para os outros ele some e a compra segue com a próxima carta
+    while (k === 'pacto' && (p.team !== 'bruxa' || G.semConversao)){ k = tirar(); if (!k) return; }
+    if (k === 'pacto'){
+      // a bruxa fica com o Pacto e ainda compra a carta normal: no total pega 3, mas para todos parecem 2
+      p.hand.push('pacto');
+      if (p.isHuman){
+        log('🌒 Você encontrou o lendário <b>PACTO DOURADO</b>! Ele veio de brinde: você ainda compra suas 2 cartas normais. Use num morador para torná-lo bruxa... ninguém vai saber.', 'priv', p.id);
+        if (p.ctl === 'local') cenaPegaDourada('pacto'); else enviar(p.conn, {t:'cena', tipo:'pegaPacto'});
+      }
+      j--; continue;
+    }
     if (CARDS[k].cor === 'preta'){
       log(`${CARDS[k].ic} ${nm(p)} comprou e revelou <b>${CARDS[k].nome}</b>!`, 'phase'); await delay(.8);
       if (k === 'noite'){ await noite(); if (!G.over && !G.deck.length) novoBaralho(); } // (Noite forçada no teste não reembaralha)
@@ -2791,10 +2813,15 @@ function cenaVirouBruxa(parceiras){
   timers.push(setTimeout(() => fim(false), 7500));
 }
 // Só para quem comprou a Sentença Dourada: a carta sobe brilhando da mão e volta para ela
-function cenaPegaDourada(){
+function cenaPegaDourada(tipo = 'sentenca'){
   if (cenaAtiva) return; // se outra cena estiver passando, fica só o aviso na crônica
   const el = document.createElement('div'); el.id = 'cenaPega';
-  el.innerHTML = `<div class="raios"></div><div class="halo"></div>
+  const pacto = tipo === 'pacto'; if (pacto) el.className = 'pacto';
+  el.innerHTML = pacto ? `<div class="raios"></div><div class="halo"></div>
+    <div class="topoP">☾ LENDÁRIA DAS BRUXAS ☾</div>
+    <div class="cartaP"><div class="face"><div class="fTopo">✦ SÓ BRUXAS ✦</div><div class="fIc">🌒</div><div class="fNome">Pacto<br>Dourado</div><div class="fDesc">Um morador vira bruxa<br>em segredo.</div></div></div>
+    <div class="textoP">Você encontrou o <b>Pacto Dourado</b>!<small>Ele veio de brinde e ninguém vê que você tem uma carta a mais... use bem.</small></div>`
+  : `<div class="raios"></div><div class="halo"></div>
     <div class="topoP">✦ CARTA LENDÁRIA ✦</div>
     <div class="cartaP"><div class="face"><div class="fTopo">✦ LENDÁRIA ✦</div><div class="fIc">⚜️</div><div class="fNome">Sentença<br>Dourada</div><div class="fDesc">Elimine qualquer jogador.<br>Nada pode impedir.</div></div></div>
     <div class="textoP">Você encontrou a <b>Sentença Dourada</b>!<small>Só você sabe que ela existe... guarde segredo.</small></div>
@@ -2824,7 +2851,7 @@ function cenaPegaDourada(){
   // brilho que sobe da mão
   A(el, [{opacity:0}, {opacity:1}], {duration:400});
   Som.tocar('douradaPega');
-  setTimeout(() => Som.tocar('douradaRevela'), 650);
+  setTimeout(() => { if (pacto){ if (Som.ok()) Som.sinistro(); } else Som.tocar('douradaRevela'); }, 650);
   const raios = q('.raios');
   raios.animate([{transform:'rotate(0deg)'}, {transform:'rotate(360deg)'}], {duration:30000, iterations:Infinity});
   A(raios, [{opacity:0}, {opacity:1}], {duration:1200});
@@ -3435,6 +3462,7 @@ function clienteRecebe(d){
     else if (d.tipo === 'final' && d.d) cenaFinal({vitima:String(d.d.vitima || ''), bruxa:String(d.d.bruxa || ''), parceiras:Array.isArray(d.d.parceiras) ? d.d.parceiras.map(String) : []});
     else if (d.tipo === 'feitico' && d.d) cenaFeitico({tipo:['morte', 'confissao', 'protegido'].includes(d.d.tipo) ? d.d.tipo : 'protegido', nome:String(d.d.nome || ''), carta:String(d.d.carta || '')});
     else if (d.tipo === 'pegaDourada') cenaPegaDourada();
+    else if (d.tipo === 'pegaPacto') cenaPegaDourada('pacto');
     else if (d.tipo === 'virouBruxa') cenaVirouBruxa(Array.isArray(d.parceiras) ? d.parceiras.map(String) : []);
     else if (d.tipo === 'dourada' && d.d) cenaDourada({quem:String(d.d.quem || ''), alvo:String(d.d.alvo || ''), bruxa:!!d.d.bruxa});
     else if (d.tipo === 'noite' && Array.isArray(d.pessoas)) cenaNoite(d.pessoas.map(p => ({nome:String(p.nome || ''), eu:CV && p.id === CV.meId})));
@@ -3501,7 +3529,7 @@ function painelHTML(){
     <h3>🎬 Cenas</h3>
     <div class="grade">${b('cena:conspiracao', '🕸️ Conspiração')}
       <span class="linha" style="gap:4px">${b('cena:noite', '🌑 Noite com')}<select id="admN">${Array.from({length:12}, (_, i) => `<option ${i + 1 === 6 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select> pessoas</span></div>
-    <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}${b('cena:final', '👑 Final: a bruxa se revela')}${b('cena:dourada', '⚜️ Sentença Dourada')}${b('cena:pegaDourada', '✨ Pegar a Sentença (só quem compra)')}${b('cena:virouBruxa', '🌒 Virou bruxa (Pacto)')}</div>
+    <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}${b('cena:final', '👑 Final: a bruxa se revela')}${b('cena:dourada', '⚜️ Sentença Dourada')}${b('cena:pegaDourada', '✨ Pegar a Sentença (só quem compra)')}${b('cena:pegaPacto', '🌒 Pegar o Pacto (só a bruxa)')}${b('cena:virouBruxa', '🌒 Virou bruxa (Pacto)')}</div>
     <h3>🔊 Sons</h3>
     <div class="grade">${Object.keys(NOMES_SONS).filter(k => EFEITOS[k]).map(k => b('som:' + k, NOMES_SONS[k])).join('')}
       ${b('som2:susto', 'Susto (Conspiração)')}${b('som2:pancada', 'Pancada na mesa')}${b('som2:sinistro', 'Acorde sinistro')}</div>
@@ -3547,6 +3575,7 @@ async function acaoPainel(a){
     else if (x === 'protegido') await cenaFeitico({tipo:'protegido', nome:''});
     else if (x === 'final') await cenaFinal({vitima:nomes[0], bruxa:nomes[1], parceiras:[nomes[2]]});
     else if (x === 'pegaDourada'){ cenaPegaDourada(); await sleep(7600); }
+    else if (x === 'pegaPacto'){ cenaPegaDourada('pacto'); await sleep(7600); }
     else if (x === 'virouBruxa'){ cenaVirouBruxa([nomes[0]]); await sleep(8500); }
     else if (x === 'dourada') await cenaDourada({quem:meuNome(), alvo:nomes[0], bruxa:Math.random() < .5});
     else if (x.startsWith('conf-')) await cenaFeitico({tipo:'confissao', nome:nomes[1], carta:x.slice(5)});
