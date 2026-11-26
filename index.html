@@ -885,7 +885,7 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
     <div><span>4</span><p><b>À noite</b>, as bruxas escolhem alguém para matar. O Guardião pode salvar.</p></div>
   </div>
   <div class="rg-dois">
-    <div class="rg-caixa vila"><h4>✝ Moradores vencem</h4><p>quando <b>todas as cartas Bruxa</b> do jogo forem reveladas.</p></div>
+    <div class="rg-caixa vila"><h4>✝ Moradores vencem</h4><p>quando <b>todas as bruxas estiverem mortas</b>, inclusive quem virou bruxa no meio do jogo.</p></div>
     <div class="rg-caixa bru"><h4>☾ Bruxas vencem</h4><p>quando <b>todos os vivos</b> forem da equipe das bruxas.</p></div>
   </div>
   <p class="rg-dica">💡 Não precisa decorar: durante a partida, a frase em destaque embaixo da mesa sempre diz o que você pode fazer agora.</p>
@@ -970,7 +970,7 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
   </ul>
   <h3>🏆 Vitória</h3>
   <div class="rg-dois">
-    <div class="rg-caixa vila"><h4>✝ Moradores</h4><p>Vencem quando <b>todas as cartas Bruxa</b> forem reveladas, seja em julgamentos, confissões, mortes ou pelo gato.</p></div>
+    <div class="rg-caixa vila"><h4>✝ Moradores</h4><p>Vencem quando <b>todas as bruxas estiverem mortas</b>. Não basta matar uma: se sobrar qualquer bruxa viva (até quem virou bruxa na Conspiração ou pelo Pacto), o jogo continua.</p></div>
     <div class="rg-caixa bru"><h4>☾ Bruxas</h4><p>Vencem quando <b>só sobrarem vivos</b> da equipe das bruxas.</p></div>
   </div>
   <h3>🧠 Dicas</h3>
@@ -1182,12 +1182,12 @@ function enviarChat(){
 function visao(vid, comLog = true){
   const me = G.players[vid];
   const verTudo = !!(G.teste && G.verTudo && me.ctl === 'local'); // painel do administrador: ver as cartas de todos
-  const rev = G.players.reduce((s, p) => s + p.pistas.filter(x => x.rev && x.t === 'bruxa').length, 0);
+  const mortas = G.players.filter(p => !p.alive && p.team === 'bruxa').length; // morto tem o time revelado para todos
   const atual = G.current != null ? G.players[G.current] : null;
   return {
     meId:vid, fase:G.fase, noite:G.noite, over:G.over, current:G.current, atualNome:atual ? atual.nome : '',
-    placar:`☾ Bruxas reveladas: <b>${rev}/${G.totalBruxas}</b> · 🂠 ${semPacto(G.deck).length}`,
-    monte:semPacto(G.deck).length, descarte:G.discard.length, bruxasRev:rev, totalBruxas:G.totalBruxas,
+    placar:`☾ Bruxas mortas: <b>${mortas}</b> (começaram ${G.totalBruxas}) · 🂠 ${semPacto(G.deck).length}`,
+    monte:semPacto(G.deck).length, descarte:G.discard.length, bruxasMortas:mortas, totalBruxas:G.totalBruxas,
     minhaVez: !!(G.turno && G.turno.pid === vid && G.turno.res), jogou: !!(G.turno && G.turno.pid === vid && G.turno.jogou),
     prazo: G.turno && G.turno.prazo && G.turno.res ? Math.max(0, Math.round((G.turno.prazo - Date.now()) / 1000)) : 0,
     esperando:[...G.esperando].filter(id => id !== vid).map(id => G.players[id].nome),
@@ -1813,14 +1813,14 @@ async function loop(){
 }
 function checarVitoria(){
   if (G.over) return;
-  const rev = G.players.reduce((s, p) => s + p.pistas.filter(x => x.rev && x.t === 'bruxa').length, 0);
-  if (rev >= G.totalBruxas) return fim('vila');
+  // a vila só vence quando TODAS as bruxas estiverem mortas (inclusive quem virou bruxa no meio do jogo)
   const v = vivos();
-  if (!v.length || v.every(p => p.team === 'bruxa')) fim('bruxa');
+  if (!v.some(p => p.team === 'bruxa')) return fim('vila');
+  if (v.every(p => p.team === 'bruxa')) fim('bruxa');
 }
 async function fim(lado){
   G.over = true; G.current = null; G.turno = null; G.noite = false;
-  log(lado === 'vila' ? '🌅 Todas as bruxas foram reveladas. A vila está salva!' : '🔥 Só restaram bruxas vivas. A vila caiu...', 'phase', null, lado === 'vila' ? 'fimVila' : 'fimBruxa');
+  log(lado === 'vila' ? '🌅 Todas as bruxas estão mortas. A vila está salva!' : '🔥 Só restaram bruxas vivas. A vila caiu...', 'phase', null, lado === 'vila' ? 'fimVila' : 'fimBruxa');
   const meuG = G;
   await sleep(700);
   if (G !== meuG) return;
@@ -1839,7 +1839,7 @@ function introHTML(p){
     <p>Suas cartas de julgamento (só você vê):</p><div class="mini">${mini}</div>
     ${p.pistas.some(x => x.t === 'guardiao') ? '<p>🏮 Você tem o <b>Guardião</b>: à noite escolhe alguém para proteger.</p>' : ''}
     ${p.team === 'bruxa' ? (parc.length ? `<p>Sua parceira: <b>${parc.join(', ')}</b>.</p>` : '<p>Você é a única bruxa... por enquanto.</p>') + '<p>Vença quando todos os vivos forem da equipe das bruxas.</p>'
-      : `<p>Há <b>${G.totalBruxas}</b> carta(s) Bruxa escondida(s). Revele todas para vencer.</p>`}`;
+      : `<p>Há <b>${G.totalBruxas}</b> bruxa(s) escondida(s) na vila. <b>Todas</b> precisam morrer para a vila vencer, e cuidado: na Conspiração mais gente pode virar bruxa.</p>`}`;
 }
 async function comecarJogo(pessoas, n, teste = null, bruxas = null){
   resetModal();
@@ -1922,7 +1922,7 @@ function desenhar(v){
       <div class="mesaCentro"><div class="faseM">${esc(v.fase || '')}</div><div class="vezM">${vez}</div><div class="relogioM"></div>
         <div class="monteM"><div class="pilha">${'<i></i>'.repeat(camadas)}<span>🂠 ${v.monte} no monte</span></div>
           <div class="pilha descarte">${v.descarte ? '<i></i><i></i>' : ''}<span>${v.descarte} no descarte</span></div></div>
-        <div class="bruxasM">☾ Bruxas reveladas: <b>${v.bruxasRev ?? 0}/${v.totalBruxas ?? '?'}</b></div></div>`;
+        <div class="bruxasM">☾ Bruxas mortas: <b>${v.bruxasMortas ?? 0}</b> <small>(começaram ${v.totalBruxas ?? '?'})</small></div></div>`;
     grid.querySelectorAll('.pilha i').forEach((i, k, todas) => { const s = todas.length - 1 - k; i.style.transform = i.closest('.descarte') ? `rotate(${k ? 7 : -5}deg)` : `translate(${-s * 1.6}px,${s * 1.6}px)`; });
   }
   // lugares igualmente espaçados ao longo da borda da mesa oval (começando por você, embaixo)
