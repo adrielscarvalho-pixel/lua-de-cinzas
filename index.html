@@ -661,6 +661,35 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
 #cenaPacto .textoPacto small{display:block;font-size:.72em;font-style:italic;color:#c9b6dd;margin-top:6px}
 #cenaPacto .fumacaP{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#9a4dff55,#5a1a9a22 50%,#0000 70%);filter:blur(6px)}
 #cenaPacto .pular{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#ffffff66;font-size:14px;font-family:Cinzel,serif;letter-spacing:.08em}
+/* ---------- caça à carta dourada ---------- */
+.sorteBox{max-width:620px;text-align:center}
+.sorteBox h2{color:var(--gold2)}
+.sorteEscolha{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:4px 0 8px}
+.sorteEscolha button{border-radius:99px;font-size:13px}
+.sorteEscolha button.on{background:linear-gradient(#ebc76e,#a87b25);color:#25170a;border-color:#f6dc92;font-weight:700}
+.sorteNota{font-size:15px;color:#d4c7e6;margin:4px 0 10px}
+.sorteMesa{display:flex;align-items:center;justify-content:center;gap:clamp(14px,4vw,36px);padding:22px 12px;border-radius:50% / 40%;margin:6px 0 12px;
+ background:radial-gradient(ellipse at 50% 40%,#7a2a32,#521a21 50%,#2e0d12 85%);border:10px solid #6b3f1c;box-shadow:inset 0 0 40px #000c,0 12px 30px #000a;perspective:800px}
+.sorteEu{display:flex;flex-direction:column;align-items:center;gap:4px;color:#f3e8cf;font-family:Cinzel,serif;font-size:13px}
+.sorteEu .av{width:50px;height:50px;display:grid;place-items:center;border-radius:50%;font-size:26px;background:radial-gradient(circle at 35% 30%,#544270,#231b33);border:2px solid var(--gold);box-shadow:0 0 16px #d8b25a66}
+.sortePilha{position:relative;width:62px;height:88px}
+.sortePilha i{position:absolute;inset:0;border-radius:7px;background:repeating-linear-gradient(45deg,#3b2a55 0 6px,#30224a 6px 12px);border:2px solid #c9a23f;box-shadow:0 3px 5px #0009}
+.sortePilha i:nth-child(1){transform:translate(-4px,4px)}.sortePilha i:nth-child(2){transform:translate(-2px,2px)}
+.sortePilha i:nth-child(3)::after{content:'☾';position:absolute;inset:0;display:grid;place-items:center;color:#c9a23f;font-size:22px}
+.sortePilha span{position:absolute;bottom:-20px;left:-10px;right:-10px;font-size:12px;color:#e6d8b8}
+.sorteSlot{width:112px;min-height:150px;display:grid;place-items:center}
+.sorteSlot .carta{width:108px;min-height:146px;margin:0}
+.sorteVazio{width:104px;height:146px;border-radius:12px;border:2px dashed #ffffff33;display:grid;place-items:center;color:#ffffff44;font-size:40px;font-family:Cinzel,serif}
+.sortePlacar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}
+.sortePlacar div{background:#ffffff0a;border:1px solid #ffffff14;border-radius:12px;padding:8px 6px}
+.sortePlacar small{display:block;font-size:12px;color:#a99cbc}
+.sortePlacar b{font-family:Cinzel,serif;font-size:24px;color:var(--gold2)}
+.sorteMsg{min-height:44px;margin:8px 0 0;font-size:16px}
+.sorteBox .botoes{justify-content:center}
+.sorteBox.ganhou{animation:sorteGanhou .6s ease-in-out 3}
+.sorteBox.pacto.ganhou{animation-name:sorteGanhouPacto}
+@keyframes sorteGanhou{50%{box-shadow:0 0 0 3px #ffe08a,0 0 80px #ffcc33cc}}
+@keyframes sorteGanhouPacto{50%{box-shadow:0 0 0 3px #d4a017,0 0 80px #9a4dffcc}}
 /* ---------- celular ---------- */
 @media (max-width:759px){
  :root{--mesaH:auto}
@@ -3530,6 +3559,9 @@ function painelHTML(){
     <div class="grade">${b('cena:conspiracao', '🕸️ Conspiração')}
       <span class="linha" style="gap:4px">${b('cena:noite', '🌑 Noite com')}<select id="admN">${Array.from({length:12}, (_, i) => `<option ${i + 1 === 6 ? 'selected' : ''}>${i + 1}</option>`).join('')}</select> pessoas</span></div>
     <div class="grade" style="margin-top:6px">${b('cena:morte', '💀 Feitiço: morte')}${b('cena:conf-inocente', '🙊 Confissão: ✝ Não é Bruxa')}${b('cena:conf-guardiao', '🙊 Confissão: 🏮 Guardião')}${b('cena:protegido', '🕊️ Feitiço: protegido')}${b('cena:final', '👑 Final: a bruxa se revela')}${b('cena:dourada', '⚜️ Sentença Dourada')}${b('cena:pegaDourada', '✨ Pegar a Sentença (só quem compra)')}${b('cena:pegaPacto', '🌒 Pegar o Pacto (só a bruxa)')}${b('cena:virouBruxa', '🌒 Virou bruxa (Pacto)')}</div>
+    <h3>🎰 Caça à carta dourada</h3>
+    <p class="nota">Só você na mesa, comprando de baralhos novos até a carta lendária aparecer (1% de chance em cada tentativa).</p>
+    <div class="grade">${b('sorte:sentenca', '⚜️ Tentar pegar a Sentença Dourada')}${b('sorte:pacto', '🌒 Tentar pegar o Pacto Dourado')}</div>
     <h3>🔊 Sons</h3>
     <div class="grade">${Object.keys(NOMES_SONS).filter(k => EFEITOS[k]).map(k => b('som:' + k, NOMES_SONS[k])).join('')}
       ${b('som2:susto', 'Susto (Conspiração)')}${b('som2:pancada', 'Pancada na mesa')}${b('som2:sinistro', 'Acorde sinistro')}</div>
@@ -3561,6 +3593,79 @@ function painelHTML(){
   }
   return h;
 }
+// ---------- 🎰 Caça à carta dourada (painel do administrador) ----------
+const SORTE = {tipo:'sentenca', tent:0, ocupado:false, auto:null};
+function recordeSorte(tipo){ try { return JSON.parse(localStorage.getItem('ldc-sorte-' + tipo) || 'null'); } catch (e) { return null; } }
+function salvarRecorde(tipo, r){ try { localStorage.setItem('ldc-sorte-' + tipo, JSON.stringify(r)); } catch (e) {} }
+function abrirSorte(tipo){
+  SORTE.tipo = tipo === 'pacto' ? 'pacto' : 'sentenca'; SORTE.tent = 0; SORTE.ocupado = false; pararAutoSorte();
+  let el = $('sorte');
+  if (!el){ el = document.createElement('div'); el.id = 'sorte'; el.className = 'modal'; el.style.zIndex = 30; document.body.appendChild(el); }
+  const nome = meuNome(), c = CARDS[SORTE.tipo];
+  el.innerHTML = `<div class="mbox sorteBox ${SORTE.tipo}">
+    <h2>🎰 Caça à carta dourada</h2>
+    <div class="sorteEscolha"><button data-s="sentenca" class="${SORTE.tipo === 'sentenca' ? 'on' : ''}">⚜️ Sentença Dourada</button><button data-s="pacto" class="${SORTE.tipo === 'pacto' ? 'on' : ''}">🌒 Pacto Dourado</button></div>
+    <p class="sorteNota">Só você na mesa. Cada tentativa é um <b>baralho novo</b>: ${c.ic} <b>${c.nome}</b> tem <b>1%</b> de chance de estar nele.</p>
+    <div class="sorteMesa">
+      <div class="sorteEu"><span class="av">🕯️</span><b>${esc(nome)}</b></div>
+      <div class="sortePilha"><i></i><i></i><i></i><span>baralho</span></div>
+      <div class="sorteSlot" id="sorteSlot"><div class="sorteVazio">?</div></div>
+    </div>
+    <div class="sortePlacar"><div><small>Tentativas</small><b id="sorteTent">0</b></div><div><small>Recorde (menos tentativas)</small><b id="sorteRec">—</b></div><div><small>Já conseguiu</small><b id="sorteVezes">0</b></div></div>
+    <p class="sorteMsg" id="sorteMsg">Toque em <b>Tentar</b> para comprar de um baralho novo.</p>
+    <div class="botoes"><button class="prim" id="sorteTentar">🂠 Tentar</button><button id="sorteAuto">⏩ Tentar até sair</button><button id="sorteZerar">↺ Zerar</button><button id="sorteFechar">Fechar</button></div>
+  </div>`;
+  el.hidden = false;
+  el.querySelectorAll('.sorteEscolha button').forEach(b => b.onclick = () => { Som.tocar('clique'); abrirSorte(b.dataset.s); });
+  $('sorteTentar').onclick = () => { pararAutoSorte(); tentarSorte(); };
+  $('sorteAuto').onclick = () => { if (SORTE.auto) return pararAutoSorte(); $('sorteAuto').textContent = '⏸ Parar'; SORTE.auto = setInterval(() => { if (!SORTE.ocupado) tentarSorte(true); }, 140); };
+  $('sorteZerar').onclick = () => { pararAutoSorte(); SORTE.tent = 0; salvarRecorde(SORTE.tipo, null); placarSorte(); $('sorteMsg').innerHTML = 'Zerado. Boa sorte!'; $('sorteSlot').innerHTML = '<div class="sorteVazio">?</div>'; };
+  $('sorteFechar').onclick = () => { pararAutoSorte(); el.hidden = true; abrirPainel(); };
+  placarSorte();
+}
+function pararAutoSorte(){ clearInterval(SORTE.auto); SORTE.auto = null; const b = $('sorteAuto'); if (b) b.textContent = '⏩ Tentar até sair'; }
+function placarSorte(){
+  const r = recordeSorte(SORTE.tipo) || {melhor:null, vezes:0};
+  $('sorteTent').textContent = SORTE.tent; $('sorteRec').textContent = r.melhor ?? '—'; $('sorteVezes').textContent = r.vezes || 0;
+}
+function cartaSorteHTML(k){
+  const c = CARDS[k];
+  return `<div class="carta ${c.cor === 'dourada' ? 'dourada' + (k === 'pacto' ? ' pacto' : '') : ''}" style="--cor:${COR[c.cor]}">${c.pts ? `<span class="pts">${c.pts}</span>` : ''}<div class="ic">${c.ic}</div><div class="cn">${c.nome}</div></div>`;
+}
+async function tentarSorte(rapido = false){
+  if (SORTE.ocupado || $('sorte').hidden) return;
+  SORTE.ocupado = true;
+  SORTE.tent++;
+  const ganhou = Math.random() < (SORTE.tipo === 'pacto' ? CHANCE_PACTO : CHANCE_DOURADA);
+  const k = ganhou ? SORTE.tipo : cartaComum();
+  const slot = $('sorteSlot');
+  slot.innerHTML = cartaSorteHTML(k);
+  const carta = slot.firstElementChild;
+  if (!rapido || ganhou) Som.tocar('carta');
+  carta.animate([{transform:'translate(-120px,0) rotateY(180deg) scale(.6)', opacity:0}, {transform:'translate(0,0) rotateY(0deg) scale(1)', opacity:1}], {duration:rapido && !ganhou ? 120 : 380, easing:'cubic-bezier(.2,.8,.3,1)'});
+  placarSorte();
+  if (!ganhou){
+    $('sorteMsg').innerHTML = `Saiu <b>${CARDS[k].nome}</b>... nada de carta dourada. Tentativa nº <b>${SORTE.tent}</b>.`;
+    setTimeout(() => { SORTE.ocupado = false; }, rapido ? 40 : 300);
+    return;
+  }
+  // conseguiu!
+  pararAutoSorte();
+  const r = recordeSorte(SORTE.tipo) || {melhor:null, vezes:0};
+  const novoRecorde = r.melhor == null || SORTE.tent < r.melhor;
+  r.vezes = (r.vezes || 0) + 1; if (novoRecorde) r.melhor = SORTE.tent; salvarRecorde(SORTE.tipo, r); placarSorte();
+  const n = SORTE.tent;
+  $('sorteMsg').innerHTML = `✨ <b>CONSEGUIU!</b> ${CARDS[k].ic} ${CARDS[k].nome} saiu na tentativa nº <b>${n}</b>!${novoRecorde ? ' 🏆 <b>Novo recorde!</b>' : ''}`;
+  $('sorte').querySelector('.sorteBox').classList.add('ganhou');
+  await sleep(500);
+  cenaAtiva = null;
+  cenaPegaDourada(SORTE.tipo);
+  await sleep(6800);
+  $('sorte').querySelector('.sorteBox').classList.remove('ganhou');
+  SORTE.tent = 0; placarSorte();
+  $('sorteMsg').innerHTML = `Última vez: saiu na tentativa nº <b>${n}</b>. Quer tentar de novo?`;
+  SORTE.ocupado = false;
+}
 function abrirPainel(){ $('adminC').innerHTML = painelHTML(); $('admin').hidden = false; }
 const atualizarPainel = () => { if (!$('admin').hidden) { const s = $('admin').querySelector('.mbox').scrollTop; $('adminC').innerHTML = painelHTML(); $('admin').querySelector('.mbox').scrollTop = s; } };
 
@@ -3581,6 +3686,7 @@ async function acaoPainel(a){
     else if (x.startsWith('conf-')) await cenaFeitico({tipo:'confissao', nome:nomes[1], carta:x.slice(5)});
     abrirPainel(); return;
   }
+  if (tipo === 'sorte'){ $('admin').hidden = true; abrirSorte(x); return; }
   if (tipo === 'som'){ Som.tocar(x); return; }
   if (tipo === 'som2'){ if (Som.ok()) Som[x](); return; }
   if (tipo === 'musica'){ if (Musica.tocando) Musica.parar(); else { Musica.ligada = true; mostrarMusica(); Musica.iniciar(); } setTimeout(atualizarPainel, 50); return; }
