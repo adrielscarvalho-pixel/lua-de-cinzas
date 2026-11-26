@@ -1,6 +1,6 @@
 // Service worker do Lua de Cinzas: guarda o jogo no aparelho para funcionar sem internet.
 // Ao publicar uma versão nova do jogo, troque o número da VERSAO.
-const VERSAO = 'ldc-v25';
+const VERSAO = 'ldc-v26';
 const ARQUIVOS = [
   './',
   './index.html',

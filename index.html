@@ -957,7 +957,6 @@ main:has(#jogadores.mesaModo) #log{height:calc(var(--mesaH) - 56px)}
   <p class="rg-dica">💡 É por isso que ninguém está seguro: um morador fiel pode virar bruxa no meio do jogo!</p>
   <ul class="rg-lista">
     <li>✨ O <b>Exorcismo</b> não tira o Gato da Lua, mas o <b>🐐 Bode Expiatório</b> o leva junto com as outras cartas azuis.</li>
-    <li>🙏 Se alguém com Devoção vira bruxa, a Devoção se desfaz.</li>
   </ul>
 </section>
 
@@ -1012,7 +1011,7 @@ const CARDS = {
   suspeita:  {nome:'Suspeita',   cor:'vermelha', pts:1, qtd:20, ic:'👉', desc:'Acusação de 1 ponto.'},
   prova:     {nome:'Prova',      cor:'vermelha', pts:3, qtd:8,  ic:'📌', desc:'Acusação de 3 pontos.'},
   flagrante: {nome:'Flagrante',  cor:'vermelha', pts:7, qtd:2,  ic:'⚡', desc:'Acusação de 7 pontos.'},
-  devocao:   {nome:'Devoção',    cor:'azul', qtd:1, ic:'🙏', desc:'Ninguém pode jogar acusações neste jogador. Dura só uma rodada: some depois da próxima Noite. Não pode ser colocada em quem é da equipe das bruxas.'},
+  devocao:   {nome:'Devoção',    cor:'azul', qtd:1, ic:'🙏', desc:'Ninguém pode jogar acusações neste jogador. Dura só uma rodada: some depois da próxima Noite. Pode ir para qualquer um, até para bruxas.'},
   refugio:   {nome:'Refúgio',    cor:'azul', qtd:1, ic:'⛪', desc:'Este jogador não pode ser morto na próxima Noite. Dura só uma rodada: some depois dessa Noite.'},
   mafama:    {nome:'Má Fama',    cor:'azul', qtd:3, ic:'🐍', desc:'Cada acusação neste jogador vale +1 ponto.'},
   pelourinho:{nome:'Pelourinho', cor:'azul', qtd:3, ic:'⛓️', desc:'O jogador perde o próximo turno.'},
@@ -1196,7 +1195,6 @@ function visao(vid, comLog = true){
     players:G.players.map(p => ({
       id:p.id, nome:p.nome, av:p.av, alive:p.alive, humano:p.isHuman, pts:pontos(p), azuis:p.azuis.slice(),
       mao:semPacto(p.hand).length, oc:ocultas(p).length, acus:p.acus.length, time:(verTudo || conheceTime(me, p)) ? p.team : null,
-      semDevocao:p.team === 'bruxa' && !p.pacto, // regra da casa: Devoção não pode ir para a equipe das bruxas (o Pacto é segredo)
       slots:p.pistas.map(x => x.rev ? {c:'rev-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
         : (p === me || verTudo) ? {c:'own own-' + x.t, i:ICONE[x.t], t:TIPO[x.t]}
         : me.peek.has(x.id) ? {c:'peek-' + x.t, i:'', t:'Você espiou: ' + TIPO[x.t]}
@@ -1274,7 +1272,6 @@ function alvoOk(k, pv, sel, meId, bru = false){ // funciona com a visão (client
   if (k === 'sentenca') return true; // qualquer vivo que não seja você
   if (k === 'pacto') return !!bru && pv.time !== 'bruxa'; // bruxa escolhe um morador
   if (c.cor === 'vermelha') return !pv.azuis.includes('devocao');
-  if (k === 'devocao' && pv.semDevocao) return false;
   if (c.cor === 'azul') return !pv.azuis.includes(k);
   if (k === 'exorcismo') return pv.azuis.some(a => a !== 'gato');
   if (k === 'confisco') return pv.mao > 0;
@@ -1407,8 +1404,7 @@ async function jogar(p, i, ts){
     log(`🐐 ${nm(p)} faz de ${nm(d)} o bode expiatório: tudo que estava na frente de ${nm(t)} passa para ${nm(d)}.`, '', null, 'bode');
     d.acus.push(...t.acus); t.acus = [];
     t.azuis.forEach(a => {
-      if (a === 'devocao' && d.team === 'bruxa'){ G.discard.push(a); log(`🙏 A Devoção não acompanha ${nm(d)} e é descartada.`); }
-      else if (d.azuis.includes(a)) G.discard.push(a); else d.azuis.push(a);
+      if (d.azuis.includes(a)) G.discard.push(a); else d.azuis.push(a);
     }); t.azuis = [];
     if (!d.isHuman && d.team === 'vila') d.b[p.id] += 1;
     if (pontos(d) >= LIM) await julgamento(d, p);
@@ -1663,11 +1659,6 @@ async function conspiracao(quem){
   }));
   trocas.forEach(({dador, carta}) => { dador.pistas.splice(dador.pistas.indexOf(carta), 1); });
   trocas.forEach(x => { x.rec.pistas.push(x.carta); if (x.carta.t === 'bruxa' && !G.semConversao && x.rec.team !== 'bruxa'){ x.rec.team = 'bruxa'; x.virou = true; } });
-  // quem virou bruxa perde a Devoção (ela não pode ficar com a equipe das bruxas)
-  v.forEach(p => { if (p.team === 'bruxa' && !p.pacto && p.azuis.includes('devocao')){ // (o Pacto é segredo: não desfaz)
-    p.azuis.splice(p.azuis.indexOf('devocao'), 1); G.discard.push('devocao');
-    log(`🙏 A Devoção de ${nm(p)} se desfaz em cinzas...`, 'trial');
-  } });
   G.players.forEach(p => { p.peek = new Set(); if (!p.isHuman) for (const k in p.b) if (Math.abs(p.b[k]) < 40) p.b[k] *= .6; });
   atualizar();
   await Promise.all(trocas.filter(x => x.rec.isHuman).map(({rec, carta}) => perguntar(rec,
@@ -1714,7 +1705,7 @@ function opcoesBot(me){
     } else if (k === 'mafama' || k === 'pelourinho'){
       outros.forEach(t => { if (t.azuis.includes(k) || amigo(t)) return; add([t], isB ? .3 + ameaca(t) * .5 : B(t) * .7 - .2); });
     } else if (k === 'devocao' || k === 'refugio'){
-      outros.forEach(t => { if (t.azuis.includes(k) || (k === 'devocao' && t.team === 'bruxa')) return;
+      outros.forEach(t => { if (t.azuis.includes(k)) return;
         add([t], isB ? (amigo(t) ? .5 + pontos(t) * .25 : -2) : -B(t) * .5 + (k === 'devocao' ? pontos(t) * .12 : .15)); });
     } else if (k === 'defesa'){
       outros.forEach(t => { const pts = pontos(t); if (!pts) return; add([t], isB ? (amigo(t) ? .8 + pts * .35 : -1.5) : -B(t) * .6 + pts * .2 - .2); });
